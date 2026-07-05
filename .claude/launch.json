@@ -14,6 +14,20 @@
       "runtimeArgs": ["--filter", "@leta/playground", "dev", "--port", "5180", "--strictPort"],
       "autoPort": false,
       "port": 5180
+    },
+    {
+      "name": "storybook-alt",
+      "runtimeExecutable": "/Users/ifeanyi/Library/pnpm/bin/pnpm",
+      "runtimeArgs": ["--filter", "@leta/storybook", "exec", "storybook", "dev", "-p", "6108", "--ci"],
+      "autoPort": false,
+      "port": 6108
+    },
+    {
+      "name": "playground-alt",
+      "runtimeExecutable": "/Users/ifeanyi/Library/pnpm/bin/pnpm",
+      "runtimeArgs": ["--filter", "@leta/playground", "dev", "--port", "5181", "--strictPort"],
+      "autoPort": false,
+      "port": 5181
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
   DesktopDropdowns,
   DesktopMenuOptions,
   LAST_UPDATED_COLUMN,
+  LoadingOverlay,
   ORDER_TABLE_COLUMNS,
   PageTabsControl,
   SCHEDULED_ORDER_COLUMNS,
@@ -164,6 +165,19 @@ export function OrdersPage(): React.ReactElement {
   const [createdLabel, setCreatedLabel] = React.useState('Created: Today');
   // Live search query — matches Order ID, recipient name, or recipient phone.
   const [search, setSearch] = React.useState('');
+  // Table refresh: the toolbar's Refresh button shows the blocking LETA loader
+  // for ~2s (simulated re-fetch of the mock data), then remounts the table.
+  const [refreshing, setRefreshing] = React.useState(false);
+  const refreshTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleRefresh = () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    refreshTimer.current = setTimeout(() => {
+      setRefreshing(false);
+      setTableKey((k) => k + 1);
+    }, 2000);
+  };
+  React.useEffect(() => () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); }, []);
   const [overlay, setOverlay] = React.useState<OverlayState | null>(null);
 
   // Live duration timer — recompute each second; `duration` cells re-render.
@@ -518,6 +532,7 @@ export function OrdersPage(): React.ReactElement {
                   variant="filters-column"
                   dataCount={`${filtered.length} Orders`}
                   onColumnsClick={() => openFromFocus('columns')}
+                  onRefreshClick={handleRefresh}
                   filters={<TopFilterSection filters={TABS} onFilterClick={handleFilterClick} animatedSelection />}
                 />
               </>
@@ -553,6 +568,10 @@ export function OrdersPage(): React.ReactElement {
           />
         </div>
       )}
+
+      {/* Blocking reload overlay (toolbar Refresh) — fixed inset-0, covers the
+          whole page incl. SideBar/TopBar; auto-dismissed by handleRefresh. */}
+      <LoadingOverlay open={refreshing} />
 
       {/* Bulk actions toolbar — slides up in / down out as the selection changes.
           Centered via flex (not translateX) so it doesn't fight the animation's

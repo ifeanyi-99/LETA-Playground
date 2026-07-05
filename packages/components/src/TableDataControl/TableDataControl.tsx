@@ -51,6 +51,12 @@ export interface TableDataControlProps
 
   /** Search field placeholder. Default "Search here...". */
   searchPlaceholder?: string;
+  /** Controlled search field value. Omit for an uncontrolled field. */
+  searchValue?: string;
+  /** Fired as the user types in the search field. */
+  onSearchChange?: (value: string) => void;
+  /** Fired when the search field's clear (×) button is clicked. */
+  onSearchClear?: () => void;
   /** Label for the Created date-filter button. Default "Created: Today". */
   createdLabel?: string;
   // optional callbacks for the default controls
@@ -72,6 +78,9 @@ function SearchAndFilter({
   onCreated,
   onFilter,
   onSort,
+  searchValue,
+  onSearchChange,
+  onSearchClear,
 }: {
   placeholder: string;
   filterCount?: number;
@@ -79,10 +88,19 @@ function SearchAndFilter({
   onCreated?: () => void;
   onFilter?: () => void;
   onSort?: () => void;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  onSearchClear?: () => void;
 }) {
   return (
     <div style={GROUP}>
-      <SearchInput placeholder={placeholder} style={{ width: 250 }} />
+      <SearchInput
+        placeholder={placeholder}
+        value={searchValue}
+        onChange={onSearchChange ? (e) => onSearchChange(e.target.value) : undefined}
+        onClear={onSearchClear}
+        style={{ width: 250 }}
+      />
       <Button variant="secondary" size="medium" iconLeft="Calendar" onClick={onCreated}>{createdLabel}</Button>
       {/* Filter is always icon-only; badge appears when filterCount > 0 */}
       <div style={{ position: 'relative', display: 'inline-flex' }}>
@@ -158,6 +176,9 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
       ctas,
       columnControl,
       searchPlaceholder = 'Search here...',
+      searchValue,
+      onSearchChange,
+      onSearchClear,
       createdLabel,
       onCreatedClick,
       onFilterClick,
@@ -175,7 +196,7 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
       variant === 'filters-column'
         ? filters ?? <TopFilterSection filters={DEFAULT_FILTERS} />
         : searchSection ?? (
-            <SearchAndFilter placeholder={searchPlaceholder} filterCount={filterCount} createdLabel={createdLabel} onCreated={onCreatedClick} onFilter={onFilterClick} onSort={onSortClick} />
+            <SearchAndFilter placeholder={searchPlaceholder} searchValue={searchValue} onSearchChange={onSearchChange} onSearchClear={onSearchClear} filterCount={filterCount} createdLabel={createdLabel} onCreated={onCreatedClick} onFilter={onFilterClick} onSort={onSortClick} />
           );
 
     const right =

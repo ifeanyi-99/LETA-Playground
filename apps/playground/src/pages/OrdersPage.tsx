@@ -149,6 +149,8 @@ export function OrdersPage(): React.ReactElement {
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(() => new Set());
   const [tableKey, setTableKey] = React.useState(0);
   const [createdLabel, setCreatedLabel] = React.useState('Created: Today');
+  // Live search query — matches Order ID, recipient name, or recipient phone.
+  const [search, setSearch] = React.useState('');
   const [overlay, setOverlay] = React.useState<OverlayState | null>(null);
 
   // Live duration timer — recompute each second; `duration` cells re-render.
@@ -176,13 +178,30 @@ export function OrdersPage(): React.ReactElement {
   }, [selectedIds]);
 
   // ── Filtering + pagination ─────────────────────────────────────────────────
+  // Search matches the field's promise ("Search orders by ID or recipient"):
+  // Order ID, recipient name, or recipient phone — case-insensitive substring;
+  // phones compare digits-only so "0712 345" matches "+254 712 345 678".
+  const query = search.trim().toLowerCase();
+  const queryDigits = query.replace(/\D/g, '');
   const filtered = React.useMemo(() => {
     return orders.filter((o) => {
       if (filterTab !== 'all' && !GROUP_STATUSES[filterTab].includes(o.status)) return false;
       if (subStatus && o.status !== subStatus) return false;
+      if (query) {
+        const idMatch = o.id.toLowerCase().includes(query);
+        const nameMatch = o.customer.toLowerCase().includes(query);
+        // Local-format queries ("0712...") also match the stored international
+        // form ("+254 712...") — retry without the leading 0.
+        const phoneDigits = o.phone.replace(/\D/g, '');
+        const phoneMatch =
+          queryDigits.length > 0 &&
+          (phoneDigits.includes(queryDigits) ||
+            (queryDigits.startsWith('0') && phoneDigits.includes(queryDigits.slice(1))));
+        if (!idMatch && !nameMatch && !phoneMatch) return false;
+      }
       return true;
     });
-  }, [orders, filterTab, subStatus]);
+  }, [orders, filterTab, subStatus, query, queryDigits]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
   const clampedPage = Math.min(page, pageCount);
@@ -194,6 +213,15 @@ export function OrdersPage(): React.ReactElement {
     setSelectedIds(new Set());
     setTableKey((k) => k + 1);
   }, [filterTab, subStatus]);
+
+  // On search change: back to page 1 and remount the Table so its index-based
+  // internal selection re-seeds against the new row slice. Selection is KEPT
+  // (it's ID-based across pages) — matching rows stay checked, and orders
+  // filtered out of view remain selected in the bulk toolbar.
+  React.useEffect(() => {
+    setPage(1);
+    setTableKey((k) => k + 1);
+  }, [query]);
 
   const clearSelection = () => {
     setSelectedIds(new Set());
@@ -461,6 +489,10 @@ export function OrdersPage(): React.ReactElement {
               <>
                 <TableDataControl
                   variant="search-create"
+                  searchPlaceholder="Search orders by ID or recipient"
+                  searchValue={search}
+                  onSearchChange={setSearch}
+                  onSearchClear={() => setSearch('')}
                   filterCount={activeFilterCount}
                   createdLabel={createdLabel}
                   onCreatedClick={() => openFromFocus('created')}

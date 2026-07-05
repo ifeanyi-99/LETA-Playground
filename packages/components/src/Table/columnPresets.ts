@@ -13,9 +13,12 @@ import type { TableColumn } from './Table.js';
  *   with **Recipient = 1.00** (§3.2): Route 1.48 (40%), Driver 1.22 (33%),
  *   Recipient 1.00 (27%). Each carries a `minWidth` floor (§3.4). When Driver is
  *   removed (Unassigned/All), Route/Recipient settle at 60/40 on their own.
- * - Order ID is **bounded-flexible** (§3.3): a low `flex` weight within a
- *   `minWidth`–`maxWidth` band (150–224); it sits at 150 when constrained and caps
- *   at 224, ceding further surplus to Route.
+ * - Order ID is **low-weight flexible** (§3.3): a low `flex` weight with a 150px
+ *   floor and no hard cap — the low weight (0.5 vs Route's 1.48) is the governor.
+ *   It sits near 150 when constrained; on wide viewports it grows slowly (Route
+ *   always gains ~3× as much from the same surplus), eventually un-truncating
+ *   long IDs. (The former 224px cap was removed 2026-07-05 — it produced IDs
+ *   truncating beside visibly free space on wide monitors.)
  * - The 52px checkbox/control column is added by `<Table selectable>`. Depot is NOT
  *   a column — it lives inside the Route cell (§3.5).
  * - **Actions is instance-specific:** 64px (overflow-only) on the Order table,
@@ -42,7 +45,6 @@ const ORDER_ID: TableColumn = {
   role: 'identifier',
   flex: 0.5,
   minWidth: 150,
-  maxWidth: 224,
   pinned: 'left',
 };
 const TRIP: TableColumn = { label: 'Trip', role: 'identifier', width: 90 };

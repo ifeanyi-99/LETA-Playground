@@ -489,7 +489,7 @@ export function OrdersPage(): React.ReactElement {
               <>
                 <TableDataControl
                   variant="search-create"
-                  searchPlaceholder="Search orders by ID or recipient"
+                  searchPlaceholder="Search by order or recipient..."
                   searchValue={search}
                   onSearchChange={setSearch}
                   onSearchClear={() => setSearch('')}

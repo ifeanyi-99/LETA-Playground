@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   ALL_ORDER_COLUMNS,
+  AVATAR_PHOTOS,
   Badge,
   BROADCASTED_ORDER_COLUMNS,
   BulkActionsToolbar,
@@ -53,14 +54,15 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 // flexible Primary column (spec §3.3): weight 0.5, ~200 floor, no cap — so when
 // toggled on it never outcompetes Route/Recipient.
 const CREATED_BY_COLUMN: TableColumn = { label: 'Created By', role: 'primary', flex: 0.5, minWidth: 200 };
-// Clustered/randomized creators — some carry a photo (avatarSrc), the rest render
-// the empty-teal avatar with their initials. Assigned deterministically per order.
+// Clustered/randomized creators — some carry a photo (the exact Figma Avatar
+// Photo 1/2/3 images, shipped as @leta/components assets), the rest render the
+// empty-teal avatar with their initials. Assigned deterministically per order.
 const CREATORS: { name: string; email: string; avatarSrc?: string }[] = [
-  { name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: 'https://picsum.photos/seed/aisha/80' },
+  { name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: AVATAR_PHOTOS[0] },
   { name: 'Grace Wanjiru', email: 'grace.wanjiru@leta.ai' },
-  { name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: 'https://picsum.photos/seed/samuel/80' },
+  { name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: AVATAR_PHOTOS[1] },
   { name: 'Fatuma Hassan', email: 'fatuma.hassan@leta.ai' },
-  { name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: 'https://picsum.photos/seed/peter/80' },
+  { name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: AVATAR_PHOTOS[2] },
 ];
 type ExtraColumnKey = 'lastUpdated' | 'createdBy';
 const EXTRA_COLUMN_OPTIONS: { key: ExtraColumnKey; label: string }[] = [

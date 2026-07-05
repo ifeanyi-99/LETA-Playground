@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --out-dir dist --external leaflet && rm -rf dist/assets && cp -R src/EmptyState/assets dist/assets",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist --external leaflet && rm -rf dist/assets && cp -R src/EmptyState/assets dist/assets && cp src/Avatar/assets/*.png dist/assets/",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },

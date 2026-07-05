@@ -2,9 +2,10 @@ import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Cell, type CellType, type CellState } from './Cell.js';
 import { Button } from '../Button/Button.js';
+import { AVATAR_PHOTOS } from '../Avatar/avatarPhotos.js';
 
 /**
- * Cell (`4444:45000`) — the building block of LETA data tables, all 18 Types.
+ * Cell (`4444:45000`) — the building block of LETA data tables, all 19 Types.
  * Header types are 40px tall; body types are 72px. Hover/pressed are runtime;
  * `selected` is caller-controlled; the `state` prop forces a visual state for
  * these catalogs. Each cell fills its column — here every cell is wrapped in a
@@ -146,7 +147,7 @@ export const UserCell: Story = {
     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Lab s="photo avatar" />
-        <Box width={300}><Cell type="user-cell" name="Dave Mungai" email="davemungai@gmail.com" avatarSrc="https://picsum.photos/seed/dave/80" /></Box>
+        <Box width={300}><Cell type="user-cell" name="Dave Mungai" email="davemungai@gmail.com" avatarSrc={AVATAR_PHOTOS[0]} /></Box>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <Lab s="empty-teal initials (no photo)" />

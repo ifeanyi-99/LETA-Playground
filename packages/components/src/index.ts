@@ -10,7 +10,7 @@ export { Button } from './Button/index.js';
 export type { ButtonProps, ButtonVariant, ButtonSize, ButtonPlatform } from './Button/index.js';
 export { CollapsedSidebarLogo } from './CollapsedSidebarLogo/index.js';
 export type { CollapsedSidebarLogoProps } from './CollapsedSidebarLogo/index.js';
-export { Avatar } from './Avatar/index.js';
+export { Avatar, AVATAR_PHOTOS } from './Avatar/index.js';
 export type { AvatarProps, AvatarSize, AvatarTone } from './Avatar/index.js';
 export { Badge } from './Badge/index.js';
 export type { BadgeProps, BadgeColor } from './Badge/index.js';

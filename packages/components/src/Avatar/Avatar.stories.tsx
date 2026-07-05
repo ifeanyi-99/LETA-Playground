@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import * as React from 'react';
 import { Avatar, type AvatarSize, type AvatarTone } from './Avatar.js';
+import { AVATAR_PHOTOS } from './avatarPhotos.js';
 
 const meta: Meta<typeof Avatar> = {
   title: 'Atoms/Avatar',
@@ -9,7 +10,7 @@ const meta: Meta<typeof Avatar> = {
     docs: {
       description: {
         component:
-          'Avatar variants per Figma node `7446:22517`. The Type axis in Figma is `Empty-Teal / Empty-Warning / Empty-Grey / Photo 1 / Photo 2 / Photo 3` — the three "Empty" Types map to the React `tone` prop, the three "Photo" Types collapse to a single image render mode (the photo URLs in Figma are placeholders). Sizes are 24 / 32 / 44 / 72 px.',
+          'Avatar variants per Figma node `7446:22517`. The Type axis in Figma is `Empty-Teal / Empty-Warning / Empty-Grey / Photo 1 / Photo 2 / Photo 3` — the three "Empty" Types map to the React `tone` prop, the three "Photo" Types collapse to a single image render mode. The photo stories use `AVATAR_PHOTOS` — the exact Photo 1/2/3 images from the Figma component, shipped as package assets. Sizes are 24 / 32 / 44 / 72 px.',
       },
     },
   },
@@ -25,11 +26,8 @@ const meta: Meta<typeof Avatar> = {
 export default meta;
 type Story = StoryObj<typeof Avatar>;
 
-const SAMPLE_PHOTOS = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces',
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=faces',
-];
+// The exact Photo 1/2/3 images from the Figma Avatar component (package assets).
+const SAMPLE_PHOTOS = AVATAR_PHOTOS;
 
 const SIZE_LABEL: Record<AvatarSize, string> = {
   xs: 'Extra Small · 24',

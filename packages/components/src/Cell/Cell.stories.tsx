@@ -46,6 +46,7 @@ const CELL_W: Record<CellType, number> = {
   'manual-order': 300,
   'automatic-order': 300,
   'driver-cell': 300,
+  'user-cell': 300,
 };
 
 const Box = ({ width, children }: { width: number; children: React.ReactNode }) => (
@@ -139,11 +140,26 @@ export const AddressCell: Story = { render: () => <Variants type="address-cell" 
 export const ManualOrder: Story = { render: () => <Variants type="manual-order" /> };
 export const AutomaticOrder: Story = { render: () => <Variants type="automatic-order" /> };
 export const DriverCell: Story = { render: () => <Variants type="driver-cell" /> };
+/** User cell — Medium avatar (photo, or empty-teal initials from the name) + name + email. Both avatar renders shown. */
+export const UserCell: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Lab s="photo avatar" />
+        <Box width={300}><Cell type="user-cell" name="Dave Mungai" email="davemungai@gmail.com" avatarSrc="https://picsum.photos/seed/dave/80" /></Box>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Lab s="empty-teal initials (no photo)" />
+        <Box width={300}><Cell type="user-cell" name="Aisha Mohamed" email="aisha.mohamed@leta.ai" /></Box>
+      </div>
+    </div>
+  ),
+};
 
 const ALL_TYPES: CellType[] = [
   'header', 'header-checkbox', 'sample', 'date', 'text-link', 'status', 'default-checkbox',
   'actions', 'preview-chips', 'duration', 'select-field', 'item-stepper', 'time-stepper',
-  'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell',
+  'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell',
 ];
 
 export const Catalog: Story = {

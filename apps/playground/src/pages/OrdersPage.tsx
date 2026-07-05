@@ -49,8 +49,19 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 // into horizontal-scroll mode (spec §4.3: pinned Order ID/Actions, middle scrolls).
 // LAST_UPDATED_COLUMN comes from the spec presets; Created By is a wireframe-level
 // extra so it's defined here, not in @leta/components.
-const CREATED_BY_COLUMN: TableColumn = { label: 'Created By', role: 'utility', width: 140 };
-const CREATORS = ['Aisha Mohamed', 'Grace Wanjiru', 'Samuel Mwangi'];
+// Created By renders the `user-cell` (avatar + name + email). It's a low-weight
+// flexible Primary column (spec §3.3): weight 0.5, ~200 floor, no cap — so when
+// toggled on it never outcompetes Route/Recipient.
+const CREATED_BY_COLUMN: TableColumn = { label: 'Created By', role: 'primary', flex: 0.5, minWidth: 200 };
+// Clustered/randomized creators — some carry a photo (avatarSrc), the rest render
+// the empty-teal avatar with their initials. Assigned deterministically per order.
+const CREATORS: { name: string; email: string; avatarSrc?: string }[] = [
+  { name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: 'https://picsum.photos/seed/aisha/80' },
+  { name: 'Grace Wanjiru', email: 'grace.wanjiru@leta.ai' },
+  { name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: 'https://picsum.photos/seed/samuel/80' },
+  { name: 'Fatuma Hassan', email: 'fatuma.hassan@leta.ai' },
+  { name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: 'https://picsum.photos/seed/peter/80' },
+];
 type ExtraColumnKey = 'lastUpdated' | 'createdBy';
 const EXTRA_COLUMN_OPTIONS: { key: ExtraColumnKey; label: string }[] = [
   { key: 'lastUpdated', label: 'Last Updated' },
@@ -428,7 +439,7 @@ export function OrdersPage(): React.ReactElement {
         : { type: 'duration', durationVariant: 'active', durationStatus: 'on-target', durationTime: elapsed(o.createdAt) },
       'Created': { type: 'date', date: formatCreated(o.createdAt) },
       'Last Updated': { type: 'date', date: formatCreated(o.createdAt) }, // toggle column
-      'Created By': { type: 'sample', text: CREATORS[o.id.charCodeAt(0) % CREATORS.length] }, // toggle column
+      'Created By': (() => { const u = CREATORS[o.id.charCodeAt(0) % CREATORS.length]!; return { type: 'user-cell', name: u.name, email: u.email, avatarSrc: u.avatarSrc }; })(), // toggle column → User cell
       'Status': { type: 'status', statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} /> },
       '': actionsCell,
     };

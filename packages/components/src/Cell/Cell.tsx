@@ -36,13 +36,14 @@ export type CellType =
   | 'address-cell'
   | 'manual-order'
   | 'automatic-order'
-  | 'driver-cell';
+  | 'driver-cell'
+  | 'user-cell';
 
 export type CellState = 'idle' | 'hover' | 'pressed' | 'selected';
 
 export interface CellProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'content'> {
-  /** Which of the 18 Figma Types to render. Default `sample`. */
+  /** Which of the 19 Figma Types to render. Default `sample`. */
   type?: CellType;
   /** Caller-controlled selected row (body types only; ignored by Header types). */
   selected?: boolean;
@@ -110,10 +111,12 @@ export interface CellProps
   stepperValue?: number;
   /** `item-stepper`: fired with the next stepper value. */
   onStepperChange?: (value: number) => void;
-  /** `driver-cell`: the driver name. Default "Michael Kariuki". */
+  /** `driver-cell` / `user-cell`: the person's name (also the source for the Avatar's initials). Default "Michael Kariuki". */
   name?: string;
-  /** `driver-cell`: the driver avatar photo URL (falls back to initials). */
+  /** `driver-cell` / `user-cell`: the avatar photo URL (falls back to empty-teal initials). */
   avatarSrc?: string;
+  /** `user-cell`: the user's email, shown under the name in muted sub-body text. */
+  email?: string;
 
   // SLOTs (caller-injected; defaults mirror the visible Figma instance)
   /** `status` SLOT — the status/delivery badge(s). Default a Scheduled badge. */
@@ -135,7 +138,7 @@ const V = (s: string) => `var(${s})`;
 
 const HEADER_TYPES = new Set<CellType>(['header', 'header-checkbox']);
 const COL_TYPES = new Set<CellType>([
-  'time-stepper', 'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell',
+  'time-stepper', 'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell',
 ]);
 const CENTER_ROW = new Set<CellType>(['header-checkbox', 'default-checkbox', 'actions', 'preview-chips']);
 
@@ -233,6 +236,7 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
     onStepperChange,
     name = 'Michael Kariuki',
     avatarSrc,
+    email = 'davemungai@gmail.com',
     statusContent,
     actions,
     timeStepperContent,
@@ -415,6 +419,19 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
               <Button variant="secondary" size="extra-small" iconOnly="Swap" aria-label="Swap driver" />
               <Button variant="secondary" size="extra-small" iconOnly="Phone" iconOutlined aria-label="Call driver" />
             </div>
+          </div>
+        </div>
+      );
+      break;
+    case 'user-cell':
+      // Avatar (Medium 40px — photo via avatarSrc, else empty-teal initials from
+      // the name) + name (heading) + email (muted sub-body). Figma Cell "User" 10757:9057.
+      inner = (
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-12px)', minWidth: 0 }}>
+          <Avatar name={name} size="medium" tone="teal" src={avatarSrc} decorative />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
+            <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
+            <Truncate className="text-body-m-regular" color="var(--text-default-sub-body)">{email}</Truncate>
           </div>
         </div>
       );

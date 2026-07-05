@@ -1,0 +1,215 @@
+import * as React from 'react';
+import { SearchInput } from '../SearchInput/SearchInput.js';
+import { Button } from '../Button/Button.js';
+import { Badge } from '../Badge/Badge.js';
+import { TopFilterSection, type TopFilterSectionItem } from '../TopFilterSection/TopFilterSection.js';
+
+/**
+ * - `search-create` — search + filter buttons (Created / Filter / Sort By) on the
+ *   left, primary CTAs (Add Order / Import-Export) on the right.
+ * - `search-column` — the same search + filters, with a data count + Columns
+ *   control on the right.
+ * - `filters-column` — a Top Filter Section on the left, data count + Columns on
+ *   the right.
+ */
+export type TableDataControlVariant = 'search-create' | 'search-column' | 'filters-column';
+
+export interface TableDataControlProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Which toolbar layout to render. Default `search-create`. */
+  variant?: TableDataControlVariant;
+  /** Data count shown in the column-control group (e.g. "10 Orders"). Default "10 Orders". */
+  dataCount?: string;
+  /** Show the data count (column-control variants). Default true. */
+  showDataCount?: boolean;
+  /**
+   * Show the right-hand column-control group (data count + Columns button) on the
+   * `search-column` / `filters-column` variants. Mirrors the Figma
+   * `Show Column Control & Count` property. Default true; set `false` for a
+   * search/filter-only toolbar (e.g. the Table Section's table).
+   */
+  showColumnControl?: boolean;
+
+  /**
+   * Number of active filter rules currently applied. When > 0, a Coral Red (Alt)
+   * count badge is overlaid at the top-right corner of the Filter icon button.
+   * Filter and Sort are always icon-only buttons in both base and active states.
+   * Mirrors the Figma `search-create` / `search-column` variants and their
+   * "Active Filter" counterparts (Figma nodes `10697:60514` / `10697:60683`).
+   * Default 0 (no active filters).
+   */
+  filterCount?: number;
+
+  /** Left section for the search variants — overrides the default search + filter buttons. */
+  searchSection?: React.ReactNode;
+  /** Left section for `filters-column` — overrides the default Top Filter Section. */
+  filters?: React.ReactNode;
+  /** Right section for `search-create` — overrides the default Add Order + Import/Export. */
+  ctas?: React.ReactNode;
+  /** Right column-control content (search-column / filters-column) — overrides the default Columns button. */
+  columnControl?: React.ReactNode;
+
+  /** Search field placeholder. Default "Search here...". */
+  searchPlaceholder?: string;
+  /** Label for the Created date-filter button. Default "Created: Today". */
+  createdLabel?: string;
+  // optional callbacks for the default controls
+  onCreatedClick?: () => void;
+  onFilterClick?: () => void;
+  onSortClick?: () => void;
+  onAddOrderClick?: () => void;
+  onImportExportClick?: () => void;
+  onColumnsClick?: () => void;
+}
+
+const GROUP: React.CSSProperties = { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' };
+
+/** Default search + filter buttons (left of the search-* variants). */
+function SearchAndFilter({
+  placeholder,
+  filterCount = 0,
+  createdLabel = 'Created: Today',
+  onCreated,
+  onFilter,
+  onSort,
+}: {
+  placeholder: string;
+  filterCount?: number;
+  createdLabel?: string;
+  onCreated?: () => void;
+  onFilter?: () => void;
+  onSort?: () => void;
+}) {
+  return (
+    <div style={GROUP}>
+      <SearchInput placeholder={placeholder} style={{ width: 250 }} />
+      <Button variant="secondary" size="medium" iconLeft="Calendar" onClick={onCreated}>{createdLabel}</Button>
+      {/* Filter is always icon-only; badge appears when filterCount > 0 */}
+      <div style={{ position: 'relative', display: 'inline-flex' }}>
+        <Button
+          variant="secondary"
+          size="medium"
+          iconOnly="Filter"
+          aria-label={filterCount > 0 ? `${filterCount} active filter${filterCount !== 1 ? 's' : ''}. Click to manage.` : 'Filter'}
+          onClick={onFilter}
+        />
+        {filterCount > 0 && (
+          <Badge
+            color="primary-alt"
+            label={String(filterCount)}
+            style={{ position: 'absolute', top: -5, right: -5, pointerEvents: 'none' }}
+          />
+        )}
+      </div>
+      {/* Sort is always icon-only */}
+      <Button variant="secondary" size="medium" iconOnly="Sort" aria-label="Sort" onClick={onSort} />
+    </div>
+  );
+}
+
+/**
+ * Default column-control group: data count + divider + Columns button.
+ * The Columns button is a Secondary **icon-only** control (outlined Columns
+ * glyph, no text label) per Figma `7575:36637`.
+ */
+function ColumnControl({ dataCount, showCount, onColumns }: { dataCount: string; showCount: boolean; onColumns?: () => void }) {
+  return (
+    <div style={{ ...GROUP, gap: 'var(--spacing-12px)' }}>
+      {showCount && (
+        <>
+          <span className="text-label-m-medium" style={{ color: 'var(--text-default-label)', whiteSpace: 'nowrap' }}>{dataCount}</span>
+          <div aria-hidden style={{ width: 'var(--stroke-xs)', height: 24, backgroundColor: 'var(--border-neutral-default)' }} />
+        </>
+      )}
+      <Button variant="secondary" size="medium" iconOnly="Columns" iconOutlined aria-label="Columns" onClick={onColumns} />
+    </div>
+  );
+}
+
+const DEFAULT_FILTERS: TopFilterSectionItem[] = [
+  { label: 'Status', advanced: true, selected: true, badge: <Badge color="primary" label="Scheduled" /> },
+  { label: 'Status', advanced: true },
+  { label: 'Status', advanced: true },
+  { label: 'Status', advanced: true },
+  { label: 'Status', advanced: true },
+];
+
+/**
+ * Table Data Control — the toolbar that sits above a data table to search,
+ * filter, sort, and act on its rows. Three layouts (`variant`) cover the common
+ * table headers: search + create, search + column control, and top-level filters
+ * + column control. The left/right sections are slot props with Figma-faithful
+ * defaults (reusing Search Input, Button, and Top Filter Section).
+ *
+ * **When to use:** as the controls row of a `Table Container`.
+ * **When not to use:** acting on a multi-row selection (Bulk Actions Toolbar);
+ * in-table pagination (the Table's Pagination footer).
+ */
+export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataControlProps>(
+  function TableDataControl(
+    {
+      variant = 'search-create',
+      dataCount = '10 Orders',
+      showDataCount = true,
+      showColumnControl = true,
+      filterCount = 0,
+      searchSection,
+      filters,
+      ctas,
+      columnControl,
+      searchPlaceholder = 'Search here...',
+      createdLabel,
+      onCreatedClick,
+      onFilterClick,
+      onSortClick,
+      onAddOrderClick,
+      onImportExportClick,
+      onColumnsClick,
+      className,
+      style,
+      ...rest
+    },
+    ref,
+  ) {
+    const left =
+      variant === 'filters-column'
+        ? filters ?? <TopFilterSection filters={DEFAULT_FILTERS} />
+        : searchSection ?? (
+            <SearchAndFilter placeholder={searchPlaceholder} filterCount={filterCount} createdLabel={createdLabel} onCreated={onCreatedClick} onFilter={onFilterClick} onSort={onSortClick} />
+          );
+
+    const right =
+      variant === 'search-create'
+        ? ctas ?? (
+            <div style={GROUP}>
+              <Button variant="primary" size="medium" iconLeft="Add" onClick={onAddOrderClick}>Add Order</Button>
+              <Button variant="secondary" size="medium" iconRight="Chevron-Down" onClick={onImportExportClick}>Import/Export</Button>
+            </div>
+          )
+        : !showColumnControl
+          ? null
+          : columnControl ?? <ColumnControl dataCount={dataCount} showCount={showDataCount} onColumns={onColumnsClick} />;
+
+    return (
+      <div
+        ref={ref}
+        className={['leta-table-data-control', className].filter(Boolean).join(' ')}
+        style={{
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'var(--spacing-16px)',
+          width: '100%',
+          minHeight: 40,
+          ...style,
+        }}
+        {...rest}
+      >
+        {left}
+        {right}
+      </div>
+    );
+  },
+);

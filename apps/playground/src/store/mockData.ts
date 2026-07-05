@@ -1,0 +1,406 @@
+import type { Client, Driver, Order } from './types.js';
+
+/**
+ * Mock seed data — Nairobi (matching MapView's default center [-1.286, 36.817]).
+ * Orders use ISO datetime createdAt strings so the live duration timer works.
+ */
+
+/**
+ * LETA unique order ID format: **alphanumeric clusters of 5–6 chars joined by
+ * hyphens, 10–30 chars total** (the platform max for a unique ID). The table cell
+ * truncates with an ellipsis once the ID exceeds the cell width.
+ *
+ * Generated deterministically from a seed (no Math.random — stable across reloads).
+ */
+const ID_CHARS = 'abcdefghjkmnpqrstuvwxyz0123456789';
+function makeOrderId(seed: number): string {
+  let n = ((seed + 1) * 2654435761) >>> 0;
+  const next = () => { n = (n * 1103515245 + 12345) >>> 0; return n; };
+  // Spread cluster count (2–5) deterministically across orders so lengths vary
+  // ~11–29 chars (and the longer IDs exercise the cell's ellipsis truncation).
+  const clusters = 2 + (seed % 4);
+  const parts: string[] = [];
+  for (let c = 0; c < clusters; c++) {
+    const len = 5 + (next() % 2); // 5 or 6 chars
+    let s = '';
+    for (let i = 0; i < len; i++) s += ID_CHARS[next() % ID_CHARS.length];
+    parts.push(s);
+  }
+  let id = parts.join('-');
+  if (id.length > 30) id = id.slice(0, 30).replace(/-+$/, ''); // cap at 30, no trailing hyphen
+  return id;
+}
+
+export const MOCK_CLIENTS: Client[] = [
+  { id: 'acme-corp', name: 'Acme Corp' },
+  { id: 'naivas', name: 'Naivas Group' },
+  { id: 'java-house', name: 'Java House' },
+];
+
+export const DEFAULT_CLIENT = MOCK_CLIENTS[0]!;
+
+export const MOCK_DRIVERS: Driver[] = [
+  {
+    id: 'DRV-01',
+    name: 'Brian Otieno',
+    tone: 'teal',
+    vehicle: 'bike',
+    phone: '+254 712 345 001',
+    status: 'busy',
+    location: { label: 'Westlands', lat: -1.2683, lng: 36.8108 },
+    currentOrderId: null,
+  },
+  {
+    id: 'DRV-02',
+    name: 'Aisha Mohamed',
+    tone: 'warning',
+    vehicle: 'car',
+    phone: '+254 712 345 002',
+    status: 'available',
+    location: { label: 'Kilimani', lat: -1.2906, lng: 36.788 },
+    currentOrderId: null,
+  },
+  {
+    id: 'DRV-03',
+    name: 'Peter Kamau',
+    tone: 'yankee-blue',
+    vehicle: 'van',
+    phone: '+254 712 345 003',
+    status: 'available',
+    location: { label: 'Upper Hill', lat: -1.295, lng: 36.812 },
+    currentOrderId: null,
+  },
+  {
+    id: 'DRV-04',
+    name: 'Grace Wanjiru',
+    tone: 'teal',
+    vehicle: 'bike',
+    phone: '+254 712 345 004',
+    status: 'busy',
+    location: { label: 'Parklands', lat: -1.262, lng: 36.82 },
+    currentOrderId: null,
+  },
+  {
+    id: 'DRV-05',
+    name: 'Samuel Mwangi',
+    tone: 'warning',
+    vehicle: 'car',
+    phone: '+254 712 345 005',
+    status: 'available',
+    location: { label: 'Ngong Road', lat: -1.3, lng: 36.77 },
+    currentOrderId: null,
+  },
+  {
+    id: 'DRV-06',
+    name: 'Fatuma Hassan',
+    tone: 'yankee-blue',
+    vehicle: 'bike',
+    phone: '+254 712 345 006',
+    status: 'offline',
+    location: { label: 'Eastleigh', lat: -1.273, lng: 36.847 },
+    currentOrderId: null,
+  },
+];
+
+const RAW_ORDERS: Omit<Order, 'id'>[] = [
+  // ── Unassigned: Scheduled (8) ──────────────────────────────────────────────
+  {
+    customer: 'John Kamau',
+    phone: '+254 712 001 009',
+    depot: 'Arc Kitisuru Depot',
+    pickup: { label: '14 Kitisuru Rd, Kitisuru, Nairobi', lat: -1.242, lng: 36.777 },
+    dropoff: { label: '38 Cedar Lane, Kilimani, Nairobi', lat: -1.2906, lng: 36.788 },
+    package: 'Electronics delivery',
+    items: 2,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T05:30:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Amina Yusuf',
+    phone: '+254 722 001 010',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2683, lng: 36.808 },
+    dropoff: { label: '7 UN Crescent, Gigiri, Nairobi', lat: -1.233, lng: 36.812 },
+    package: 'Catering supplies',
+    items: 4,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T06:00:00',
+    priority: 'express',
+  },
+  {
+    customer: 'David Njoroge',
+    phone: '+254 733 001 011',
+    depot: 'Kilimani Dispatch Hub',
+    pickup: { label: '5 Argwings Kodhek Rd, Kilimani', lat: -1.2906, lng: 36.788 },
+    dropoff: { label: 'ABC Place, Waiyaki Way, Westlands', lat: -1.265, lng: 36.79 },
+    package: 'Medical supplies',
+    items: 1,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T06:15:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Wanjiru Mwangi',
+    phone: '+254 700 001 012',
+    depot: 'Upper Hill Distribution Centre',
+    pickup: { label: '3 Upper Hill Rd, Upper Hill', lat: -1.295, lng: 36.812 },
+    dropoff: { label: 'Brookside Drive, Westlands', lat: -1.255, lng: 36.795 },
+    package: 'Office stationery',
+    items: 6,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T06:45:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Otieno Achieng',
+    phone: '+254 714 001 013',
+    depot: 'Karen Distribution Hub',
+    pickup: { label: '11 Langata Rd, Karen, Nairobi', lat: -1.335, lng: 36.72 },
+    dropoff: { label: 'Ngong Road Mall, Nairobi', lat: -1.3, lng: 36.77 },
+    package: 'Household goods',
+    items: 3,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T07:00:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Zawadi Kariuki',
+    phone: '+254 725 001 014',
+    depot: 'Parklands Collection Center',
+    pickup: { label: '6 Parklands Ave, Parklands', lat: -1.262, lng: 36.82 },
+    dropoff: { label: 'Spring Valley, Nairobi', lat: -1.252, lng: 36.79 },
+    package: 'Pharmaceuticals',
+    items: 2,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T07:15:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Hassan Abdi',
+    phone: '+254 734 001 015',
+    depot: 'Lavington Depot',
+    pickup: { label: '18 James Gichuru Rd, Lavington', lat: -1.279, lng: 36.766 },
+    dropoff: { label: 'Highridge, Nairobi', lat: -1.258, lng: 36.778 },
+    package: 'Grocery delivery',
+    items: 8,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T07:30:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Njambi Gathoni',
+    phone: '+254 701 001 016',
+    depot: 'South B Fulfillment Center',
+    pickup: { label: '22 Mombasa Rd, South B', lat: -1.312, lng: 36.839 },
+    dropoff: { label: 'Imara Daima Estate, Nairobi', lat: -1.325, lng: 36.85 },
+    package: 'Bakery order',
+    items: 2,
+    status: 'scheduled',
+    driverId: null,
+    createdAt: '2026-06-29T07:45:00',
+    priority: 'standard',
+  },
+
+  // ── Unassigned: Pending (2) ────────────────────────────────────────────────
+  {
+    customer: 'Naivas Supermarket',
+    phone: '+254 720 100 001',
+    depot: 'CBD Pickup Point',
+    pickup: { label: 'Moi Ave, Nairobi CBD', lat: -1.2864, lng: 36.8172 },
+    dropoff: { label: 'Lavington Mall, James Gichuru Rd', lat: -1.279, lng: 36.766 },
+    package: 'Grocery delivery',
+    items: 3,
+    status: 'pending',
+    driverId: null,
+    createdAt: '2026-06-29T08:12:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Artcaffe Westlands',
+    phone: '+254 720 100 005',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2675, lng: 36.808 },
+    dropoff: { label: 'ABC Place, Waiyaki Way', lat: -1.265, lng: 36.78 },
+    package: 'Bakery order',
+    items: 4,
+    status: 'pending',
+    driverId: null,
+    createdAt: '2026-06-29T09:15:00',
+    priority: 'standard',
+  },
+
+  // ── Dispatched (4) ────────────────────────────────────────────────────────
+  {
+    customer: 'Java House Gigiri',
+    phone: '+254 720 100 002',
+    depot: 'CBD Pickup Point',
+    pickup: { label: 'Moi Ave, Nairobi CBD', lat: -1.2864, lng: 36.8172 },
+    dropoff: { label: 'UN Complex, Gigiri', lat: -1.2351, lng: 36.8065 },
+    package: 'Catering order',
+    items: 1,
+    status: 'broadcasted',
+    driverId: null,
+    batchId: 'BC-4821',
+    createdAt: '2026-06-29T08:30:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Healthy U Sarit',
+    phone: '+254 720 100 006',
+    depot: 'Parklands Collection Center',
+    pickup: { label: '6 Parklands Ave, Parklands', lat: -1.2615, lng: 36.804 },
+    dropoff: { label: 'Parklands Plaza, Nairobi', lat: -1.262, lng: 36.82 },
+    package: 'Supplements',
+    items: 2,
+    status: 'assigned',
+    driverId: 'DRV-04',
+    createdAt: '2026-06-29T09:20:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Goodlife Pharmacy',
+    phone: '+254 720 100 003',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2566, lng: 36.8033 },
+    dropoff: { label: 'Spring Valley, Nairobi', lat: -1.252, lng: 36.79 },
+    package: 'Prescription medicines',
+    items: 2,
+    status: 'in-transit',
+    driverId: 'DRV-01',
+    createdAt: '2026-06-29T07:45:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Chandarana Foods',
+    phone: '+254 726 001 017',
+    depot: 'Kilimani Dispatch Hub',
+    pickup: { label: '5 Argwings Kodhek Rd, Kilimani', lat: -1.293, lng: 36.785 },
+    dropoff: { label: 'Yaya Centre, Kilimani', lat: -1.293, lng: 36.785 },
+    package: 'Grocery delivery',
+    items: 5,
+    status: 'at-depot',
+    driverId: 'DRV-02',
+    createdAt: '2026-06-29T08:50:00',
+    priority: 'standard',
+  },
+
+  // ── Finished (3) ──────────────────────────────────────────────────────────
+  {
+    customer: 'Carrefour Two Rivers',
+    phone: '+254 720 100 004',
+    depot: 'Ruaka Distribution Hub',
+    pickup: { label: 'Two Rivers Mall, Ruaka', lat: -1.2156, lng: 36.8 },
+    dropoff: { label: 'Runda Estate, Nairobi', lat: -1.218, lng: 36.815 },
+    package: 'Electronics',
+    items: 1,
+    status: 'delivered',
+    driverId: 'DRV-05',
+    createdAt: '2026-06-29T06:30:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Text Book Centre',
+    phone: '+254 720 100 007',
+    depot: 'Parklands Collection Center',
+    pickup: { label: '6 Parklands Ave, Parklands', lat: -1.2618, lng: 36.8035 },
+    dropoff: { label: 'Brookside Drive, Westlands', lat: -1.255, lng: 36.795 },
+    package: 'Stationery',
+    items: 6,
+    status: 'delivered',
+    driverId: 'DRV-05',
+    createdAt: '2026-06-29T05:00:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Chandarana Yaya',
+    phone: '+254 720 100 008',
+    depot: 'Kilimani Dispatch Hub',
+    pickup: { label: '5 Argwings Kodhek Rd, Kilimani', lat: -1.293, lng: 36.785 },
+    dropoff: { label: 'Kilimani Apartments, Nairobi', lat: -1.2906, lng: 36.788 },
+    package: 'Grocery delivery',
+    items: 5,
+    status: 'cancelled',
+    driverId: null,
+    createdAt: '2026-06-29T07:10:00',
+    priority: 'standard',
+  },
+
+  // ── Dispatched: Arrived / Returning ────────────────────────────────────────
+  {
+    customer: 'Faith Wairimu',
+    phone: '+254 715 001 018',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2683, lng: 36.808 },
+    dropoff: { label: 'Sarit Centre, Westlands', lat: -1.2618, lng: 36.8035 },
+    package: 'Electronics delivery',
+    items: 1,
+    status: 'arrived',
+    driverId: 'DRV-03',
+    createdAt: '2026-06-29T08:05:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Kevin Omondi',
+    phone: '+254 716 001 019',
+    depot: 'CBD Pickup Point',
+    pickup: { label: 'Moi Ave, Nairobi CBD', lat: -1.2864, lng: 36.8172 },
+    dropoff: { label: 'Yaya Centre, Kilimani', lat: -1.293, lng: 36.785 },
+    package: 'Returned parcel',
+    items: 2,
+    status: 'returning',
+    driverId: 'DRV-05',
+    createdAt: '2026-06-29T08:40:00',
+    priority: 'standard',
+  },
+
+  // ── Finished: Returned (2) ─────────────────────────────────────────────────
+  {
+    customer: 'Mercy Atieno',
+    phone: '+254 717 001 020',
+    depot: 'Parklands Collection Center',
+    pickup: { label: '6 Parklands Ave, Parklands', lat: -1.262, lng: 36.82 },
+    dropoff: { label: 'Highridge, Nairobi', lat: -1.258, lng: 36.778 },
+    package: 'Apparel',
+    items: 3,
+    status: 'returned',
+    driverId: null,
+    createdAt: '2026-06-29T06:20:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Brian Mutua',
+    phone: '+254 718 001 021',
+    depot: 'South B Fulfillment Center',
+    pickup: { label: '22 Mombasa Rd, South B', lat: -1.312, lng: 36.839 },
+    dropoff: { label: 'Imara Daima Estate, Nairobi', lat: -1.325, lng: 36.85 },
+    package: 'Damaged item',
+    items: 1,
+    status: 'returned',
+    driverId: null,
+    createdAt: '2026-06-29T05:50:00',
+    priority: 'standard',
+  },
+];
+
+/** Orders with deterministic, varied-length LETA unique IDs (see {@link makeOrderId}). */
+export const MOCK_ORDERS: Order[] = RAW_ORDERS.map((o, i) => ({ id: makeOrderId(i), ...o }));
+
+/** Statuses where the assigned driver is actively fulfilling the order (→ busy). */
+const ACTIVE_DRIVER_STATUSES: Order['status'][] = ['assigned', 'at-depot', 'in-transit', 'arrived', 'returning'];
+
+// Wire each busy driver to the active order it's fulfilling (keeps driver ↔ order
+// references consistent now that order IDs are generated).
+for (const order of MOCK_ORDERS) {
+  if (order.driverId && ACTIVE_DRIVER_STATUSES.includes(order.status)) {
+    const driver = MOCK_DRIVERS.find((d) => d.id === order.driverId);
+    if (driver) { driver.currentOrderId = order.id; driver.status = 'busy'; }
+  }
+}

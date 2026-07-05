@@ -1,0 +1,65 @@
+/**
+ * Scroll Utilities — LETA Design System
+ * @leta/design-tokens/scroll-utilities.css
+ *
+ * Overscroll behaviour utilities that control scroll chaining.
+ * Import alongside tokens.css and text-styles.css wherever the design system
+ * is consumed (Storybook, Playground, host applications).
+ *
+ * ─── Rule reference ────────────────────────────────────────────────────────
+ *
+ *  .scroll-isolated  (overscroll-behavior: contain)
+ *    Use on all NESTED / INTERNAL scroll containers: dropdown option lists,
+ *    modal body panels, sidebar navigation, search-results panels, date-picker
+ *    lists, mobile dropdown panels, and configuration form columns.
+ *    Effect: the browser stops at the element boundary — no scroll chain to
+ *    the parent and no pull-to-refresh trigger when the user reaches the top
+ *    or bottom of the inner list.
+ *
+ *  .scroll-rigid  (overscroll-behavior: none)
+ *    Use on DATA TABLE bodies and precision SNAP-SCROLL surfaces (time wheels).
+ *    Effect: zero overscroll bounce / rubber-band on any axis. Prevents
+ *    distracting UI shifts when aligning tabular data or advancing a snap list.
+ *
+ *  Root page / document scroll: leave untouched (native elastic bounce on iOS,
+ *  standard desktop behaviour). Do NOT apply either class to <html> or <body>.
+ *
+ * ─── Usage in component code (inline-style equivalent) ────────────────────
+ *
+ *   Nested list / panel   → style={{ overscrollBehavior: 'contain' }}
+ *   Data table / wheel    → style={{ overscrollBehavior: 'none' }}
+ *
+ * ─── Usage in playground / host app (class-based) ─────────────────────────
+ *
+ *   import '@leta/design-tokens/scroll-utilities.css';
+ *
+ *   // Internal panel
+ *   <div className="scroll-isolated" style={{ overflowY: 'auto', maxHeight: 300 }}>
+ *     {items}
+ *   </div>
+ *
+ *   // Data table viewport
+ *   <div className="scroll-rigid" style={{ overflow: 'auto', maxHeight: 600 }}>
+ *     <table>…</table>
+ *   </div>
+ *
+ * ─── Already applied in design-system components ──────────────────────────
+ *
+ *  contain:  ModalShell (body) · SideBar (nav content) · DesktopDropdowns (all
+ *            scroll lists + filter-group panes) · MapSearchInput (results panel) ·
+ *            MobileDropdown (panel) · DateTimePicker (desktop time-list, mobile
+ *            content) · Page (config column)
+ *
+ *  none:     Table (body — both fillHeight and maxBodyHeight modes, both-axes
+ *            scrollX mode) · DateTimePicker WheelColumn (snap-scroll time wheel)
+ */
+
+/** Isolate scroll chain — for nested lists, panels, and navigation drawers. */
+.scroll-isolated {
+  overscroll-behavior: contain;
+}
+
+/** Rigid scroll — for data tables and snap-scroll precision surfaces. */
+.scroll-rigid {
+  overscroll-behavior: none;
+}

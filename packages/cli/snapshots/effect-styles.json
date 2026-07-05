@@ -1,0 +1,206 @@
+{
+  "count": 5,
+  "styles": [
+    {
+      "id": "S:1cb75733cfd9305628c2da0f295d1cb1895f9a79,",
+      "name": "Red Drop Shadow",
+      "description": "Active Card Headers",
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 1,
+            "g": 0.2235294133424759,
+            "b": 0.2549019753932953,
+            "a": 0.11999999731779099
+          },
+          "offset": {
+            "x": 2,
+            "y": 4
+          },
+          "radius": 8,
+          "spread": 0,
+          "visible": true,
+          "blendMode": "NORMAL"
+        }
+      ]
+    },
+    {
+      "id": "S:0e3f1af353b92ea7815ff6570f8159738ebe165e,",
+      "name": "Blue Drop Shadow",
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0.28365886211395264,
+            "g": 0.6263790130615234,
+            "b": 1,
+            "a": 0.11999999731779099
+          },
+          "offset": {
+            "x": 2,
+            "y": 4
+          },
+          "radius": 8,
+          "spread": 0,
+          "visible": true,
+          "blendMode": "NORMAL"
+        }
+      ]
+    },
+    {
+      "id": "S:067bf02eb3ed9a7688fe794e6608da943457ce26,",
+      "name": "Neutral Drop Shadow 1",
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": 4
+          },
+          "radius": 10,
+          "spread": -4,
+          "visible": true,
+          "blendMode": "NORMAL"
+        },
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 1,
+            "y": 0
+          },
+          "radius": 8,
+          "spread": -8,
+          "visible": true,
+          "blendMode": "NORMAL"
+        }
+      ]
+    },
+    {
+      "id": "S:abf2bf68e5becfd69067f8eae66eea73dba6fb88,",
+      "name": "Neutral Drop Shadow 2",
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.10000000149011612
+          },
+          "offset": {
+            "x": 0,
+            "y": 4
+          },
+          "radius": 10,
+          "spread": -4,
+          "visible": true,
+          "blendMode": "NORMAL"
+        },
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 0.10000000149011612
+          },
+          "offset": {
+            "x": 1,
+            "y": 0
+          },
+          "radius": 8,
+          "spread": -8,
+          "visible": true,
+          "blendMode": "NORMAL"
+        },
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0.14509804546833038,
+            "g": 0.14509804546833038,
+            "b": 0.14509804546833038,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": -1
+          },
+          "radius": 8,
+          "spread": -8,
+          "visible": true,
+          "blendMode": "NORMAL"
+        }
+      ]
+    },
+    {
+      "id": "S:0ab076061279b91613c333a6247acb530d251981,",
+      "name": "Neutral Drop Shadow 3",
+      "effects": [
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0.14509804546833038,
+            "g": 0.14509804546833038,
+            "b": 0.14509804546833038,
+            "a": 0.25
+          },
+          "offset": {
+            "x": 0,
+            "y": 5
+          },
+          "radius": 8,
+          "spread": -4,
+          "visible": true,
+          "blendMode": "NORMAL"
+        },
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0.14509804546833038,
+            "g": 0.14509804546833038,
+            "b": 0.14509804546833038,
+            "a": 0.20000000298023224
+          },
+          "offset": {
+            "x": 4,
+            "y": 0
+          },
+          "radius": 8,
+          "spread": -6,
+          "visible": true,
+          "blendMode": "NORMAL"
+        },
+        {
+          "type": "DROP_SHADOW",
+          "color": {
+            "r": 0.14509804546833038,
+            "g": 0.14509804546833038,
+            "b": 0.14509804546833038,
+            "a": 0.03999999910593033
+          },
+          "offset": {
+            "x": 0,
+            "y": -1
+          },
+          "radius": 8,
+          "spread": -8,
+          "visible": true,
+          "blendMode": "NORMAL"
+        }
+      ]
+    }
+  ]
+}

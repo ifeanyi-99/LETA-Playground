@@ -1,0 +1,30 @@
+name: Token drift check
+
+on:
+  pull_request:
+    paths:
+      - 'packages/design-tokens/**'
+      - 'packages/cli/**'
+      - '.github/workflows/token-drift.yml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify tokens match Figma snapshots
+        # Fails (exit 1) with a clear remediation message if generated output differs from committed.
+        run: pnpm tokens:check

@@ -1,0 +1,35 @@
+{
+  "name": "leta",
+  "version": "0.0.0",
+  "private": true,
+  "description": "LETA design system — code mirror of the Figma Library, with Storybook docs and product playground",
+  "type": "module",
+  "packageManager": "pnpm@11.0.8",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "tokens:fetch": "pnpm --filter @leta/cli tokens:fetch",
+    "tokens:generate": "pnpm --filter @leta/cli tokens:generate",
+    "tokens:check": "pnpm --filter @leta/cli tokens:check",
+    "tokens:sync": "pnpm --filter @leta/cli tokens:sync",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0",
+    "prettier": "^3.4.0",
+    "eslint": "^9.16.0",
+    "@types/node": "^22.10.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

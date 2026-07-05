@@ -1,0 +1,38 @@
+{
+  "name": "@leta/icons",
+  "version": "0.0.0",
+  "private": true,
+  "description": "LETA SVG icon React components",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "registry": "tsx scripts/build-registry.ts",
+    "prebuild": "pnpm registry",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist",
+    "lint": "eslint src",
+    "typecheck": "pnpm registry && tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@material-symbols/svg-500": "^0.44.5"
+  }
+}

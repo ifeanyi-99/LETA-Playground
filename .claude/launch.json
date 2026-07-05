@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "storybook",
+      "runtimeExecutable": "/Users/ifeanyi/Library/pnpm/bin/pnpm",
+      "runtimeArgs": ["--filter", "@leta/storybook", "exec", "storybook", "dev", "-p", "6107", "--ci"],
+      "autoPort": false,
+      "port": 6107
+    },
+    {
+      "name": "playground",
+      "runtimeExecutable": "/Users/ifeanyi/Library/pnpm/bin/pnpm",
+      "runtimeArgs": ["--filter", "@leta/playground", "dev", "--port", "5180", "--strictPort"],
+      "autoPort": false,
+      "port": 5180
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "comment": "Hand-authored SVGs for icons that aren't in @material-symbols/svg-400. The build script merges these into the registry, and they take precedence over auto-resolved glyphs. Each value is the COMPLETE outer <svg> markup (the build script extracts the inner content the same way it does for Material Symbols files).",
+  "icons": {
+    "Circle-Medium": {
+      "fill": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8z\"/></svg>"
+    }
+  }
+}

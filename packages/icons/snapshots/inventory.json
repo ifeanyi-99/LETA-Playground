@@ -1,0 +1,2214 @@
+{
+  "source": "LETA Icons (8063:7080)",
+  "generatedAt": "2026-06-02T17:39:03.918Z",
+  "components": [
+    {
+      "name": "Icon/Account",
+      "id": "10114:20014",
+      "glyph": "account-circle",
+      "raw": "material-symbols:account-circle"
+    },
+    {
+      "name": "Icon/Account-Outline",
+      "id": "10114:20013",
+      "glyph": "account-circle-outline",
+      "raw": "material-symbols:account-circle-outline"
+    },
+    {
+      "name": "Icon/Add",
+      "id": "28:37609",
+      "glyph": "add-rounded",
+      "raw": "material-symbols:add-rounded"
+    },
+    {
+      "name": "Icon/Add-Circle",
+      "id": "5094:182991",
+      "glyph": "add-circle-rounded",
+      "raw": "material-symbols:add-circle-rounded"
+    },
+    {
+      "name": "Icon/Add-Outline",
+      "id": "73:37405",
+      "glyph": "add-circle-outline-rounded",
+      "raw": "material-symbols:add-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Aid",
+      "id": "7851:22236",
+      "glyph": "health-cross-rounded",
+      "raw": "material-symbols:health-cross-rounded"
+    },
+    {
+      "name": "Icon/Aid-Outline",
+      "id": "7851:22235",
+      "glyph": "health-cross-outline-rounded",
+      "raw": "material-symbols:health-cross-outline-rounded"
+    },
+    {
+      "name": "Icon/Alarm",
+      "id": "1876:12514",
+      "glyph": "alarm-outline-rounded",
+      "raw": "material-symbols:alarm-outline-rounded"
+    },
+    {
+      "name": "Icon/Alerts",
+      "id": "28:37818",
+      "glyph": "e911-emergency-rounded",
+      "raw": "material-symbols:e911-emergency-rounded"
+    },
+    {
+      "name": "Icon/Analytics",
+      "id": "569:472",
+      "glyph": "analytics-rounded",
+      "raw": "material-symbols:analytics-rounded"
+    },
+    {
+      "name": "Icon/Approved-Order",
+      "id": "1023:4843",
+      "glyph": "order-approve-rounded",
+      "raw": "material-symbols:order-approve-rounded"
+    },
+    {
+      "name": "Icon/Apps",
+      "id": "2499:14423",
+      "glyph": "apps",
+      "raw": "material-symbols:apps"
+    },
+    {
+      "name": "Icon/Archive",
+      "id": "2530:22634",
+      "glyph": "archive-rounded",
+      "raw": "material-symbols:archive-rounded"
+    },
+    {
+      "name": "Icon/Arrange",
+      "id": "3476:25342",
+      "glyph": "edit-note-rounded",
+      "raw": "material-symbols:edit-note-rounded"
+    },
+    {
+      "name": "Icon/Arrow-Left",
+      "id": "1037:3730",
+      "glyph": "arrow-left-alt-rounded",
+      "raw": "material-symbols:arrow-left-alt-rounded"
+    },
+    {
+      "name": "Icon/Arrow-Right",
+      "id": "2079:21179",
+      "glyph": "arrow-right-alt-rounded",
+      "raw": "material-symbols:arrow-right-alt-rounded"
+    },
+    {
+      "name": "Icon/Attachment",
+      "id": "3331:46552",
+      "glyph": "attachment-rounded",
+      "raw": "material-symbols:attachment-rounded"
+    },
+    {
+      "name": "Icon/Automatic",
+      "id": "9313:54585",
+      "glyph": "integration-instructions-rounded",
+      "raw": "material-symbols:integration-instructions-rounded"
+    },
+    {
+      "name": "Icon/Automatic-Outline",
+      "id": "9313:54586",
+      "glyph": "integration-instructions-outline-rounded",
+      "raw": "material-symbols:integration-instructions-outline-rounded"
+    },
+    {
+      "name": "Icon/Available-Vehicle",
+      "id": "28:37783",
+      "glyph": "garage-check-rounded",
+      "raw": "material-symbols:garage-check-rounded"
+    },
+    {
+      "name": "Icon/Backward",
+      "id": "52:33999",
+      "glyph": "keyboard-double-arrow-left-rounded",
+      "raw": "material-symbols:keyboard-double-arrow-left-rounded"
+    },
+    {
+      "name": "Icon/Bag",
+      "id": "8581:7997",
+      "glyph": "shopping-bag",
+      "raw": "material-symbols:shopping-bag"
+    },
+    {
+      "name": "Icon/Bag-Outline",
+      "id": "8581:7998",
+      "glyph": "shopping-bag-outline",
+      "raw": "material-symbols:shopping-bag-outline"
+    },
+    {
+      "name": "Icon/Bar-Chart",
+      "id": "5457:86909",
+      "glyph": "bar-chart-rounded",
+      "raw": "material-symbols:bar-chart-rounded"
+    },
+    {
+      "name": "Icon/Barcode",
+      "id": "9551:8273",
+      "glyph": "barcode-scanner-rounded",
+      "raw": "material-symbols:barcode-scanner-rounded"
+    },
+    {
+      "name": "Icon/Bolt",
+      "id": "5454:86788",
+      "glyph": "bolt-rounded",
+      "raw": "material-symbols:bolt-rounded"
+    },
+    {
+      "name": "Icon/Bolt-Outline",
+      "id": "5540:68626",
+      "glyph": "bolt-outline-rounded",
+      "raw": "material-symbols:bolt-outline-rounded"
+    },
+    {
+      "name": "Icon/Briefcase",
+      "id": "5314:221684",
+      "glyph": "business-center-rounded",
+      "raw": "material-symbols:business-center-rounded"
+    },
+    {
+      "name": "Icon/Briefcase-Outline",
+      "id": "5314:221685",
+      "glyph": "business-center-outline-rounded",
+      "raw": "material-symbols:business-center-outline-rounded"
+    },
+    {
+      "name": "Icon/Broadcast",
+      "id": "960:7511",
+      "glyph": "wifi-tethering-rounded",
+      "raw": "material-symbols:wifi-tethering-rounded"
+    },
+    {
+      "name": "Icon/Bug",
+      "id": "5512:71342",
+      "glyph": "bug-report-rounded",
+      "raw": "material-symbols:bug-report-rounded"
+    },
+    {
+      "name": "Icon/Bug-Outline",
+      "id": "5512:71343",
+      "glyph": "bug-report-outline-rounded",
+      "raw": "material-symbols:bug-report-outline-rounded"
+    },
+    {
+      "name": "Icon/Calendar",
+      "id": "28:37660",
+      "glyph": "calendar-month-rounded",
+      "raw": "material-symbols:calendar-month-rounded"
+    },
+    {
+      "name": "Icon/Calendar-Add",
+      "id": "3476:25352",
+      "glyph": "calendar-add-on-rounded",
+      "raw": "material-symbols:calendar-add-on-rounded"
+    },
+    {
+      "name": "Icon/Calendar-Busy",
+      "id": "2512:16747",
+      "glyph": "event-busy-rounded",
+      "raw": "material-symbols:event-busy-rounded"
+    },
+    {
+      "name": "Icon/Calendar-Check",
+      "id": "28:37764",
+      "glyph": "event-available-rounded",
+      "raw": "material-symbols:event-available-rounded"
+    },
+    {
+      "name": "Icon/Camera",
+      "id": "2922:35988",
+      "glyph": "photo-camera-rounded",
+      "raw": "material-symbols:photo-camera-rounded"
+    },
+    {
+      "name": "Icon/Camera-Outline",
+      "id": "5509:71300",
+      "glyph": "photo-camera-outline-rounded",
+      "raw": "material-symbols:photo-camera-outline-rounded"
+    },
+    {
+      "name": "Icon/Cancel",
+      "id": "28:37604",
+      "glyph": "close-rounded",
+      "raw": "material-symbols:close-rounded"
+    },
+    {
+      "name": "Icon/Cancel-Circle",
+      "id": "983:7656",
+      "glyph": "cancel-rounded",
+      "raw": "material-symbols:cancel-rounded"
+    },
+    {
+      "name": "Icon/Cancelled-Order",
+      "id": "5550:68923",
+      "glyph": "contract-delete-rounded",
+      "raw": "material-symbols:contract-delete-rounded"
+    },
+    {
+      "name": "Icon/Cancelled-Order-Outline",
+      "id": "5550:68924",
+      "glyph": "contract-delete-outline-rounded",
+      "raw": "material-symbols:contract-delete-outline-rounded"
+    },
+    {
+      "name": "Icon/Cash",
+      "id": "28:37652",
+      "glyph": "payments-outline-rounded",
+      "raw": "material-symbols:payments-outline-rounded"
+    },
+    {
+      "name": "Icon/Check",
+      "id": "65:35884",
+      "glyph": "check-rounded",
+      "raw": "material-symbols:check-rounded"
+    },
+    {
+      "name": "Icon/Check-Circle",
+      "id": "28:37698",
+      "glyph": "check-circle-rounded",
+      "raw": "material-symbols:check-circle-rounded"
+    },
+    {
+      "name": "Icon/Check-Circle-Outline",
+      "id": "28:37617",
+      "glyph": "check-circle-outline-rounded",
+      "raw": "material-symbols:check-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Checkbox-Active",
+      "id": "1053:5198",
+      "glyph": "check-box-rounded",
+      "raw": "material-symbols:check-box-rounded"
+    },
+    {
+      "name": "Icon/Checkbox-Default",
+      "id": "1053:5197",
+      "glyph": "check-box-outline-blank",
+      "raw": "material-symbols:check-box-outline-blank"
+    },
+    {
+      "name": "Icon/Checkbox-Indeterminate",
+      "id": "1053:5199",
+      "glyph": "indeterminate-check-box-rounded",
+      "raw": "material-symbols:indeterminate-check-box-rounded"
+    },
+    {
+      "name": "Icon/Checklist",
+      "id": "5374:116889",
+      "glyph": "list-alt-check-rounded",
+      "raw": "material-symbols:list-alt-check-rounded"
+    },
+    {
+      "name": "Icon/Checklist-Outline",
+      "id": "5540:68662",
+      "glyph": "list-alt-check-outline-rounded",
+      "raw": "material-symbols:list-alt-check-outline-rounded"
+    },
+    {
+      "name": "Icon/Chevron-Down",
+      "id": "28:37692",
+      "glyph": "keyboard-arrow-down-rounded",
+      "raw": "material-symbols:keyboard-arrow-down-rounded"
+    },
+    {
+      "name": "Icon/Chevron-Left",
+      "id": "28:37686",
+      "glyph": "chevron-left-rounded",
+      "raw": "material-symbols:chevron-left-rounded"
+    },
+    {
+      "name": "Icon/Chevron-Right",
+      "id": "28:37689",
+      "glyph": "chevron-right-rounded",
+      "raw": "material-symbols:chevron-right-rounded"
+    },
+    {
+      "name": "Icon/Chevron-Up",
+      "id": "955:26",
+      "glyph": "keyboard-arrow-up-rounded",
+      "raw": "material-symbols:keyboard-arrow-up-rounded"
+    },
+    {
+      "name": "Icon/Circle-Large",
+      "id": "3754:85607",
+      "glyph": "circle",
+      "raw": "material-symbols:circle"
+    },
+    {
+      "name": "Icon/Circle-Medium",
+      "id": "3999:62928",
+      "glyph": null,
+      "raw": "mdi:circle-medium"
+    },
+    {
+      "name": "Icon/Clock",
+      "id": "2391:21874",
+      "glyph": "schedule-rounded",
+      "raw": "material-symbols:schedule-rounded"
+    },
+    {
+      "name": "Icon/Clock-Outline",
+      "id": "28:37637",
+      "glyph": "schedule-outline-rounded",
+      "raw": "material-symbols:schedule-outline-rounded"
+    },
+    {
+      "name": "Icon/Cloud",
+      "id": "9316:54603",
+      "glyph": "cloud",
+      "raw": "material-symbols:cloud"
+    },
+    {
+      "name": "Icon/Cloud-Outline",
+      "id": "9316:54604",
+      "glyph": "cloud-outline",
+      "raw": "material-symbols:cloud-outline"
+    },
+    {
+      "name": "Icon/Code",
+      "id": "9551:8264",
+      "glyph": "code-blocks-rounded",
+      "raw": "material-symbols:code-blocks-rounded"
+    },
+    {
+      "name": "Icon/Code-Outline",
+      "id": "9551:8263",
+      "glyph": "code-blocks-outline-rounded",
+      "raw": "material-symbols:code-blocks-outline-rounded"
+    },
+    {
+      "name": "Icon/Collapse",
+      "id": "904:4207",
+      "glyph": "collapse-content-rounded",
+      "raw": "material-symbols:collapse-content-rounded"
+    },
+    {
+      "name": "Icon/Collapse-Left",
+      "id": "3741:81589",
+      "glyph": "arrow-menu-close-rounded",
+      "raw": "material-symbols:arrow-menu-close-rounded"
+    },
+    {
+      "name": "Icon/Columns",
+      "id": "7820:22455",
+      "glyph": "view-column-outline",
+      "raw": "material-symbols:view-column-outline"
+    },
+    {
+      "name": "Icon/Comment",
+      "id": "7885:24430",
+      "glyph": "chat-add-on-rounded",
+      "raw": "material-symbols:chat-add-on-rounded"
+    },
+    {
+      "name": "Icon/Comment-Outline",
+      "id": "7885:24431",
+      "glyph": "chat-add-on-outline-rounded",
+      "raw": "material-symbols:chat-add-on-outline-rounded"
+    },
+    {
+      "name": "Icon/Company",
+      "id": "28:37808",
+      "glyph": "domain-rounded",
+      "raw": "material-symbols:domain-rounded"
+    },
+    {
+      "name": "Icon/Console",
+      "id": "2115:21488",
+      "glyph": "monitor-outline-rounded",
+      "raw": "material-symbols:monitor-outline-rounded"
+    },
+    {
+      "name": "Icon/Copy",
+      "id": "28:37803",
+      "glyph": "content-copy-rounded",
+      "raw": "material-symbols:content-copy-rounded"
+    },
+    {
+      "name": "Icon/Copy-Outline",
+      "id": "5095:193517",
+      "glyph": "content-copy-outline-rounded",
+      "raw": "material-symbols:content-copy-outline-rounded"
+    },
+    {
+      "name": "Icon/Crate",
+      "id": "566:1903",
+      "glyph": "pallet-rounded",
+      "raw": "material-symbols:pallet-rounded"
+    },
+    {
+      "name": "Icon/Crate-Outline",
+      "id": "5732:31475",
+      "glyph": "pallet-outline-rounded",
+      "raw": "material-symbols:pallet-outline-rounded"
+    },
+    {
+      "name": "Icon/Credit-Card-Off",
+      "id": "2492:14414",
+      "glyph": "credit-card-off-rounded",
+      "raw": "material-symbols:credit-card-off-rounded"
+    },
+    {
+      "name": "Icon/Customers",
+      "id": "652:38",
+      "glyph": "contacts-product",
+      "raw": "material-symbols:contacts-product"
+    },
+    {
+      "name": "Icon/Cycle",
+      "id": "566:4688",
+      "glyph": "cycle-rounded",
+      "raw": "material-symbols:cycle-rounded"
+    },
+    {
+      "name": "Icon/Dark-Mode",
+      "id": "7485:26228",
+      "glyph": "dark-mode-rounded",
+      "raw": "material-symbols:dark-mode-rounded"
+    },
+    {
+      "name": "Icon/Dark-Mode-Outline",
+      "id": "7485:26227",
+      "glyph": "dark-mode-outline-rounded",
+      "raw": "material-symbols:dark-mode-outline-rounded"
+    },
+    {
+      "name": "Icon/Dashboard",
+      "id": "922:5063",
+      "glyph": "space-dashboard",
+      "raw": "material-symbols:space-dashboard"
+    },
+    {
+      "name": "Icon/Dashboard-Outline",
+      "id": "7376:62385",
+      "glyph": "space-dashboard-outline",
+      "raw": "material-symbols:space-dashboard-outline"
+    },
+    {
+      "name": "Icon/Data-Stack",
+      "id": "28:37747",
+      "glyph": "database",
+      "raw": "material-symbols:database"
+    },
+    {
+      "name": "Icon/Data-Table",
+      "id": "8241:28369",
+      "glyph": "data-table-outline-rounded",
+      "raw": "material-symbols:data-table-outline-rounded"
+    },
+    {
+      "name": "Icon/Deactivate",
+      "id": "10134:10470",
+      "glyph": "block",
+      "raw": "material-symbols:block"
+    },
+    {
+      "name": "Icon/Deactivate-Outline",
+      "id": "3442:55194",
+      "glyph": "block",
+      "raw": "material-symbols:block"
+    },
+    {
+      "name": "Icon/Decrease",
+      "id": "28:37648",
+      "glyph": "arrow-circle-down-rounded",
+      "raw": "material-symbols:arrow-circle-down-rounded"
+    },
+    {
+      "name": "Icon/Deductions",
+      "id": "5716:229700",
+      "glyph": "money-off-rounded",
+      "raw": "material-symbols:money-off-rounded"
+    },
+    {
+      "name": "Icon/Delay",
+      "id": "5540:68650",
+      "glyph": "assignment-late-rounded",
+      "raw": "material-symbols:assignment-late-rounded"
+    },
+    {
+      "name": "Icon/Delay-Outline",
+      "id": "5540:68649",
+      "glyph": "assignment-late-outline",
+      "raw": "material-symbols:assignment-late-outline"
+    },
+    {
+      "name": "Icon/Delete",
+      "id": "28:37724",
+      "glyph": "delete-rounded",
+      "raw": "material-symbols:delete-rounded"
+    },
+    {
+      "name": "Icon/Delete-Outline",
+      "id": "5510:71328",
+      "glyph": "delete-outline-rounded",
+      "raw": "material-symbols:delete-outline-rounded"
+    },
+    {
+      "name": "Icon/Depot",
+      "id": "28:37842",
+      "glyph": "storefront-rounded",
+      "raw": "material-symbols:storefront-rounded"
+    },
+    {
+      "name": "Icon/Depot-Outline",
+      "id": "5540:68674",
+      "glyph": "storefront-outline-rounded",
+      "raw": "material-symbols:storefront-outline-rounded"
+    },
+    {
+      "name": "Icon/Dialpad",
+      "id": "8582:8007",
+      "glyph": "dialpad",
+      "raw": "material-symbols:dialpad"
+    },
+    {
+      "name": "Icon/Directions",
+      "id": "3126:14263",
+      "glyph": "directions",
+      "raw": "material-symbols:directions"
+    },
+    {
+      "name": "Icon/Disconnected",
+      "id": "5698:117704",
+      "glyph": "signal-disconnected-rounded",
+      "raw": "material-symbols:signal-disconnected-rounded"
+    },
+    {
+      "name": "Icon/Discount",
+      "id": "3533:51821",
+      "glyph": "percent-discount-rounded",
+      "raw": "material-symbols:percent-discount-rounded"
+    },
+    {
+      "name": "Icon/Distance",
+      "id": "28:37839",
+      "glyph": "distance-rounded",
+      "raw": "material-symbols:distance-rounded"
+    },
+    {
+      "name": "Icon/Distance-Outline",
+      "id": "5559:31062",
+      "glyph": "distance-outline-rounded",
+      "raw": "material-symbols:distance-outline-rounded"
+    },
+    {
+      "name": "Icon/Document",
+      "id": "3007:14454",
+      "glyph": "docs-rounded",
+      "raw": "material-symbols:docs-rounded"
+    },
+    {
+      "name": "Icon/Document-Outline",
+      "id": "5197:116781",
+      "glyph": "docs-outline-rounded",
+      "raw": "material-symbols:docs-outline-rounded"
+    },
+    {
+      "name": "Icon/Dollar",
+      "id": "3955:27350",
+      "glyph": "attach-money-rounded",
+      "raw": "material-symbols:attach-money-rounded"
+    },
+    {
+      "name": "Icon/Double-Check",
+      "id": "2925:36021",
+      "glyph": "done-all-rounded",
+      "raw": "material-symbols:done-all-rounded"
+    },
+    {
+      "name": "Icon/Down-Arrow",
+      "id": "4853:75539",
+      "glyph": "arrow-downward-rounded",
+      "raw": "material-symbols:arrow-downward-rounded"
+    },
+    {
+      "name": "Icon/Download",
+      "id": "611:4021",
+      "glyph": "download-rounded",
+      "raw": "material-symbols:download-rounded"
+    },
+    {
+      "name": "Icon/Draft",
+      "id": "3991:62693",
+      "glyph": "draft-rounded",
+      "raw": "material-symbols:draft-rounded"
+    },
+    {
+      "name": "Icon/Drop-Off",
+      "id": "5478:68261",
+      "glyph": "hand-package-rounded",
+      "raw": "material-symbols:hand-package-rounded"
+    },
+    {
+      "name": "Icon/Drop-Off-Outline",
+      "id": "5540:68614",
+      "glyph": "hand-package-outline-rounded",
+      "raw": "material-symbols:hand-package-outline-rounded"
+    },
+    {
+      "name": "Icon/Earnings",
+      "id": "5085:170682",
+      "glyph": "money-bag-rounded",
+      "raw": "material-symbols:money-bag-rounded"
+    },
+    {
+      "name": "Icon/Earnings-Outline",
+      "id": "5085:170683",
+      "glyph": "money-bag-outline-rounded",
+      "raw": "material-symbols:money-bag-outline-rounded"
+    },
+    {
+      "name": "Icon/Edit",
+      "id": "28:37730",
+      "glyph": "edit-rounded",
+      "raw": "material-symbols:edit-rounded"
+    },
+    {
+      "name": "Icon/Edit-Off",
+      "id": "10674:19965",
+      "glyph": "edit-off-rounded",
+      "raw": "material-symbols:edit-off-rounded"
+    },
+    {
+      "name": "Icon/Edit-Off-Outline",
+      "id": "10674:19964",
+      "glyph": "edit-off-outline-rounded",
+      "raw": "material-symbols:edit-off-outline-rounded"
+    },
+    {
+      "name": "Icon/Edit-Outline",
+      "id": "5796:336648",
+      "glyph": "edit-outline-rounded",
+      "raw": "material-symbols:edit-outline-rounded"
+    },
+    {
+      "name": "Icon/Error",
+      "id": "1167:15289",
+      "glyph": "error-rounded",
+      "raw": "material-symbols:error-rounded"
+    },
+    {
+      "name": "Icon/Error-Outline",
+      "id": "5507:71285",
+      "glyph": "error-outline-rounded",
+      "raw": "material-symbols:error-outline-rounded"
+    },
+    {
+      "name": "Icon/Expand",
+      "id": "748:301",
+      "glyph": "expand-content-rounded",
+      "raw": "material-symbols:expand-content-rounded"
+    },
+    {
+      "name": "Icon/Expand-Right",
+      "id": "3742:81598",
+      "glyph": "arrow-menu-open-rounded",
+      "raw": "material-symbols:arrow-menu-open-rounded"
+    },
+    {
+      "name": "Icon/Explore",
+      "id": "5190:77395",
+      "glyph": "explore-rounded",
+      "raw": "material-symbols:explore-rounded"
+    },
+    {
+      "name": "Icon/Explore-Nearby",
+      "id": "5190:77386",
+      "glyph": "explore-nearby",
+      "raw": "material-symbols:explore-nearby"
+    },
+    {
+      "name": "Icon/Explore-Outline",
+      "id": "726:3601",
+      "glyph": "explore-outline-rounded",
+      "raw": "material-symbols:explore-outline-rounded"
+    },
+    {
+      "name": "Icon/Face-Scan",
+      "id": "5601:216161",
+      "glyph": "familiar-face-and-zone-rounded",
+      "raw": "material-symbols:familiar-face-and-zone-rounded"
+    },
+    {
+      "name": "Icon/Face-Scan-Outline",
+      "id": "5601:216164",
+      "glyph": "familiar-face-and-zone-outline-rounded",
+      "raw": "material-symbols:familiar-face-and-zone-outline-rounded"
+    },
+    {
+      "name": "Icon/Filter",
+      "id": "28:37677",
+      "glyph": "discover-tune-rounded",
+      "raw": "material-symbols:discover-tune-rounded"
+    },
+    {
+      "name": "Icon/Fingerprint",
+      "id": "5601:216173",
+      "glyph": "fingerprint",
+      "raw": "material-symbols:fingerprint"
+    },
+    {
+      "name": "Icon/Fix",
+      "id": "2525:22616",
+      "glyph": "wand-shine-rounded",
+      "raw": "material-symbols:wand-shine-rounded"
+    },
+    {
+      "name": "Icon/Flag",
+      "id": "9965:22213",
+      "glyph": "flag-2-rounded",
+      "raw": "material-symbols:flag-2-rounded"
+    },
+    {
+      "name": "Icon/Flag-Outline",
+      "id": "9965:22212",
+      "glyph": "flag-2-outline-rounded",
+      "raw": "material-symbols:flag-2-outline-rounded"
+    },
+    {
+      "name": "Icon/Fleet",
+      "id": "28:37578",
+      "glyph": "garage-home-rounded",
+      "raw": "material-symbols:garage-home-rounded"
+    },
+    {
+      "name": "Icon/Flip-Camera",
+      "id": "3256:15139",
+      "glyph": "flip-camera-ios-rounded",
+      "raw": "material-symbols:flip-camera-ios-rounded"
+    },
+    {
+      "name": "Icon/Format-Bold",
+      "id": "7241:80379",
+      "glyph": "format-bold-rounded",
+      "raw": "material-symbols:format-bold-rounded"
+    },
+    {
+      "name": "Icon/Format-Italics",
+      "id": "7241:80380",
+      "glyph": "format-italic-rounded",
+      "raw": "material-symbols:format-italic-rounded"
+    },
+    {
+      "name": "Icon/Format-Underline",
+      "id": "7241:80378",
+      "glyph": "format-underlined-rounded",
+      "raw": "material-symbols:format-underlined-rounded"
+    },
+    {
+      "name": "Icon/Forward",
+      "id": "52:33998",
+      "glyph": "keyboard-double-arrow-right-rounded",
+      "raw": "material-symbols:keyboard-double-arrow-right-rounded"
+    },
+    {
+      "name": "Icon/Front-Door",
+      "id": "8577:8204",
+      "glyph": "door-front-rounded",
+      "raw": "material-symbols:door-front-rounded"
+    },
+    {
+      "name": "Icon/Front-Door-Outline",
+      "id": "8577:8203",
+      "glyph": "door-front-outline-rounded",
+      "raw": "material-symbols:door-front-outline-rounded"
+    },
+    {
+      "name": "Icon/Fuel",
+      "id": "28:37832",
+      "glyph": "oil-barrel-rounded",
+      "raw": "material-symbols:oil-barrel-rounded"
+    },
+    {
+      "name": "Icon/Graph",
+      "id": "4252:84623",
+      "glyph": "timeline",
+      "raw": "material-symbols:timeline"
+    },
+    {
+      "name": "Icon/Group-Add",
+      "id": "5114:233109",
+      "glyph": "group-add-rounded",
+      "raw": "material-symbols:group-add-rounded"
+    },
+    {
+      "name": "Icon/Group-Add-Outline",
+      "id": "9404:72572",
+      "glyph": "group-add-outline-rounded",
+      "raw": "material-symbols:group-add-outline-rounded"
+    },
+    {
+      "name": "Icon/Half-Star",
+      "id": "570:45",
+      "glyph": "star-rate-half-rounded",
+      "raw": "material-symbols:star-rate-half-rounded"
+    },
+    {
+      "name": "Icon/Halt",
+      "id": "5294:218216",
+      "glyph": "front-hand-rounded",
+      "raw": "material-symbols:front-hand-rounded"
+    },
+    {
+      "name": "Icon/Help",
+      "id": "3247:286",
+      "glyph": "help-rounded",
+      "raw": "material-symbols:help-rounded"
+    },
+    {
+      "name": "Icon/Hide",
+      "id": "5216:71143",
+      "glyph": "visibility-off-rounded",
+      "raw": "material-symbols:visibility-off-rounded"
+    },
+    {
+      "name": "Icon/Hide-Outline",
+      "id": "28:37753",
+      "glyph": "visibility-off-outline-rounded",
+      "raw": "material-symbols:visibility-off-outline-rounded"
+    },
+    {
+      "name": "Icon/History",
+      "id": "724:36",
+      "glyph": "history-rounded",
+      "raw": "material-symbols:history-rounded"
+    },
+    {
+      "name": "Icon/Home",
+      "id": "3232:280",
+      "glyph": "home-rounded",
+      "raw": "material-symbols:home-rounded"
+    },
+    {
+      "name": "Icon/Home-Outline",
+      "id": "8432:25859",
+      "glyph": "home-outline-rounded",
+      "raw": "material-symbols:home-outline-rounded"
+    },
+    {
+      "name": "Icon/Hourglass",
+      "id": "5613:216349",
+      "glyph": "hourglass-rounded",
+      "raw": "material-symbols:hourglass-rounded"
+    },
+    {
+      "name": "Icon/Hourglass-Outline",
+      "id": "5613:216350",
+      "glyph": "hourglass-outline-rounded",
+      "raw": "material-symbols:hourglass-outline-rounded"
+    },
+    {
+      "name": "Icon/Hub",
+      "id": "981:7591",
+      "glyph": "hub",
+      "raw": "material-symbols:hub"
+    },
+    {
+      "name": "Icon/ID",
+      "id": "8582:8022",
+      "glyph": "id-card-rounded",
+      "raw": "material-symbols:id-card-rounded"
+    },
+    {
+      "name": "Icon/ID-Outline",
+      "id": "8582:8021",
+      "glyph": "id-card-outline-rounded",
+      "raw": "material-symbols:id-card-outline-rounded"
+    },
+    {
+      "name": "Icon/Image",
+      "id": "2443:25166",
+      "glyph": "imagesmode-rounded",
+      "raw": "material-symbols:imagesmode-rounded"
+    },
+    {
+      "name": "Icon/Image-Outline",
+      "id": "5509:71322",
+      "glyph": "imagesmode-outline-rounded",
+      "raw": "material-symbols:imagesmode-outline-rounded"
+    },
+    {
+      "name": "Icon/Image-Upload",
+      "id": "4016:26630",
+      "glyph": "add-photo-alternate-rounded",
+      "raw": "material-symbols:add-photo-alternate-rounded"
+    },
+    {
+      "name": "Icon/Image-Upload-Outline",
+      "id": "5509:71321",
+      "glyph": "add-photo-alternate-outline-rounded",
+      "raw": "material-symbols:add-photo-alternate-outline-rounded"
+    },
+    {
+      "name": "Icon/Inbox",
+      "id": "3755:85618",
+      "glyph": "inbox-rounded",
+      "raw": "material-symbols:inbox-rounded"
+    },
+    {
+      "name": "Icon/Increase",
+      "id": "28:37644",
+      "glyph": "arrow-circle-up-rounded",
+      "raw": "material-symbols:arrow-circle-up-rounded"
+    },
+    {
+      "name": "Icon/Info",
+      "id": "2967:41358",
+      "glyph": "info-rounded",
+      "raw": "material-symbols:info-rounded"
+    },
+    {
+      "name": "Icon/Info-Outline",
+      "id": "438:1970",
+      "glyph": "info-outline-rounded",
+      "raw": "material-symbols:info-outline-rounded"
+    },
+    {
+      "name": "Icon/Insights",
+      "id": "28:37592",
+      "glyph": "show-chart-rounded",
+      "raw": "material-symbols:show-chart-rounded"
+    },
+    {
+      "name": "Icon/Integration",
+      "id": "923:5789",
+      "glyph": "api-rounded",
+      "raw": "material-symbols:api-rounded"
+    },
+    {
+      "name": "Icon/Internet-Call",
+      "id": "5321:221699",
+      "glyph": "wifi-calling-bar-3-rounded",
+      "raw": "material-symbols:wifi-calling-bar-3-rounded"
+    },
+    {
+      "name": "Icon/Inventory",
+      "id": "2439:23477",
+      "glyph": "inventory-2-rounded",
+      "raw": "material-symbols:inventory-2-rounded"
+    },
+    {
+      "name": "Icon/Inventory-Outline",
+      "id": "5732:31484",
+      "glyph": "inventory-2-outline-rounded",
+      "raw": "material-symbols:inventory-2-outline-rounded"
+    },
+    {
+      "name": "Icon/Join",
+      "id": "6239:24894",
+      "glyph": "join-outline",
+      "raw": "material-symbols:join-outline"
+    },
+    {
+      "name": "Icon/Key",
+      "id": "2836:31799",
+      "glyph": "key-rounded",
+      "raw": "material-symbols:key-rounded"
+    },
+    {
+      "name": "Icon/Key-Outline",
+      "id": "9404:72581",
+      "glyph": "key-outline-rounded",
+      "raw": "material-symbols:key-outline-rounded"
+    },
+    {
+      "name": "Icon/KPI",
+      "id": "28:37820",
+      "glyph": "chart-data-rounded",
+      "raw": "material-symbols:chart-data-rounded"
+    },
+    {
+      "name": "Icon/Label",
+      "id": "4355:148216",
+      "glyph": "label-rounded",
+      "raw": "material-symbols:label-rounded"
+    },
+    {
+      "name": "Icon/Label-Outline",
+      "id": "4355:148215",
+      "glyph": "label-outline-rounded",
+      "raw": "material-symbols:label-outline-rounded"
+    },
+    {
+      "name": "Icon/Layers",
+      "id": "4337:148176",
+      "glyph": "layers-rounded",
+      "raw": "material-symbols:layers-rounded"
+    },
+    {
+      "name": "Icon/Layers-Outline",
+      "id": "4337:148177",
+      "glyph": "layers-outline-rounded",
+      "raw": "material-symbols:layers-outline-rounded"
+    },
+    {
+      "name": "Icon/Leaderboard",
+      "id": "5102:196888",
+      "glyph": "social-leaderboard-rounded",
+      "raw": "material-symbols:social-leaderboard-rounded"
+    },
+    {
+      "name": "Icon/Leads",
+      "id": "3392:41057",
+      "glyph": "sensor-occupied-rounded",
+      "raw": "material-symbols:sensor-occupied-rounded"
+    },
+    {
+      "name": "Icon/Leads-Outline",
+      "id": "5508:71291",
+      "glyph": "sensor-occupied-outline-rounded",
+      "raw": "material-symbols:sensor-occupied-outline-rounded"
+    },
+    {
+      "name": "Icon/Light",
+      "id": "5309:221669",
+      "glyph": "light-mode-rounded",
+      "raw": "material-symbols:light-mode-rounded"
+    },
+    {
+      "name": "Icon/Light-Outline",
+      "id": "5309:221670",
+      "glyph": "light-mode-outline-rounded",
+      "raw": "material-symbols:light-mode-outline-rounded"
+    },
+    {
+      "name": "Icon/Lightbulb",
+      "id": "5309:221655",
+      "glyph": "emoji-objects-rounded",
+      "raw": "material-symbols:emoji-objects-rounded"
+    },
+    {
+      "name": "Icon/Lightbulb-Outline",
+      "id": "5513:71352",
+      "glyph": "emoji-objects-outline-rounded",
+      "raw": "material-symbols:emoji-objects-outline-rounded"
+    },
+    {
+      "name": "Icon/Link",
+      "id": "2825:31473",
+      "glyph": "link-rounded",
+      "raw": "material-symbols:link-rounded"
+    },
+    {
+      "name": "Icon/Liquor",
+      "id": "8439:25873",
+      "glyph": "liquor-rounded",
+      "raw": "material-symbols:liquor-rounded"
+    },
+    {
+      "name": "Icon/Liquor-Outline",
+      "id": "8439:25876",
+      "glyph": "liquor-outline-rounded",
+      "raw": "material-symbols:liquor-outline-rounded"
+    },
+    {
+      "name": "Icon/List",
+      "id": "2872:75560",
+      "glyph": "format-list-bulleted-rounded",
+      "raw": "material-symbols:format-list-bulleted-rounded"
+    },
+    {
+      "name": "Icon/Load",
+      "id": "28:37774",
+      "glyph": "trolley-rounded",
+      "raw": "material-symbols:trolley-rounded"
+    },
+    {
+      "name": "Icon/Loading",
+      "id": "2066:21095",
+      "glyph": "progress-activity",
+      "raw": "material-symbols:progress-activity"
+    },
+    {
+      "name": "Icon/Location",
+      "id": "1003:8148",
+      "glyph": "location-on-rounded",
+      "raw": "material-symbols:location-on-rounded"
+    },
+    {
+      "name": "Icon/Location-Check",
+      "id": "5091:182936",
+      "glyph": "where-to-vote-rounded",
+      "raw": "material-symbols:where-to-vote-rounded"
+    },
+    {
+      "name": "Icon/Location-Off",
+      "id": "8865:25743",
+      "glyph": "location-off-rounded",
+      "raw": "material-symbols:location-off-rounded"
+    },
+    {
+      "name": "Icon/Location-Off-Outline",
+      "id": "8865:25744",
+      "glyph": "location-off-outline-rounded",
+      "raw": "material-symbols:location-off-outline-rounded"
+    },
+    {
+      "name": "Icon/Location-Outline",
+      "id": "839:2361",
+      "glyph": "location-on-outline-rounded",
+      "raw": "material-symbols:location-on-outline-rounded"
+    },
+    {
+      "name": "Icon/Location-Wrong",
+      "id": "5580:70121",
+      "glyph": "wrong-location-rounded",
+      "raw": "material-symbols:wrong-location-rounded"
+    },
+    {
+      "name": "Icon/Location-Wrong-Outline",
+      "id": "5580:70120",
+      "glyph": "wrong-location-outline-rounded",
+      "raw": "material-symbols:wrong-location-outline-rounded"
+    },
+    {
+      "name": "Icon/Lock",
+      "id": "2369:30192",
+      "glyph": "lock",
+      "raw": "material-symbols:lock"
+    },
+    {
+      "name": "Icon/Lock-Outline",
+      "id": "5197:116745",
+      "glyph": "lock-outline",
+      "raw": "material-symbols:lock-outline"
+    },
+    {
+      "name": "Icon/Logout",
+      "id": "28:37633",
+      "glyph": "logout-rounded",
+      "raw": "material-symbols:logout-rounded"
+    },
+    {
+      "name": "Icon/Mail",
+      "id": "2368:26871",
+      "glyph": "mail-rounded",
+      "raw": "material-symbols:mail-rounded"
+    },
+    {
+      "name": "Icon/Mail-Check",
+      "id": "2368:26873",
+      "glyph": "mark-email-read-rounded",
+      "raw": "material-symbols:mark-email-read-rounded"
+    },
+    {
+      "name": "Icon/Mail-Failed",
+      "id": "2368:26872",
+      "glyph": "mail-off-rounded",
+      "raw": "material-symbols:mail-off-rounded"
+    },
+    {
+      "name": "Icon/Mail-Outline",
+      "id": "4274:87265",
+      "glyph": "mail-outline-rounded",
+      "raw": "material-symbols:mail-outline-rounded"
+    },
+    {
+      "name": "Icon/Maintenance",
+      "id": "28:37814",
+      "glyph": "service-toolbox-rounded",
+      "raw": "material-symbols:service-toolbox-rounded"
+    },
+    {
+      "name": "Icon/Manual-Touch",
+      "id": "9313:54583",
+      "glyph": "touch-app-rounded",
+      "raw": "material-symbols:touch-app-rounded"
+    },
+    {
+      "name": "Icon/Manual-Touch-Outline",
+      "id": "9313:54584",
+      "glyph": "touch-app-outline-rounded",
+      "raw": "material-symbols:touch-app-outline-rounded"
+    },
+    {
+      "name": "Icon/Map",
+      "id": "728:3739",
+      "glyph": "map-outline-rounded",
+      "raw": "material-symbols:map-outline-rounded"
+    },
+    {
+      "name": "Icon/Menu",
+      "id": "4993:41828",
+      "glyph": "menu-rounded",
+      "raw": "material-symbols:menu-rounded"
+    },
+    {
+      "name": "Icon/Merge",
+      "id": "28:37829",
+      "glyph": "merge-rounded",
+      "raw": "material-symbols:merge-rounded"
+    },
+    {
+      "name": "Icon/Message",
+      "id": "2923:36006",
+      "glyph": "chat-bubble-rounded",
+      "raw": "material-symbols:chat-bubble-rounded"
+    },
+    {
+      "name": "Icon/Message-Outline",
+      "id": "2649:59889",
+      "glyph": "chat-bubble-outline-rounded",
+      "raw": "material-symbols:chat-bubble-outline-rounded"
+    },
+    {
+      "name": "Icon/Meter",
+      "id": "7359:19724",
+      "glyph": "speed-outline-rounded",
+      "raw": "material-symbols:speed-outline-rounded"
+    },
+    {
+      "name": "Icon/Microphone",
+      "id": "2922:35997",
+      "glyph": "mic-rounded",
+      "raw": "material-symbols:mic-rounded"
+    },
+    {
+      "name": "Icon/Minus",
+      "id": "28:37611",
+      "glyph": "remove-rounded",
+      "raw": "material-symbols:remove-rounded"
+    },
+    {
+      "name": "Icon/Minus-Outline",
+      "id": "5716:229709",
+      "glyph": "do-not-disturb-on-outline-rounded",
+      "raw": "material-symbols:do-not-disturb-on-outline-rounded"
+    },
+    {
+      "name": "Icon/Mixer",
+      "id": "2596:22664",
+      "glyph": "tune-rounded",
+      "raw": "material-symbols:tune-rounded"
+    },
+    {
+      "name": "Icon/More",
+      "id": "637:34",
+      "glyph": "more-horiz",
+      "raw": "material-symbols:more-horiz"
+    },
+    {
+      "name": "Icon/Motorcycle",
+      "id": "997:7875",
+      "glyph": "two-wheeler-rounded",
+      "raw": "material-symbols:two-wheeler-rounded"
+    },
+    {
+      "name": "Icon/Motorcycle-Outline",
+      "id": "5735:31502",
+      "glyph": "two-wheeler-outline-rounded",
+      "raw": "material-symbols:two-wheeler-outline-rounded"
+    },
+    {
+      "name": "Icon/Moving-Vehicle",
+      "id": "998:7985",
+      "glyph": "delivery-truck-speed-rounded",
+      "raw": "material-symbols:delivery-truck-speed-rounded"
+    },
+    {
+      "name": "Icon/Moving-Vehicle-Outline",
+      "id": "9353:57239",
+      "glyph": "delivery-truck-speed-outline-rounded",
+      "raw": "material-symbols:delivery-truck-speed-outline-rounded"
+    },
+    {
+      "name": "Icon/Navigation-Assistant",
+      "id": "5133:588603",
+      "glyph": "assistant-navigation-rounded",
+      "raw": "material-symbols:assistant-navigation-rounded"
+    },
+    {
+      "name": "Icon/Note",
+      "id": "2977:731",
+      "glyph": "sticky-note-2-rounded",
+      "raw": "material-symbols:sticky-note-2-rounded"
+    },
+    {
+      "name": "Icon/Note-Outline",
+      "id": "899:3076",
+      "glyph": "sticky-note-2-outline-rounded",
+      "raw": "material-symbols:sticky-note-2-outline-rounded"
+    },
+    {
+      "name": "Icon/Notifications",
+      "id": "998:7930",
+      "glyph": "notifications-rounded",
+      "raw": "material-symbols:notifications-rounded"
+    },
+    {
+      "name": "Icon/Notifications-Outline",
+      "id": "28:37627",
+      "glyph": "notifications-outline-rounded",
+      "raw": "material-symbols:notifications-outline-rounded"
+    },
+    {
+      "name": "Icon/Offline",
+      "id": "28:37736",
+      "glyph": "wifi-off-rounded",
+      "raw": "material-symbols:wifi-off-rounded"
+    },
+    {
+      "name": "Icon/Offload",
+      "id": "28:37777",
+      "glyph": "forklift-rounded",
+      "raw": "material-symbols:forklift-rounded"
+    },
+    {
+      "name": "Icon/Online",
+      "id": "832:3780",
+      "glyph": "wifi-rounded",
+      "raw": "material-symbols:wifi-rounded"
+    },
+    {
+      "name": "Icon/Open",
+      "id": "10391:39666",
+      "glyph": "open-in-new-rounded",
+      "raw": "material-symbols:open-in-new-rounded"
+    },
+    {
+      "name": "Icon/Open-Box",
+      "id": "5425:232710",
+      "glyph": "orders-rounded",
+      "raw": "material-symbols:orders-rounded"
+    },
+    {
+      "name": "Icon/Open-Box-Outline",
+      "id": "5540:68632",
+      "glyph": "orders-outline-rounded",
+      "raw": "material-symbols:orders-outline-rounded"
+    },
+    {
+      "name": "Icon/Order-Status",
+      "id": "28:37816",
+      "glyph": "app-badging",
+      "raw": "material-symbols:app-badging"
+    },
+    {
+      "name": "Icon/Order-Status-Outline",
+      "id": "5094:182977",
+      "glyph": "app-badging-outline",
+      "raw": "material-symbols:app-badging-outline"
+    },
+    {
+      "name": "Icon/Orders",
+      "id": "915:4853",
+      "glyph": "package-2",
+      "raw": "material-symbols:package-2"
+    },
+    {
+      "name": "Icon/Orders-Outline",
+      "id": "7151:53842",
+      "glyph": "package-2-outline",
+      "raw": "material-symbols:package-2-outline"
+    },
+    {
+      "name": "Icon/Overview",
+      "id": "1023:4834",
+      "glyph": "overview-rounded",
+      "raw": "material-symbols:overview-rounded"
+    },
+    {
+      "name": "Icon/Palette",
+      "id": "7485:26245",
+      "glyph": "palette",
+      "raw": "material-symbols:palette"
+    },
+    {
+      "name": "Icon/Palette-Outline",
+      "id": "7485:26244",
+      "glyph": "palette-outline",
+      "raw": "material-symbols:palette-outline"
+    },
+    {
+      "name": "Icon/Partner",
+      "id": "991:7788",
+      "glyph": "handshake-rounded",
+      "raw": "material-symbols:handshake-rounded"
+    },
+    {
+      "name": "Icon/Paste",
+      "id": "3893:34065",
+      "glyph": "content-paste-rounded",
+      "raw": "material-symbols:content-paste-rounded"
+    },
+    {
+      "name": "Icon/Pause",
+      "id": "3232:319",
+      "glyph": "pause-circle-rounded",
+      "raw": "material-symbols:pause-circle-rounded"
+    },
+    {
+      "name": "Icon/Pause-Outline",
+      "id": "3232:318",
+      "glyph": "pause-circle-outline-rounded",
+      "raw": "material-symbols:pause-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Payment",
+      "id": "2868:75551",
+      "glyph": "credit-card-outline",
+      "raw": "material-symbols:credit-card-outline"
+    },
+    {
+      "name": "Icon/Payout",
+      "id": "5716:229690",
+      "glyph": "payment-arrow-down-rounded",
+      "raw": "material-symbols:payment-arrow-down-rounded"
+    },
+    {
+      "name": "Icon/Payout-Outline",
+      "id": "5716:229691",
+      "glyph": "payment-arrow-down-outline-rounded",
+      "raw": "material-symbols:payment-arrow-down-outline-rounded"
+    },
+    {
+      "name": "Icon/Permissions",
+      "id": "3007:14456",
+      "glyph": "security-rounded",
+      "raw": "material-symbols:security-rounded"
+    },
+    {
+      "name": "Icon/Phone",
+      "id": "767:34",
+      "glyph": "call",
+      "raw": "material-symbols:call"
+    },
+    {
+      "name": "Icon/Phone-Message",
+      "id": "2975:722",
+      "glyph": "perm-phone-msg-rounded",
+      "raw": "material-symbols:perm-phone-msg-rounded"
+    },
+    {
+      "name": "Icon/Phone-Message-Outline",
+      "id": "5575:218024",
+      "glyph": "perm-phone-msg-outline-rounded",
+      "raw": "material-symbols:perm-phone-msg-outline-rounded"
+    },
+    {
+      "name": "Icon/Phone-Outline",
+      "id": "5575:218025",
+      "glyph": "call-outline",
+      "raw": "material-symbols:call-outline"
+    },
+    {
+      "name": "Icon/Pickup",
+      "id": "5535:30766",
+      "glyph": "concierge-rounded",
+      "raw": "material-symbols:concierge-rounded"
+    },
+    {
+      "name": "Icon/Pickup-Outline",
+      "id": "5535:30765",
+      "glyph": "concierge-outline-rounded",
+      "raw": "material-symbols:concierge-outline-rounded"
+    },
+    {
+      "name": "Icon/Pin",
+      "id": "2943:48242",
+      "glyph": "keep-rounded",
+      "raw": "material-symbols:keep-rounded"
+    },
+    {
+      "name": "Icon/Play",
+      "id": "3232:317",
+      "glyph": "play-circle-rounded",
+      "raw": "material-symbols:play-circle-rounded"
+    },
+    {
+      "name": "Icon/Play-Outline",
+      "id": "3232:316",
+      "glyph": "play-circle-outline-rounded",
+      "raw": "material-symbols:play-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Polyline",
+      "id": "6236:23120",
+      "glyph": "polyline-rounded",
+      "raw": "material-symbols:polyline-rounded"
+    },
+    {
+      "name": "Icon/Polyline-Outline",
+      "id": "6236:23121",
+      "glyph": "polyline-outline-rounded",
+      "raw": "material-symbols:polyline-outline-rounded"
+    },
+    {
+      "name": "Icon/Poor-Network",
+      "id": "5698:117718",
+      "glyph": "cloud-off-rounded",
+      "raw": "material-symbols:cloud-off-rounded"
+    },
+    {
+      "name": "Icon/Poor-Network-Outline",
+      "id": "5698:117719",
+      "glyph": "cloud-off-outline-rounded",
+      "raw": "material-symbols:cloud-off-outline-rounded"
+    },
+    {
+      "name": "Icon/Power",
+      "id": "5097:193877",
+      "glyph": "power-settings-circle-rounded",
+      "raw": "material-symbols:power-settings-circle-rounded"
+    },
+    {
+      "name": "Icon/Power-Outline",
+      "id": "3011:14475",
+      "glyph": "power-settings-circle-outline-rounded",
+      "raw": "material-symbols:power-settings-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Preferences",
+      "id": "592:55",
+      "glyph": "settings-heart-rounded",
+      "raw": "material-symbols:settings-heart-rounded"
+    },
+    {
+      "name": "Icon/Preview",
+      "id": "3057:14390",
+      "glyph": "fit-screen-outline-rounded",
+      "raw": "material-symbols:fit-screen-outline-rounded"
+    },
+    {
+      "name": "Icon/Priority",
+      "id": "2526:22625",
+      "glyph": "priority-high-rounded",
+      "raw": "material-symbols:priority-high-rounded"
+    },
+    {
+      "name": "Icon/Privacy-Policy",
+      "id": "3007:14455",
+      "glyph": "policy-rounded",
+      "raw": "material-symbols:policy-rounded"
+    },
+    {
+      "name": "Icon/Privacy-Policy-Outline",
+      "id": "5197:116782",
+      "glyph": "policy-outline-rounded",
+      "raw": "material-symbols:policy-outline-rounded"
+    },
+    {
+      "name": "Icon/Proceed",
+      "id": "28:37683",
+      "glyph": "arrow-outward-rounded",
+      "raw": "material-symbols:arrow-outward-rounded"
+    },
+    {
+      "name": "Icon/Question",
+      "id": "5061:92297",
+      "glyph": "question-mark-rounded",
+      "raw": "material-symbols:question-mark-rounded"
+    },
+    {
+      "name": "Icon/Question-Outline",
+      "id": "28:37630",
+      "glyph": "help-outline-rounded",
+      "raw": "material-symbols:help-outline-rounded"
+    },
+    {
+      "name": "Icon/Radar",
+      "id": "5461:86918",
+      "glyph": "radar",
+      "raw": "material-symbols:radar"
+    },
+    {
+      "name": "Icon/Radio-Button-Active",
+      "id": "1053:5201",
+      "glyph": "radio-button-checked-outline",
+      "raw": "material-symbols:radio-button-checked-outline"
+    },
+    {
+      "name": "Icon/Radio-Button-Default",
+      "id": "1053:5200",
+      "glyph": "radio-button-unchecked",
+      "raw": "material-symbols:radio-button-unchecked"
+    },
+    {
+      "name": "Icon/Receipt-Outline",
+      "id": "2575:22655",
+      "glyph": "receipt-long-outline-rounded",
+      "raw": "material-symbols:receipt-long-outline-rounded"
+    },
+    {
+      "name": "Icon/Redo",
+      "id": "10736:25670",
+      "glyph": "redo-rounded",
+      "raw": "material-symbols:redo-rounded"
+    },
+    {
+      "name": "Icon/Refresh",
+      "id": "657:38",
+      "glyph": "refresh-rounded",
+      "raw": "material-symbols:refresh-rounded"
+    },
+    {
+      "name": "Icon/Reorder",
+      "id": "3472:24347",
+      "glyph": "reorder-rounded",
+      "raw": "material-symbols:reorder-rounded"
+    },
+    {
+      "name": "Icon/Reports",
+      "id": "28:37811",
+      "glyph": "file-export-rounded",
+      "raw": "material-symbols:file-export-rounded"
+    },
+    {
+      "name": "Icon/Requests",
+      "id": "5454:86787",
+      "glyph": "upcoming-rounded",
+      "raw": "material-symbols:upcoming-rounded"
+    },
+    {
+      "name": "Icon/Requests-Outline",
+      "id": "9404:72590",
+      "glyph": "upcoming-outline-rounded",
+      "raw": "material-symbols:upcoming-outline-rounded"
+    },
+    {
+      "name": "Icon/Return",
+      "id": "10249:63157",
+      "glyph": "u-turn-left-rounded",
+      "raw": "material-symbols:u-turn-left-rounded"
+    },
+    {
+      "name": "Icon/Reviews",
+      "id": "5514:71421",
+      "glyph": "reviews-rounded",
+      "raw": "material-symbols:reviews-rounded"
+    },
+    {
+      "name": "Icon/Reviews-Outline",
+      "id": "5514:71422",
+      "glyph": "reviews-outline-rounded",
+      "raw": "material-symbols:reviews-outline-rounded"
+    },
+    {
+      "name": "Icon/Round-Star",
+      "id": "4252:84622",
+      "glyph": "stars-rounded",
+      "raw": "material-symbols:stars-rounded"
+    },
+    {
+      "name": "Icon/Sales",
+      "id": "28:37640",
+      "glyph": "paid-rounded",
+      "raw": "material-symbols:paid-rounded"
+    },
+    {
+      "name": "Icon/Sales-Outline",
+      "id": "5090:182828",
+      "glyph": "paid-outline-rounded",
+      "raw": "material-symbols:paid-outline-rounded"
+    },
+    {
+      "name": "Icon/Save",
+      "id": "28:37715",
+      "glyph": "save-rounded",
+      "raw": "material-symbols:save-rounded"
+    },
+    {
+      "name": "Icon/Scooter",
+      "id": "982:7603",
+      "glyph": "moped-rounded",
+      "raw": "material-symbols:moped-rounded"
+    },
+    {
+      "name": "Icon/Search",
+      "id": "28:37680",
+      "glyph": "search-rounded",
+      "raw": "material-symbols:search-rounded"
+    },
+    {
+      "name": "Icon/Select",
+      "id": "7820:22504",
+      "glyph": "select-check-box-rounded",
+      "raw": "material-symbols:select-check-box-rounded"
+    },
+    {
+      "name": "Icon/Send",
+      "id": "2940:48230",
+      "glyph": "send-rounded",
+      "raw": "material-symbols:send-rounded"
+    },
+    {
+      "name": "Icon/Send-Outline",
+      "id": "7888:91801",
+      "glyph": "send-outline-rounded",
+      "raw": "material-symbols:send-outline-rounded"
+    },
+    {
+      "name": "Icon/Settings",
+      "id": "28:37581",
+      "glyph": "settings-rounded",
+      "raw": "material-symbols:settings-rounded"
+    },
+    {
+      "name": "Icon/Settings-Outline",
+      "id": "5618:216359",
+      "glyph": "settings-outline-rounded",
+      "raw": "material-symbols:settings-outline-rounded"
+    },
+    {
+      "name": "Icon/Share",
+      "id": "28:37695",
+      "glyph": "ios-share-rounded",
+      "raw": "material-symbols:ios-share-rounded"
+    },
+    {
+      "name": "Icon/Shelf",
+      "id": "3242:33531",
+      "glyph": "newsstand-rounded",
+      "raw": "material-symbols:newsstand-rounded"
+    },
+    {
+      "name": "Icon/Show",
+      "id": "5216:71144",
+      "glyph": "visibility-rounded",
+      "raw": "material-symbols:visibility-rounded"
+    },
+    {
+      "name": "Icon/Show-Outline",
+      "id": "615:5045",
+      "glyph": "visibility-outline-rounded",
+      "raw": "material-symbols:visibility-outline-rounded"
+    },
+    {
+      "name": "Icon/Sidebar",
+      "id": "6350:27445",
+      "glyph": "thumbnail-bar-outline",
+      "raw": "material-symbols:thumbnail-bar-outline"
+    },
+    {
+      "name": "Icon/Signature",
+      "id": "3962:27492",
+      "glyph": "signature-rounded",
+      "raw": "material-symbols:signature-rounded"
+    },
+    {
+      "name": "Icon/Sort",
+      "id": "696:6187",
+      "glyph": "sort-rounded",
+      "raw": "material-symbols:sort-rounded"
+    },
+    {
+      "name": "Icon/Split",
+      "id": "8150:7313",
+      "glyph": "split-scene-outline-rounded",
+      "raw": "material-symbols:split-scene-outline-rounded"
+    },
+    {
+      "name": "Icon/Square",
+      "id": "6121:92360",
+      "glyph": "square-rounded",
+      "raw": "material-symbols:square-rounded"
+    },
+    {
+      "name": "Icon/Square-Outline",
+      "id": "6121:92361",
+      "glyph": "square-outline-rounded",
+      "raw": "material-symbols:square-outline-rounded"
+    },
+    {
+      "name": "Icon/Star",
+      "id": "569:502",
+      "glyph": "star-rate-rounded",
+      "raw": "material-symbols:star-rate-rounded"
+    },
+    {
+      "name": "Icon/Star-Outline",
+      "id": "570:68",
+      "glyph": "star-rate-outline-rounded",
+      "raw": "material-symbols:star-rate-outline-rounded"
+    },
+    {
+      "name": "Icon/Stepper",
+      "id": "2606:37247",
+      "glyph": "expand-all-rounded",
+      "raw": "material-symbols:expand-all-rounded"
+    },
+    {
+      "name": "Icon/Stop",
+      "id": "3232:314",
+      "glyph": "stop-circle-rounded",
+      "raw": "material-symbols:stop-circle-rounded"
+    },
+    {
+      "name": "Icon/Stop-Outline",
+      "id": "3232:315",
+      "glyph": "stop-circle-outline-rounded",
+      "raw": "material-symbols:stop-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Support",
+      "id": "3009:14465",
+      "glyph": "support",
+      "raw": "material-symbols:support"
+    },
+    {
+      "name": "Icon/Support-Agent",
+      "id": "5076:92538",
+      "glyph": "support-agent-rounded",
+      "raw": "material-symbols:support-agent-rounded"
+    },
+    {
+      "name": "Icon/Swap",
+      "id": "28:37826",
+      "glyph": "swap-horiz-rounded",
+      "raw": "material-symbols:swap-horiz-rounded"
+    },
+    {
+      "name": "Icon/Switch",
+      "id": "4623:94575",
+      "glyph": "change-circle-outline-rounded",
+      "raw": "material-symbols:change-circle-outline-rounded"
+    },
+    {
+      "name": "Icon/Tag",
+      "id": "3191:46393",
+      "glyph": "sell",
+      "raw": "material-symbols:sell"
+    },
+    {
+      "name": "Icon/Tag-Outline",
+      "id": "7447:18162",
+      "glyph": "sell-outline",
+      "raw": "material-symbols:sell-outline"
+    },
+    {
+      "name": "Icon/Target",
+      "id": "3012:26677",
+      "glyph": "my-location-rounded",
+      "raw": "material-symbols:my-location-rounded"
+    },
+    {
+      "name": "Icon/Targets",
+      "id": "2563:22645",
+      "glyph": "target",
+      "raw": "material-symbols:target"
+    },
+    {
+      "name": "Icon/Tasks",
+      "id": "3258:15292",
+      "glyph": "assignment-rounded",
+      "raw": "material-symbols:assignment-rounded"
+    },
+    {
+      "name": "Icon/Tasks-Completed",
+      "id": "5374:116874",
+      "glyph": "assignment-turned-in-rounded",
+      "raw": "material-symbols:assignment-turned-in-rounded"
+    },
+    {
+      "name": "Icon/Team",
+      "id": "991:7773",
+      "glyph": "groups-rounded",
+      "raw": "material-symbols:groups-rounded"
+    },
+    {
+      "name": "Icon/Team-Outline",
+      "id": "7402:63457",
+      "glyph": "groups-outline-rounded",
+      "raw": "material-symbols:groups-outline-rounded"
+    },
+    {
+      "name": "Icon/Thumbs-Down",
+      "id": "4011:353",
+      "glyph": "thumb-down-rounded",
+      "raw": "material-symbols:thumb-down-rounded"
+    },
+    {
+      "name": "Icon/Thumbs-Down-Outline",
+      "id": "5197:116763",
+      "glyph": "thumb-down-outline-rounded",
+      "raw": "material-symbols:thumb-down-outline-rounded"
+    },
+    {
+      "name": "Icon/Thumbs-Up",
+      "id": "4011:352",
+      "glyph": "thumb-up-rounded",
+      "raw": "material-symbols:thumb-up-rounded"
+    },
+    {
+      "name": "Icon/Thumbs-Up-Outline",
+      "id": "5197:116762",
+      "glyph": "thumb-up-outline-rounded",
+      "raw": "material-symbols:thumb-up-outline-rounded"
+    },
+    {
+      "name": "Icon/Timer",
+      "id": "5524:62977",
+      "glyph": "timer-rounded",
+      "raw": "material-symbols:timer-rounded"
+    },
+    {
+      "name": "Icon/Timer-Outline",
+      "id": "5016:69763",
+      "glyph": "timer-outline-rounded",
+      "raw": "material-symbols:timer-outline-rounded"
+    },
+    {
+      "name": "Icon/Tracking",
+      "id": "991:7818",
+      "glyph": "near-me-rounded",
+      "raw": "material-symbols:near-me-rounded"
+    },
+    {
+      "name": "Icon/Tracking-Outline",
+      "id": "5583:70244",
+      "glyph": "near-me-outline-rounded",
+      "raw": "material-symbols:near-me-outline-rounded"
+    },
+    {
+      "name": "Icon/Trip-Origin",
+      "id": "8492:7764",
+      "glyph": "trip-origin",
+      "raw": "material-symbols:trip-origin"
+    },
+    {
+      "name": "Icon/Trips-Routing",
+      "id": "28:37789",
+      "glyph": "route",
+      "raw": "material-symbols:route"
+    },
+    {
+      "name": "Icon/Trophy",
+      "id": "3005:14425",
+      "glyph": "trophy-rounded",
+      "raw": "material-symbols:trophy-rounded"
+    },
+    {
+      "name": "Icon/Truck",
+      "id": "997:7866",
+      "glyph": "local-shipping-rounded",
+      "raw": "material-symbols:local-shipping-rounded"
+    },
+    {
+      "name": "Icon/Truck-Outline",
+      "id": "5735:31493",
+      "glyph": "local-shipping-outline-rounded",
+      "raw": "material-symbols:local-shipping-outline-rounded"
+    },
+    {
+      "name": "Icon/Undo",
+      "id": "250:2739",
+      "glyph": "undo-rounded",
+      "raw": "material-symbols:undo-rounded"
+    },
+    {
+      "name": "Icon/Up-Arrow",
+      "id": "4853:75540",
+      "glyph": "arrow-upward-rounded",
+      "raw": "material-symbols:arrow-upward-rounded"
+    },
+    {
+      "name": "Icon/Update",
+      "id": "779:2532",
+      "glyph": "update-rounded",
+      "raw": "material-symbols:update-rounded"
+    },
+    {
+      "name": "Icon/Upload",
+      "id": "611:4022",
+      "glyph": "upload-rounded",
+      "raw": "material-symbols:upload-rounded"
+    },
+    {
+      "name": "Icon/User",
+      "id": "917:4862",
+      "glyph": "person-rounded",
+      "raw": "material-symbols:person-rounded"
+    },
+    {
+      "name": "Icon/User-Add",
+      "id": "2790:28168",
+      "glyph": "person-add-rounded",
+      "raw": "material-symbols:person-add-rounded"
+    },
+    {
+      "name": "Icon/User-Add-Outline",
+      "id": "7361:60448",
+      "glyph": "person-add-outline-rounded",
+      "raw": "material-symbols:person-add-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Admin",
+      "id": "2462:21929",
+      "glyph": "supervisor-account-rounded",
+      "raw": "material-symbols:supervisor-account-rounded"
+    },
+    {
+      "name": "Icon/User-Available",
+      "id": "28:37733",
+      "glyph": "person-check-rounded",
+      "raw": "material-symbols:person-check-rounded"
+    },
+    {
+      "name": "Icon/User-Available-Outline",
+      "id": "9404:72552",
+      "glyph": "person-check-outline-rounded",
+      "raw": "material-symbols:person-check-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Cancel",
+      "id": "2790:28172",
+      "glyph": "person-cancel-rounded",
+      "raw": "material-symbols:person-cancel-rounded"
+    },
+    {
+      "name": "Icon/User-Cancel-Outline",
+      "id": "9404:72563",
+      "glyph": "person-cancel-outline-rounded",
+      "raw": "material-symbols:person-cancel-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Caution",
+      "id": "2790:28170",
+      "glyph": "person-alert-rounded",
+      "raw": "material-symbols:person-alert-rounded"
+    },
+    {
+      "name": "Icon/User-Caution-Outline",
+      "id": "9404:72553",
+      "glyph": "person-alert-outline-rounded",
+      "raw": "material-symbols:person-alert-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Edit",
+      "id": "2790:28169",
+      "glyph": "person-edit-rounded",
+      "raw": "material-symbols:person-edit-rounded"
+    },
+    {
+      "name": "Icon/User-Edit-Outline",
+      "id": "7851:22699",
+      "glyph": "person-edit-outline-rounded",
+      "raw": "material-symbols:person-edit-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Outline",
+      "id": "28:37712",
+      "glyph": "person-outline-rounded",
+      "raw": "material-symbols:person-outline-rounded"
+    },
+    {
+      "name": "Icon/User-Unavailable",
+      "id": "2790:28171",
+      "glyph": "person-off-rounded",
+      "raw": "material-symbols:person-off-rounded"
+    },
+    {
+      "name": "Icon/User-Unavailable-Outline",
+      "id": "9404:72554",
+      "glyph": "person-off-outline-rounded",
+      "raw": "material-symbols:person-off-outline-rounded"
+    },
+    {
+      "name": "Icon/Users",
+      "id": "998:7912",
+      "glyph": "group-rounded",
+      "raw": "material-symbols:group-rounded"
+    },
+    {
+      "name": "Icon/VOIP-Call",
+      "id": "5321:221700",
+      "glyph": "phone-forwarded-rounded",
+      "raw": "material-symbols:phone-forwarded-rounded"
+    },
+    {
+      "name": "Icon/Wallet",
+      "id": "28:37584",
+      "glyph": "wallet",
+      "raw": "material-symbols:wallet"
+    },
+    {
+      "name": "Icon/Warning",
+      "id": "65:35894",
+      "glyph": "warning-rounded",
+      "raw": "material-symbols:warning-rounded"
+    },
+    {
+      "name": "Icon/Weight",
+      "id": "9908:3609",
+      "glyph": "weight",
+      "raw": "material-symbols:weight"
+    },
+    {
+      "name": "Icon/Weight-Outline",
+      "id": "9908:3610",
+      "glyph": "weight-outline",
+      "raw": "material-symbols:weight-outline"
+    },
+    {
+      "name": "Icon/Wheel",
+      "id": "28:37657",
+      "glyph": "search-hands-free-rounded",
+      "raw": "material-symbols:search-hands-free-rounded"
+    },
+    {
+      "name": "Icon/Widget",
+      "id": "997:7853",
+      "glyph": "widgets-rounded",
+      "raw": "material-symbols:widgets-rounded"
+    },
+    {
+      "name": "Icon/Widget-Outline",
+      "id": "5559:31071",
+      "glyph": "widgets-outline-rounded",
+      "raw": "material-symbols:widgets-outline-rounded"
+    },
+    {
+      "name": "Icon/Write",
+      "id": "3159:27013",
+      "glyph": "note-stack-add-rounded",
+      "raw": "material-symbols:note-stack-add-rounded"
+    }
+  ],
+  "componentSets": [
+    {
+      "name": "Icon/Toggle",
+      "id": "1956:29506",
+      "variants": [
+        {
+          "name": "State=Off",
+          "id": "1107:1875"
+        },
+        {
+          "name": "State=Disabled",
+          "id": "7101:26536"
+        },
+        {
+          "name": "State=Hover",
+          "id": "1956:29468"
+        },
+        {
+          "name": "State=On",
+          "id": "1107:1876"
+        }
+      ]
+    },
+    {
+      "name": "Table Cell Checkbox",
+      "id": "4445:96840",
+      "variants": [
+        {
+          "name": "State=Idle",
+          "id": "4445:96839"
+        },
+        {
+          "name": "State=Indeterminate",
+          "id": "8261:29095"
+        },
+        {
+          "name": "State=Active",
+          "id": "4445:96838"
+        }
+      ]
+    }
+  ]
+}

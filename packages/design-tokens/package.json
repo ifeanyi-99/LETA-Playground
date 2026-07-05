@@ -1,0 +1,42 @@
+{
+  "name": "@leta/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "LETA design tokens — generated from Figma. Do not hand-edit dist/.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./fonts": {
+      "import": "./dist/fonts.js"
+    },
+    "./css": "./dist/tokens.css",
+    "./text-styles.css": "./dist/text-styles.css",
+    "./scroll-utilities.css": "./dist/scroll-utilities.css",
+    "./tailwind": "./dist/tailwind.preset.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/fonts.ts --format esm --dts --out-dir dist --external react && cp src/scroll-utilities.css dist/scroll-utilities.css",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8"
+  }
+}

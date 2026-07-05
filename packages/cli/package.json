@@ -1,0 +1,29 @@
+{
+  "name": "@leta/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Figma → code token generation CLI",
+  "type": "module",
+  "bin": {
+    "leta": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --out-dir dist",
+    "tokens:fetch": "tsx src/commands/fetch.ts",
+    "tokens:generate": "tsx src/commands/generate.ts",
+    "tokens:check": "tsx src/commands/check.ts",
+    "tokens:sync": "tsx src/commands/sync.ts",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "ws": "^8.20.0"
+  }
+}

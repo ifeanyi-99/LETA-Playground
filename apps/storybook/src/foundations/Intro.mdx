@@ -1,0 +1,32 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Foundations/Intro" />
+
+# LETA Design System
+
+This Storybook is the documentation surface for the LETA component library. The interactive product prototypes live in a separate app (`apps/playground/`).
+
+## Single source of truth
+
+Every visual primitive — color, spacing, typography, sizes — comes from the LETA Figma Library and is generated into code by `@leta/cli`. **Never hand-edit files in `packages/design-tokens/dist/`** — they're regenerated from snapshots.
+
+```bash
+pnpm tokens:fetch     # pull fresh tokens from Figma desktop (local-only)
+pnpm tokens:generate  # rebuild CSS / Tailwind / TS outputs from snapshots
+pnpm tokens:check     # verify generated output matches snapshots (CI runs this)
+pnpm tokens:sync      # fetch + generate
+```
+
+## Theme switching
+
+Use the toolbar `Theme` control to switch light ↔ dark. Behind the scenes this sets `data-theme` on `<html>`, and the cascade in `tokens.css` resolves Mapped Color values for the active theme.
+
+Mapped Type and Mapped Sizes follow CSS breakpoint media queries automatically — resize the preview pane to see them respond.
+
+## Component story conventions
+
+Each component sits in `packages/components/<name>/` with:
+
+- `<Name>.tsx` — the React component (uses Tailwind classes from the LETA preset)
+- `<Name>.stories.tsx` — variants, states, edge cases
+- `index.ts` — public exports

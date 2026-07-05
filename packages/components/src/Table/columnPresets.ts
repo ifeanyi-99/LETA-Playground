@@ -1,0 +1,112 @@
+import type { TableColumn } from './Table.js';
+
+/**
+ * Canonical column presets — the **Table Instances** (Part II) of the Table Column
+ * Layout Specification, declared against the system rules (Part I). Import these
+ * instead of re-deriving widths per screen so every screen matches the Figma
+ * wireframes 1:1 ("keep widths consistent across similar tables"). Adding a table
+ * = add an instance here, never redesign the system.
+ *
+ * Sizing model:
+ * - Fixed columns use `width`.
+ * - Primary flexible columns share the remaining width by `flex` weight, expressed
+ *   with **Recipient = 1.00** (§3.2): Route 1.48 (40%), Driver 1.22 (33%),
+ *   Recipient 1.00 (27%). Each carries a `minWidth` floor (§3.4). When Driver is
+ *   removed (Unassigned/All), Route/Recipient settle at 60/40 on their own.
+ * - Order ID is **bounded-flexible** (§3.3): a low `flex` weight within a
+ *   `minWidth`–`maxWidth` band (150–224); it sits at 150 when constrained and caps
+ *   at 224, ceding further surplus to Route.
+ * - The 52px checkbox/control column is added by `<Table selectable>`. Depot is NOT
+ *   a column — it lives inside the Route cell (§3.5).
+ * - **Actions is instance-specific:** 64px (overflow-only) on the Order table,
+ *   154px (Dispatch + overflow) on the Unassigned views. No visible header label
+ *   (`label: ''`) but a screen-reader `accessibleName` (§8).
+ * - **Pinned anchors (§4.3):** Order ID `pinned: 'left'`, Actions `pinned: 'right'`
+ *   — sticky on horizontal scroll so every row stays identifiable (no-op unless
+ *   `<Table scrollX>`). The All view has no Actions, so it pins Order ID only.
+ * - `Last Updated` (utility, 120px) is an off-by-default toggle inserted **between
+ *   Created and Status** via {@link LAST_UPDATED_COLUMN}; not in the default sets.
+ *
+ * @example
+ *   <Table selectable columns={ORDER_TABLE_COLUMNS} rows={rows} />
+ */
+
+// Floors are p90-representative (§3.4), not longest-possible; tune per real data.
+const DRIVER_FLOOR = 160; // avatar + name (phone is a call action, not text)
+const ROUTE_FLOOR = 200; //  stacked composite: depot + pickup + drop-off
+const RECIPIENT_FLOOR = 170; // name + full phone (phone must not truncate)
+
+// ── Shared column parts (composed into the instances below) ──────────────────
+const ORDER_ID: TableColumn = {
+  label: 'Order ID',
+  role: 'identifier',
+  flex: 0.5,
+  minWidth: 150,
+  maxWidth: 224,
+  pinned: 'left',
+};
+const TRIP: TableColumn = { label: 'Trip', role: 'identifier', width: 90 };
+const BATCH_ID: TableColumn = { label: 'Batch ID', role: 'identifier', width: 90 };
+const DRIVER: TableColumn = { label: 'Driver', role: 'primary', flex: 1.22, minWidth: DRIVER_FLOOR };
+const ROUTE: TableColumn = { label: 'Route', role: 'primary', flex: 1.48, minWidth: ROUTE_FLOOR };
+const RECIPIENT: TableColumn = { label: 'Recipient', role: 'primary', flex: 1.0, minWidth: RECIPIENT_FLOOR };
+const DURATION: TableColumn = { label: 'Duration', role: 'utility', width: 110 };
+const CREATED: TableColumn = { label: 'Created', role: 'utility', width: 120 };
+const STATUS: TableColumn = { label: 'Status', role: 'utility', width: 140 };
+/** Order table: single overflow button — 64px (§ Instance A). */
+const ACTIONS_OVERFLOW: TableColumn = { label: '', role: 'control', width: 64, accessibleName: 'Actions', pinned: 'right' };
+/** Unassigned views: Dispatch button + overflow — 154px (§ Instance B). */
+const ACTIONS_DISPATCH: TableColumn = { label: '', role: 'control', width: 154, accessibleName: 'Actions', pinned: 'right' };
+
+/**
+ * Instance A — Order Table (dispatched & finished: Assigned, At Depot, In Transit,
+ * Arrived, Delivered, Returned, Cancelled). The full-column shape — any state where
+ * a driver and a trip exist. Actions is 64 (overflow only). Duration carries the SLA.
+ */
+export const ORDER_TABLE_COLUMNS: TableColumn[] = [
+  ORDER_ID, TRIP, DRIVER, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_OVERFLOW,
+];
+
+/**
+ * Instance B — Unassigned Orders, **Pending view**. No driver and no trip yet, so
+ * both columns are removed; Route/Recipient re-weight to 60/40 automatically.
+ * Actions is 154 (Dispatch + overflow). No Batch ID.
+ */
+export const UNASSIGNED_ORDER_COLUMNS: TableColumn[] = [
+  ORDER_ID, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_DISPATCH,
+];
+
+/**
+ * Instance B — Unassigned Orders, **Broadcasted view**. Pending set **plus Batch ID**
+ * (90px, Primary Identifier) after Order ID — broadcasted orders belong to a batch.
+ */
+export const BROADCASTED_ORDER_COLUMNS: TableColumn[] = [
+  ORDER_ID, BATCH_ID, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_DISPATCH,
+];
+
+/**
+ * Instance B — Unassigned Orders, **Scheduled view**. Pending set **minus Duration**
+ * (no SLA until an order enters the active queue) and no Batch ID.
+ */
+export const SCHEDULED_ORDER_COLUMNS: TableColumn[] = [
+  ORDER_ID, ROUTE, RECIPIENT, CREATED, STATUS, ACTIONS_DISPATCH,
+];
+
+/**
+ * Instance C — All (search / triage) view. The dispatcher searches across mixed
+ * statuses; the primary interaction is search + the Status column. No Checkbox,
+ * Driver, Trip, Batch ID, or Actions (every row opens the drawer). Order ID is the
+ * only pinned anchor on scroll. Duration shows "—" for scheduled rows (caller-set).
+ * Use with `<Table selectable={false}>`.
+ */
+export const ALL_ORDER_COLUMNS: TableColumn[] = [
+  ORDER_ID, ROUTE, RECIPIENT, DURATION, CREATED, STATUS,
+];
+
+/**
+ * Optional `Last Updated` column (utility, 120px) — hidden by default; splice it in
+ * **after `Created`** (before `Status`) when the user enables it via the column
+ * control. Raises the table's minimum width, which is what triggers horizontal
+ * scroll (§4.3) on a constrained viewport.
+ */
+export const LAST_UPDATED_COLUMN: TableColumn = { label: 'Last Updated', role: 'utility', width: 120 };

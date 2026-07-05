@@ -7,10 +7,10 @@ import { TopFilterSection, type TopFilterSectionItem } from '../TopFilterSection
 /**
  * - `search-create` — search + filter buttons (Created / Filter / Sort By) on the
  *   left, primary CTAs (Add Order / Import-Export) on the right.
- * - `search-column` — the same search + filters, with a data count + Columns
- *   control on the right.
- * - `filters-column` — a Top Filter Section on the left, data count + Columns on
- *   the right.
+ * - `search-column` — the same search + filters, with a data count + Columns +
+ *   Refresh controls on the right.
+ * - `filters-column` — a Top Filter Section on the left, data count + Columns +
+ *   Refresh on the right.
  */
 export type TableDataControlVariant = 'search-create' | 'search-column' | 'filters-column';
 
@@ -66,6 +66,8 @@ export interface TableDataControlProps
   onAddOrderClick?: () => void;
   onImportExportClick?: () => void;
   onColumnsClick?: () => void;
+  /** Fired by the Refresh icon-only button (column-control variants) — reloads the table. */
+  onRefreshClick?: () => void;
 }
 
 const GROUP: React.CSSProperties = { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' };
@@ -126,20 +128,23 @@ function SearchAndFilter({
 }
 
 /**
- * Default column-control group: data count + divider + Columns button.
- * The Columns button is a Secondary **icon-only** control (outlined Columns
- * glyph, no text label) per Figma `7575:36637`.
+ * Default column-control group: data count + divider, then the Columns and
+ * Refresh buttons — both Secondary **icon-only** controls per Figma `7575:36637`
+ * (Columns = outlined `Icon/Columns`, Refresh = filled `Icon/Refresh`, Refresh
+ * trailing). Figma layout: the Count sub-frame (text + divider) has a 12px
+ * inner gap; the group itself flows at 8px.
  */
-function ColumnControl({ dataCount, showCount, onColumns }: { dataCount: string; showCount: boolean; onColumns?: () => void }) {
+function ColumnControl({ dataCount, showCount, onColumns, onRefresh }: { dataCount: string; showCount: boolean; onColumns?: () => void; onRefresh?: () => void }) {
   return (
-    <div style={{ ...GROUP, gap: 'var(--spacing-12px)' }}>
+    <div style={GROUP}>
       {showCount && (
-        <>
+        <div style={{ ...GROUP, gap: 'var(--spacing-12px)' }}>
           <span className="text-label-m-medium" style={{ color: 'var(--text-default-label)', whiteSpace: 'nowrap' }}>{dataCount}</span>
           <div aria-hidden style={{ width: 'var(--stroke-xs)', height: 24, backgroundColor: 'var(--border-neutral-default)' }} />
-        </>
+        </div>
       )}
       <Button variant="secondary" size="medium" iconOnly="Columns" iconOutlined aria-label="Columns" onClick={onColumns} />
+      <Button variant="secondary" size="medium" iconOnly="Refresh" aria-label="Refresh" onClick={onRefresh} />
     </div>
   );
 }
@@ -186,6 +191,7 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
       onAddOrderClick,
       onImportExportClick,
       onColumnsClick,
+      onRefreshClick,
       className,
       style,
       ...rest
@@ -209,7 +215,7 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
           )
         : !showColumnControl
           ? null
-          : columnControl ?? <ColumnControl dataCount={dataCount} showCount={showDataCount} onColumns={onColumnsClick} />;
+          : columnControl ?? <ColumnControl dataCount={dataCount} showCount={showDataCount} onColumns={onColumnsClick} onRefresh={onRefreshClick} />;
 
     return (
       <div

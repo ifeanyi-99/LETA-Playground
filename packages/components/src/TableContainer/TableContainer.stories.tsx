@@ -37,6 +37,12 @@ export const EmptyStateStory: Story = {
   render: () => <Frame><div style={{ height: 560 }}><TableContainer variant="empty" /></div></Frame>,
 };
 
+/** Zero results — both toolbars stay (the active search/filters caused the state) above the No Matching Results Empty State. */
+export const NoResults: Story = {
+  name: 'No Results',
+  render: () => <Frame><TableContainer variant="no-results" /></Frame>,
+};
+
 /** Both states. */
 export const Catalog: Story = {
   render: () => (

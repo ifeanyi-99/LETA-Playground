@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --out-dir dist --external leaflet && rm -rf dist/assets && cp -R src/EmptyState/assets dist/assets && cp src/Avatar/assets/*.png dist/assets/",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist --external leaflet --external lottie-web && rm -rf dist/assets && cp -R src/EmptyState/assets dist/assets && cp src/Avatar/assets/*.png dist/assets/ && cp src/LoadingOverlay/assets/leta-loader.json dist/assets/",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
@@ -24,7 +24,8 @@
     "@leta/design-tokens": "workspace:*",
     "@leta/icons": "workspace:*",
     "country-flag-icons": "^1.6.17",
-    "leaflet": "^1.9.4"
+    "leaflet": "^1.9.4",
+    "lottie-web": "^5.12.2"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

@@ -57,6 +57,8 @@ export { MapZoomControl } from './MapZoomControl/index.js';
 export type { MapZoomControlProps } from './MapZoomControl/index.js';
 export { MapView } from './MapView/index.js';
 export type { MapViewProps } from './MapView/index.js';
+export { LoadingOverlay } from './LoadingOverlay/index.js';
+export type { LoadingOverlayProps } from './LoadingOverlay/index.js';
 export { Page } from './Page/index.js';
 export type { PageProps, PageVariant } from './Page/index.js';
 export { UserMenu } from './UserMenu/index.js';

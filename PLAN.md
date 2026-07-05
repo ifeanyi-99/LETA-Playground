@@ -473,14 +473,15 @@ Enumerate after templates.
 
 ---
 
-## Phase 3 — Interactive Playground — ✅ built, hardened, deploying (2026-07-04 → 2026-07-05)
+## Phase 3 — Interactive Playground — ✅ built, hardened, deployed (2026-07-04 → 2026-07-05)
 
 Superseded the original scaffolding checklist below — the playground shipped as a product prototype
 (Deliveries/Orders + Map screens) rather than a per-component instance viewer. Full build history,
 every bug-fix round (table scroll model, sliding filter ring, toast animation, wide-viewport column
-scaling), and the in-progress GitHub/Vercel deployment: see CLAUDE.md `## Status` and
-`~/.claude/plans/playground-deploy-handoff.md` (the latter is the authoritative resume point for the
-deployment specifically — repo not yet pushed, waiting on go-ahead).
+scaling), and the completed GitHub/Vercel deployment (incl. the `design-tokens` build-script fix for
+Vercel's fresh-checkout builds): see CLAUDE.md `## Status` and
+`~/.claude/plans/playground-deploy-handoff.md`. Live at the `LETA` Vercel team project
+`leta-playground-playground`; repo at `github.com/ifeanyi-99/LETA-Playground`.
 
 Original checklist (kept for history — not literally how it played out):
 - [x] `apps/playground/` Vite app shell with shared layout — built as `SideBar`+`TopBar`/`Page`-style shell.

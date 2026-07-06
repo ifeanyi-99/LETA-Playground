@@ -165,18 +165,27 @@ export function OrdersPage(): React.ReactElement {
   const [createdLabel, setCreatedLabel] = React.useState('Created: Today');
   // Live search query — matches Order ID, recipient name, or recipient phone.
   const [search, setSearch] = React.useState('');
-  // Table refresh: the toolbar's Refresh button shows the blocking LETA loader
-  // for ~2s (simulated re-fetch of the mock data), then remounts the table.
+  // The Orders view boots into the Empty State (wireframe 1176:171818); the
+  // populated table appears only after a load is triggered (Add Order/Refresh).
+  const [loaded, setLoaded] = React.useState(false);
+  // Region reload: Add Order / Refresh show the LETA loader over the table
+  // region for a ~2s simulated re-fetch; the overlay itself holds until the
+  // loader animation completes its full cycle, then the (re)loaded table shows.
   const [refreshing, setRefreshing] = React.useState(false);
   const refreshTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleRefresh = () => {
+  const runLoad = () => {
     if (refreshing) return;
     setRefreshing(true);
     refreshTimer.current = setTimeout(() => {
       setRefreshing(false);
+      setLoaded(true);
       setTableKey((k) => k + 1);
     }, 2000);
   };
+  const handleRefresh = runLoad;
+  // Add Order — future side-drawer seam (wireframes + the order-management
+  // flows doc are pending); today it simulates the first fetch: loader → table.
+  const handleAddOrder = runLoad;
   React.useEffect(() => () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); }, []);
   const [overlay, setOverlay] = React.useState<OverlayState | null>(null);
 
@@ -509,9 +518,36 @@ export function OrdersPage(): React.ReactElement {
         // across filter switches — the sliding active-filter ring can only animate
         // between selections if TopFilterSection survives the switch. Only the
         // table region below is keyed/remounted (replaying its enter animation).
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 'var(--padding-16px)' }}>
+        // position:relative — the anchor for the contained LoadingOverlay, so the
+        // scrim dims only this region (toolbars + filters + table + pagination).
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 'var(--padding-16px)', position: 'relative' }}>
+          {!loaded ? (
+            // Boot state (wireframe 1176:171818): Search+Create toolbar only,
+            // "No Orders Yet" + Add Order CTA. Add Order / Refresh trigger the
+            // loader and reveal the populated table.
+            <TableContainer
+              fillHeight
+              variant="empty"
+              onAddOrder={handleAddOrder}
+              controls={
+                <TableDataControl
+                  variant="search-create"
+                  searchPlaceholder="Search by order or recipient..."
+                  createdLabel={createdLabel}
+                  onCreatedClick={() => openFromFocus('created')}
+                  onFilterClick={() => openFromFocus('filter')}
+                  onSortClick={() => openFromFocus('sort')}
+                  onAddOrderClick={handleAddOrder}
+                  onImportExportClick={() => openFromFocus('importExport')}
+                />
+              }
+            />
+          ) : (
           <TableContainer
             fillHeight
+            // Zero matches (wireframe 945:210612): both toolbars stay — the
+            // user's search/filters caused the state, so they must stay reachable.
+            variant={filtered.length === 0 ? 'no-results' : 'default'}
             controls={
               <>
                 <TableDataControl
@@ -525,7 +561,7 @@ export function OrdersPage(): React.ReactElement {
                   onCreatedClick={() => openFromFocus('created')}
                   onFilterClick={() => openFromFocus('filter')}
                   onSortClick={() => openFromFocus('sort')}
-                  onAddOrderClick={() => noop('Add Order')}
+                  onAddOrderClick={handleAddOrder}
                   onImportExportClick={() => openFromFocus('importExport')}
                 />
                 <TableDataControl
@@ -566,12 +602,15 @@ export function OrdersPage(): React.ReactElement {
               </div>
             }
           />
+          )}
+
+          {/* Region reload overlay (Add Order / Refresh) — contained: dims only
+              this table region, holds until the loader completes a full cycle.
+              Top edge extends up through the page column's 24px gap to sit 1px
+              below the Page Tabs control (its divider stays undimmed). */}
+          <LoadingOverlay contained open={refreshing} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
         </div>
       )}
-
-      {/* Blocking reload overlay (toolbar Refresh) — fixed inset-0, covers the
-          whole page incl. SideBar/TopBar; auto-dismissed by handleRefresh. */}
-      <LoadingOverlay open={refreshing} />
 
       {/* Bulk actions toolbar — slides up in / down out as the selection changes.
           Centered via flex (not translateX) so it doesn't fight the animation's

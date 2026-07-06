@@ -6,6 +6,7 @@ import {
   BROADCASTED_ORDER_COLUMNS,
   BulkActionsToolbar,
   Button,
+  CREATED_BY_COLUMN,
   DateTimePicker,
   DesktopDropdowns,
   DesktopMenuOptions,
@@ -49,12 +50,9 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 // Hidden by default — the Figma status tables don't render them. Toggled on from the
 // Columns dropdown; any active extra splices in before Status and switches the table
 // into horizontal-scroll mode (spec §4.3: pinned Order ID/Actions, middle scrolls).
-// LAST_UPDATED_COLUMN comes from the spec presets; Created By is a wireframe-level
-// extra so it's defined here, not in @leta/components.
-// Created By renders the `user-cell` (avatar + name + email). It's a low-weight
-// flexible Primary column (spec §3.3): weight 0.5, ~200 floor, no cap — so when
-// toggled on it never outcompetes Route/Recipient.
-const CREATED_BY_COLUMN: TableColumn = { label: 'Created By', role: 'primary', flex: 0.5, minWidth: 200 };
+// Both LAST_UPDATED_COLUMN and CREATED_BY_COLUMN are canonical presets from
+// @leta/components — Created By renders the `user-cell` (avatar + name + email);
+// the playground only supplies the per-row name/email/avatarSrc data below.
 // Clustered/randomized creators — some carry a photo (the exact Figma Avatar
 // Photo 1/2/3 images, shipped as @leta/components assets), the rest render the
 // empty-teal avatar with their initials. Assigned deterministically per order.

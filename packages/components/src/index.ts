@@ -200,6 +200,7 @@ export {
   SCHEDULED_ORDER_COLUMNS,
   ALL_ORDER_COLUMNS,
   LAST_UPDATED_COLUMN,
+  CREATED_BY_COLUMN,
 } from './Table/index.js';
 export type { TableProps, TableColumn, TableColumnRole, TableRow } from './Table/index.js';
 export { BulkActionsToolbar } from './BulkActionsToolbar/index.js';

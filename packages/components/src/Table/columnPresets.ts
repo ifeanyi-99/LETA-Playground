@@ -29,6 +29,11 @@ import type { TableColumn } from './Table.js';
  *   `<Table scrollX>`). The All view has no Actions, so it pins Order ID only.
  * - `Last Updated` (utility, 120px) is an off-by-default toggle inserted **between
  *   Created and Status** via {@link LAST_UPDATED_COLUMN}; not in the default sets.
+ * - `Created By` is an off-by-default toggle inserted **after `Last Updated`, before
+ *   Status** via {@link CREATED_BY_COLUMN} — a **low-weight flexible** Primary
+ *   column (§3.3, same low-weight-with-floor model as Order ID): flex 0.5, 200px
+ *   floor, no cap, so it never outcompetes Route/Driver/Recipient for surplus
+ *   width. Renders the `user-cell` Cell type (avatar + name + email).
  *
  * @example
  *   <Table selectable columns={ORDER_TABLE_COLUMNS} rows={rows} />
@@ -112,3 +117,13 @@ export const ALL_ORDER_COLUMNS: TableColumn[] = [
  * scroll (§4.3) on a constrained viewport.
  */
 export const LAST_UPDATED_COLUMN: TableColumn = { label: 'Last Updated', role: 'utility', width: 120 };
+
+/**
+ * Optional `Created By` column — hidden by default; splice it in **after
+ * `Last Updated`** (before `Status`) when the user enables it via the column
+ * control. Low-weight flexible Primary column (§3.3): flex 0.5, 200px floor, no
+ * cap — grows slowly on wide viewports without competing with Route/Driver/
+ * Recipient for surplus width. Renders the `user-cell` Cell type (avatar + name
+ * + email) — the caller supplies `name`/`email`/`avatarSrc` per row.
+ */
+export const CREATED_BY_COLUMN: TableColumn = { label: 'Created By', role: 'primary', flex: 0.5, minWidth: 200 };

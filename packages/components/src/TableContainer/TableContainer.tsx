@@ -77,7 +77,7 @@ export const TableContainer = React.forwardRef<HTMLDivElement, TableContainerPro
 
     const body = isEmpty ? (
       empty ?? (
-        <div style={{ minHeight: 624, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ minHeight: 624, ...(fillHeight ? { flex: 1 } : null), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <EmptyState type="no-orders" size="desktop">
             <Button variant="primary" size="medium" iconLeft="Add" onClick={onAddOrder}>Add Order</Button>
           </EmptyState>

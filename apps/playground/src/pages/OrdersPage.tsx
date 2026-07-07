@@ -530,12 +530,12 @@ export function OrdersPage(): React.ReactElement {
               controls={
                 <TableDataControl
                   variant="search-create"
+                  showAddOrder={false}
                   searchPlaceholder="Search by order or recipient..."
                   createdLabel={createdLabel}
                   onCreatedClick={() => openFromFocus('created')}
                   onFilterClick={() => openFromFocus('filter')}
                   onSortClick={() => openFromFocus('sort')}
-                  onAddOrderClick={handleAddOrder}
                   onImportExportClick={() => openFromFocus('importExport')}
                 />
               }

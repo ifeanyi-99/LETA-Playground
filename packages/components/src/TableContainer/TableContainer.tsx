@@ -63,11 +63,13 @@ export const TableContainer = React.forwardRef<HTMLDivElement, TableContainerPro
     const isEmpty = variant === 'empty';
     const isNoResults = variant === 'no-results';
 
-    // `empty` (nothing to show yet) drops the filter toolbar; `no-results` keeps
-    // both toolbars — the user's active search/filters are what produced the
-    // zero-state, so they must stay reachable (Figma No Results variant).
+    // `empty` (nothing to show yet) drops the filter toolbar AND the toolbar's
+    // Add Order CTA — the primary Add Order lives beside the empty-state
+    // illustration instead (Figma `4368:154614`). `no-results` keeps both
+    // toolbars — the user's active search/filters produced the zero-state, so
+    // they must stay reachable (Figma No Results variant).
     const defaultControls = isEmpty ? (
-      <TableDataControl variant="search-create" filterCount={filterCount} />
+      <TableDataControl variant="search-create" filterCount={filterCount} showAddOrder={false} />
     ) : (
       <>
         <TableDataControl variant="search-create" filterCount={filterCount} />

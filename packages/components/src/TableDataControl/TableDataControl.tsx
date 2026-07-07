@@ -46,6 +46,13 @@ export interface TableDataControlProps
   filters?: React.ReactNode;
   /** Right section for `search-create` — overrides the default Add Order + Import/Export. */
   ctas?: React.ReactNode;
+  /**
+   * Show the Primary "Add Order" button in the default `search-create` CTAs.
+   * Default true; set `false` for the Empty State toolbar, where the primary
+   * Add Order CTA lives beside the illustration instead (per Figma
+   * `4368:154614`). Ignored when `ctas` is overridden.
+   */
+  showAddOrder?: boolean;
   /** Right column-control content (search-column / filters-column) — overrides the default Columns button. */
   columnControl?: React.ReactNode;
 
@@ -179,6 +186,7 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
       searchSection,
       filters,
       ctas,
+      showAddOrder = true,
       columnControl,
       searchPlaceholder = 'Search here...',
       searchValue,
@@ -209,7 +217,9 @@ export const TableDataControl = React.forwardRef<HTMLDivElement, TableDataContro
       variant === 'search-create'
         ? ctas ?? (
             <div style={GROUP}>
-              <Button variant="primary" size="medium" iconLeft="Add" onClick={onAddOrderClick}>Add Order</Button>
+              {showAddOrder && (
+                <Button variant="primary" size="medium" iconLeft="Add" onClick={onAddOrderClick}>Add Order</Button>
+              )}
               <Button variant="secondary" size="medium" iconRight="Chevron-Down" onClick={onImportExportClick}>Import/Export</Button>
             </div>
           )

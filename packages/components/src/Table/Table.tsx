@@ -220,11 +220,13 @@ const TABLE_CSS = `
 .leta-table-scrollx::-webkit-scrollbar-thumb { background: var(--border-neutral-default); border-radius: 999px; }
 .leta-table-scrollx::-webkit-scrollbar-thumb:hover { background: var(--icons-neutral-idle); }
 .leta-table-pin-left::after, .leta-table-pin-right::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 14px;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 24px;
   pointer-events: none; opacity: 1; transition: opacity 160ms ease;
 }
-.leta-table-pin-left::after { left: 100%; background: linear-gradient(to right, rgba(16,16,16,0.07), rgba(16,16,16,0)); }
-.leta-table-pin-right::after { right: 100%; background: linear-gradient(to left, rgba(16,16,16,0.07), rgba(16,16,16,0)); }
+/* Eased falloff (extra stops approximate ease-out) — a plain two-stop linear
+   gradient reads as a harsh band; this melts into the background. */
+.leta-table-pin-left::after { left: 100%; background: linear-gradient(to right, rgba(16,16,16,0.045), rgba(16,16,16,0.028) 30%, rgba(16,16,16,0.012) 60%, rgba(16,16,16,0)); }
+.leta-table-pin-right::after { right: 100%; background: linear-gradient(to left, rgba(16,16,16,0.045), rgba(16,16,16,0.028) 30%, rgba(16,16,16,0.012) 60%, rgba(16,16,16,0)); }
 .leta-table-scrollx[data-at-start="true"] .leta-table-pin-left::after { opacity: 0; }
 .leta-table-scrollx[data-at-end="true"] .leta-table-pin-right::after { opacity: 0; }
 `;

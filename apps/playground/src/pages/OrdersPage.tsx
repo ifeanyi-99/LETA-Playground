@@ -37,10 +37,12 @@ type FilterTab = 'unassigned' | 'dispatched' | 'finished' | 'all';
 // Group → sub-statuses, mirroring the Figma status-filter dropdowns
 // (Unassigned `606:138936`, Dispatched `608:74407`, Finished `852:166443`).
 // Broadcasted is Unassigned; Assigned belongs to Dispatched (not Unassigned).
+// Returned is Unassigned (the goods came back and need re-dispatching — no driver);
+// `returning` (in-transit back) stays in Dispatched. Finished = terminal only.
 const GROUP_STATUSES: Record<Exclude<FilterTab, 'all'>, OrderStatus[]> = {
-  unassigned: ['scheduled', 'pending', 'broadcasted'],
+  unassigned: ['scheduled', 'pending', 'broadcasted', 'returned'],
   dispatched: ['assigned', 'at-depot', 'in-transit', 'returning', 'arrived'],
-  finished: ['delivered', 'cancelled', 'returned'],
+  finished: ['delivered', 'cancelled'],
 };
 
 const ROWS_PER_PAGE = 10;
@@ -388,7 +390,8 @@ export function OrdersPage(): React.ReactElement {
   //  • All (search/triage) → ALL_ORDER_COLUMNS — no Checkbox/Driver/Trip/Batch/Actions;
   //    Order ID pins left on scroll; Duration shows "—" for scheduled rows.
   //  • Unassigned (no Driver/Trip; Actions = Dispatch + overflow, 154):
-  //      – Scheduled → SCHEDULED_ORDER_COLUMNS (also drops Duration; pre-queue, no SLA).
+  //      – Scheduled/Returned → SCHEDULED_ORDER_COLUMNS (drops Duration & Batch;
+  //        Returned shares this shape — no Trip/Batch/Duration — awaiting re-dispatch).
   //      – Broadcasted → BROADCASTED_ORDER_COLUMNS (adds Batch ID 90 after Order ID).
   //      – Pending → UNASSIGNED_ORDER_COLUMNS.
   //  • Dispatched/Finished → ORDER_TABLE_COLUMNS (full: Driver + Trip + Duration; Actions overflow-only, 64).
@@ -396,7 +399,7 @@ export function OrdersPage(): React.ReactElement {
     filterTab === 'all'
       ? ALL_ORDER_COLUMNS
       : filterTab === 'unassigned'
-        ? subStatus === 'scheduled'
+        ? subStatus === 'scheduled' || subStatus === 'returned'
           ? SCHEDULED_ORDER_COLUMNS
           : subStatus === 'broadcasted'
             ? BROADCASTED_ORDER_COLUMNS

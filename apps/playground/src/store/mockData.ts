@@ -361,7 +361,7 @@ const RAW_ORDERS: Omit<Order, 'id'>[] = [
     priority: 'standard',
   },
 
-  // ── Finished: Returned (2) ─────────────────────────────────────────────────
+  // ── Unassigned: Returned (2) — goods came back, awaiting re-dispatch (no driver) ──
   {
     customer: 'Mercy Atieno',
     phone: '+254 717 001 020',

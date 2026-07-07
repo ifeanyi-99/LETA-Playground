@@ -448,12 +448,13 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
       );
       break;
     case 'api-cell':
-      // Featured Icon (Large, Teal, Integration glyph) + title (heading)
+      // Featured Icon (Large, Teal, Integration glyph, CIRCULAR — the API-cell
+      // instance overrides the component's rounded-square radius) + title (heading)
       // + source subtext (muted sub-body). Figma Cell "API" 10787:17505 — the
       // machine/integration counterpart of user-cell.
       inner = (
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-12px)', minWidth: 0 }}>
-          <FeaturedIcon icon={apiIcon} color="teal" size="large" />
+          <FeaturedIcon icon={apiIcon} color="teal" size="large" shape="circle" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
             <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{apiTitle}</Truncate>
             <Truncate className="text-body-m-regular" color="var(--text-default-sub-body)">{apiSubtext}</Truncate>

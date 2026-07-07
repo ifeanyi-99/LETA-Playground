@@ -20,6 +20,14 @@ export interface FeaturedIconProps extends React.HTMLAttributes<HTMLSpanElement>
    * @default 'medium'
    */
   size?: FeaturedIconSize;
+  /**
+   * Container shape.
+   * - `rounded`: rounded square (`--rounding-lg`) — the component default.
+   * - `circle`:  fully round (`--rounding-round`) — matches Figma instances that
+   *   override the corner radius (e.g. the Table Cell "API" type).
+   * @default 'rounded'
+   */
+  shape?: 'rounded' | 'circle';
 }
 
 const BG: Record<FeaturedIconColor, string> = {
@@ -60,7 +68,7 @@ const ICON_SIZE: Record<FeaturedIconSize, number> = {
  * visual anchor for card section titles. Non-interactive, purely presentational.
  */
 export const FeaturedIcon = React.forwardRef<HTMLSpanElement, FeaturedIconProps>(
-  function FeaturedIcon({ icon, color, size = 'medium', style, ...rest }, ref) {
+  function FeaturedIcon({ icon, color, size = 'medium', shape = 'rounded', style, ...rest }, ref) {
     return (
       <span
         ref={ref}
@@ -71,7 +79,7 @@ export const FeaturedIcon = React.forwardRef<HTMLSpanElement, FeaturedIconProps>
           justifyContent:  'center',
           width:           CONTAINER_SIZE[size],
           height:          CONTAINER_SIZE[size],
-          borderRadius:    'var(--rounding-lg)',
+          borderRadius:    shape === 'circle' ? 'var(--rounding-round)' : 'var(--rounding-lg)',
           backgroundColor: BG[color],
           flexShrink:      0,
           boxSizing:       'border-box',

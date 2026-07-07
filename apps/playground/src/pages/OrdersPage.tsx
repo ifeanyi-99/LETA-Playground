@@ -147,7 +147,8 @@ export function OrdersPage(): React.ReactElement {
 
   const [pageTabIndex, setPageTabIndex] = React.useState(0);
   // Optional columns from the Columns control (all off by default = the Figma tables).
-  // Turning ANY on switches the table into scrollX mode — pinned anchors + h-scroll.
+  // Extras just join the flex-fill; the table (scrollX="auto", spec §4.3) flips to
+  // h-scroll + pinned anchors ONLY if the column minimums exceed the container.
   const [extraCols, setExtraCols] = React.useState<Record<ExtraColumnKey, boolean>>({
     lastUpdated: false,
     createdBy: false,
@@ -406,7 +407,6 @@ export function OrdersPage(): React.ReactElement {
             : UNASSIGNED_ORDER_COLUMNS
         : ORDER_TABLE_COLUMNS;
   // Splice any active optional columns in between Created and Status (spec §4.3).
-  const hasExtraCols = extraCols.lastUpdated || extraCols.createdBy;
   const columns: TableColumn[] = React.useMemo(() => {
     const extras: TableColumn[] = [
       ...(extraCols.lastUpdated ? [LAST_UPDATED_COLUMN] : []),
@@ -585,10 +585,11 @@ export function OrdersPage(): React.ReactElement {
               <Table
                 rowVariant="complex"
                 selectable={filterTab !== 'all'}
-                // The Figma status tables carry no horizontal scroll — scrollX (pinned
-                // Order ID/Actions + h-scroll) activates only when the user adds an
-                // optional column via the Columns control.
-                scrollX={hasExtraCols}
+                // §4.3 measured scroll: the table flips to h-scroll (pinned Order
+                // ID/Actions) ONLY while its column minimums exceed the container —
+                // e.g. optional columns on a dense view, or a narrowed window. On a
+                // sparse view (Returned/Scheduled) extras just join the flex-fill.
+                scrollX="auto"
                 columns={columns}
                 rows={rows}
                 onSelectionChange={handleSelectionChange}

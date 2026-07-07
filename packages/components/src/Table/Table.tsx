@@ -126,13 +126,22 @@ export interface TableProps extends Omit<React.HTMLAttributes<HTMLDivElement>, '
   /** Show the Pagination page-number cluster. Default true; `false` → count + rows-per-page only. */
   showPages?: boolean;
   /**
-   * Keep columns at their natural (fixed) widths and let the table scroll
-   * **horizontally** (and vertically) instead of shrinking cells to fit. The
-   * header sticks to the top during vertical scroll and scrolls in sync with the
-   * body horizontally. Use with fixed-`width` columns. Default false (columns
-   * flex to fill the container).
+   * Horizontal-scroll mode (spec §4.3). Keep columns at their natural widths and
+   * let the table scroll **horizontally** (and vertically) instead of shrinking
+   * cells below their floors. The header sticks to the top during vertical
+   * scroll and scrolls in sync with the body horizontally; pinned anchor columns
+   * (Order ID left / Actions right) engage.
+   *
+   * - `'auto'` (recommended) — measures: scroll activates **only while the
+   *   table's minimum width** (checkbox + fixed columns + flexible floors)
+   *   **exceeds the container** — the spec's rule. Both §4.3 triggers fall out
+   *   of the same check: narrowing the window, or switching on an optional
+   *   column that no longer fits. On a sparse table with surplus space, an
+   *   optional column simply joins the flex-fill — no scroll.
+   * - `true` — force scroll mode on unconditionally.
+   * - `false` (default) — never scroll; columns flex to fill the container.
    */
-  scrollX?: boolean;
+  scrollX?: boolean | 'auto';
   /** Current page (1-based). */
   page?: number;
   /** Total pages. */
@@ -418,17 +427,35 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
     () => computeDesignWidths(columns, resolved, selectable),
     [columns, resolved, selectable],
   );
+  // §4.3 — the table's minimum width: checkbox + every fixed column's width +
+  // every flexible column's floor. Scroll (in `scrollX="auto"`) activates only
+  // while the container is narrower than this — the spec's "viewport below the
+  // minimum" rule; above it, optional columns just join the flex-fill.
+  const minTotal = React.useMemo(() => {
+    const num = (v: number | string | undefined): number => (typeof v === 'number' ? v : 0);
+    return (
+      (selectable ? 52 : 0) +
+      resolved.reduce((sum, r) => sum + (r.width != null ? num(r.width) : num(r.minWidth)), 0)
+    );
+  }, [resolved, selectable]);
+
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const [wide, setWide] = React.useState(false);
+  const [needScroll, setNeedScroll] = React.useState(false);
   React.useEffect(() => {
     const el = rootRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const check = () => setWide(el.clientWidth > design.designTotal + 1);
+    const check = () => {
+      setWide(el.clientWidth > design.designTotal + 1);
+      setNeedScroll(el.clientWidth < minTotal - 1);
+    };
     check();
     const ro = new ResizeObserver(check);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [design.designTotal]);
+  }, [design.designTotal, minTotal]);
+  // Resolved scroll mode: 'auto' → measured (§4.3), booleans pass through.
+  const scrollActive = scrollX === 'auto' ? needScroll : scrollX;
   const effective = React.useMemo(() => {
     if (!wide) return resolved;
     return resolved.map((r, i) => {
@@ -445,7 +472,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
   // same-side pinned columns; use its fixed `width`, else its `minWidth` floor.
   const pins = React.useMemo(() => {
     const info: (undefined | { side: 'left' | 'right'; inset: number })[] = columns.map(() => undefined);
-    if (!scrollX) return info;
+    if (!scrollActive) return info;
     const numW = (i: number): number => {
       const w = effective[i]?.width;
       if (typeof w === 'number') return w;
@@ -467,7 +494,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
       }
     }
     return info;
-  }, [columns, effective, scrollX, selectable]);
+  }, [columns, effective, scrollActive, selectable]);
 
   // Dev guard: the spec forbids equal-width tables — there must be at least one
   // flexible (primary) column to absorb the remaining space.
@@ -505,11 +532,11 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
         borderBottom: DIVIDER,
         flexShrink: 0,
         backgroundColor: 'var(--surface-neutral-table-header-idle)',
-        ...(scrollX ? { position: 'sticky', top: 0, zIndex: 4 } : null),
+        ...(scrollActive ? { position: 'sticky', top: 0, zIndex: 4 } : null),
       }}
     >
       {selectable && (
-        <Col width={52} pinned={scrollX ? 'left' : undefined} pinInset={0}>
+        <Col width={52} pinned={scrollActive ? 'left' : undefined} pinInset={0}>
           <Cell
             type="header-checkbox"
             checked={allSelected}
@@ -563,7 +590,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
               checked: isSelected,
               onCheckedChange: () => toggleRow(i),
               // Checkbox pins left with Order ID so the selection anchor stays put.
-              ...(scrollX ? { pinned: 'left' as const, pinInset: 0 } : null),
+              ...(scrollActive ? { pinned: 'left' as const, pinInset: 0 } : null),
             },
             ...row.cells.map(mergeCol),
           ]
@@ -615,7 +642,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
       }}
       {...rest}
     >
-      {scrollX ? (
+      {scrollActive ? (
         // Both-axis scroll viewport (§4.3): columns overflow horizontally, rows overflow
         // vertically, the header sticks to the top, and the pinned columns (Order ID left,
         // Actions right) are sticky relative to THIS scroller — a single scroller keeps

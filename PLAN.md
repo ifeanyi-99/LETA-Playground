@@ -619,6 +619,21 @@ Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-02.md`. Diff vs the 2026-
 - [x] Storybook docs updated (ContentPrimitives meta + SectionHeading story); `@leta/components` dist rebuilt; baseline snapshots refreshed (catalog now stores 486 top-level entries — variant children no longer duplicated as separate COMPONENT rows; 92/93 sets carry `variants`).
 - [ ] **Publish the Figma library** — the preferredValues sweep dirtied it (user action).
 
+## Pending Figma sync (2026-07-07)
+
+Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-07.md`. Diff vs the 2026-07-03 baseline. Tokens byte-identical (no drift). Two additive variant-axis changes; implemented in-session:
+
+- [x] **Cell** ([4444:45000](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=10787-17505)) Type axis 18 → 20 — added **API** (`api-cell`: Large Highlight `FeaturedIcon` w/ `Integration` glyph + title "Auto-created" + subtext "From online store"; new `apiTitle`/`apiSubtext`/`apiIcon` props) and **User** (already implemented as `user-cell`). `Cell.tsx` + `Cell.stories.tsx` (ApiCell story + Catalog + widths); typecheck clean, dist rebuilt, all 4 states verified in Storybook vs Figma.
+- [x] **Table-Container** ([1524:40283](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=1524-40283)) gained `Property 1=No Results` — already built in code 2026-07-06 (`code-already-matches`).
+- Playground: no change required (`api-cell`/`user-cell` available for a future "created by" column).
+- **`--deep` follow-up (same day)** — full byte-for-byte audit of all 93 sets after two more edits:
+  - [x] **Featured Icon** ([8967:38281](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=8967-38281)) gained **Teal** color (→ `notice` token family). Added `teal` to `FeaturedIcon.tsx` (BG `--surface-notice-bg-subtle` / icon `--icons-notice-default`) + stories. Also fixed stale "44px" Large comment (token = 40px).
+  - [x] **API cell** now uses the **Teal** Featured Icon (was Highlight) — `Cell.tsx` `api-cell` → `color="teal"`.
+  - [x] **`Icons/notice/default`** #80c6be → #669e98 (light) — refreshed `mapped-colors.json` + `tokens:generate` + `tokens:check` clean.
+  - [x] **Tag** padding L8/R6 → L6/R4; **Desktop Metric Card** padding 16→20 uniform; **Desktop Menu Options** `dropdown-advanced` padding 10→12 / minHeight 64→68.
+  - [x] Remaining ~300 variant deltas verified as **stale-baseline** (June reconciliations already in code — Footer/Notif/Badges/Tooltip/Empty State/Sections/Modal heights). Baseline refreshed with full deep capture → future diffs clean.
+- Read-only scan — no Figma library dirtied.
+
 ## Pending Figma sync (2026-07-03)
 
 Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-03.md`. Diff vs the 2026-07-02 baseline. Implemented in-session:

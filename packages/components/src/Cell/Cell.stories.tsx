@@ -48,6 +48,7 @@ const CELL_W: Record<CellType, number> = {
   'automatic-order': 300,
   'driver-cell': 300,
   'user-cell': 300,
+  'api-cell': 300,
 };
 
 const Box = ({ width, children }: { width: number; children: React.ReactNode }) => (
@@ -157,10 +158,13 @@ export const UserCell: Story = {
   ),
 };
 
+/** API cell — Large Highlight Featured Icon (Integration glyph) + title + source subtext. The machine/integration counterpart of User cell. */
+export const ApiCell: Story = { render: () => <Variants type="api-cell" /> };
+
 const ALL_TYPES: CellType[] = [
   'header', 'header-checkbox', 'sample', 'date', 'text-link', 'status', 'default-checkbox',
   'actions', 'preview-chips', 'duration', 'select-field', 'item-stepper', 'time-stepper',
-  'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell',
+  'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell', 'api-cell',
 ];
 
 export const Catalog: Story = {

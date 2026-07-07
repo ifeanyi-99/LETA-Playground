@@ -9,7 +9,7 @@ const meta: Meta<typeof FeaturedIcon> = {
   argTypes: {
     color: {
       control: 'select',
-      options: ['information', 'highlight', 'error', 'success', 'neutral', 'warning'] satisfies FeaturedIconColor[],
+      options: ['information', 'highlight', 'error', 'success', 'neutral', 'warning', 'teal'] satisfies FeaturedIconColor[],
     },
     size: {
       control: 'radio',
@@ -49,6 +49,7 @@ export const Colors: Story = {
       <FeaturedIcon icon="Check-Circle"  color="success"     size="medium" />
       <FeaturedIcon icon="Orders"        color="neutral"     size="medium" />
       <FeaturedIcon icon="Warning"       color="warning"     size="medium" />
+      <FeaturedIcon icon="Integration"   color="teal"        size="medium" />
     </div>
   ),
 };
@@ -60,6 +61,7 @@ const ALL_COLORS: FeaturedIconColor[] = [
   'success',
   'neutral',
   'warning',
+  'teal',
 ];
 
 const COLOR_ICONS: Record<FeaturedIconColor, string> = {
@@ -69,6 +71,7 @@ const COLOR_ICONS: Record<FeaturedIconColor, string> = {
   success:     'Check-Circle',
   neutral:     'Orders',
   warning:     'Warning',
+  teal:        'Integration',
 };
 
 const ALL_SIZES: FeaturedIconSize[] = ['medium', 'large'];

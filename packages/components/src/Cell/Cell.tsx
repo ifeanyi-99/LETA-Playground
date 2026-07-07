@@ -5,6 +5,7 @@ import { Button } from '../Button/Button.js';
 import { Checkbox } from '../Checkbox/Checkbox.js';
 import { Chip } from '../Chip/Chip.js';
 import { Avatar } from '../Avatar/Avatar.js';
+import { FeaturedIcon } from '../FeaturedIcon/FeaturedIcon.js';
 import { Select } from '../Select/Select.js';
 import { Stepper } from '../Stepper/Stepper.js';
 import { GroupedInput } from '../GroupedInput/GroupedInput.js';
@@ -37,7 +38,8 @@ export type CellType =
   | 'manual-order'
   | 'automatic-order'
   | 'driver-cell'
-  | 'user-cell';
+  | 'user-cell'
+  | 'api-cell';
 
 export type CellState = 'idle' | 'hover' | 'pressed' | 'selected';
 
@@ -117,6 +119,12 @@ export interface CellProps
   avatarSrc?: string;
   /** `user-cell`: the user's email, shown under the name in muted sub-body text. */
   email?: string;
+  /** `api-cell`: the title (e.g. how the row was created). Default "Auto-created". */
+  apiTitle?: string;
+  /** `api-cell`: the sub-body describing the source. Default "From online store". */
+  apiSubtext?: string;
+  /** `api-cell`: the Featured Icon glyph. Default "Integration". */
+  apiIcon?: IconName;
 
   // SLOTs (caller-injected; defaults mirror the visible Figma instance)
   /** `status` SLOT — the status/delivery badge(s). Default a Scheduled badge. */
@@ -138,7 +146,7 @@ const V = (s: string) => `var(${s})`;
 
 const HEADER_TYPES = new Set<CellType>(['header', 'header-checkbox']);
 const COL_TYPES = new Set<CellType>([
-  'time-stepper', 'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell',
+  'time-stepper', 'list-item', 'address-cell', 'manual-order', 'automatic-order', 'driver-cell', 'user-cell', 'api-cell',
 ]);
 const CENTER_ROW = new Set<CellType>(['header-checkbox', 'default-checkbox', 'actions', 'preview-chips']);
 
@@ -237,6 +245,9 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
     name = 'Michael Kariuki',
     avatarSrc,
     email = 'davemungai@gmail.com',
+    apiTitle = 'Auto-created',
+    apiSubtext = 'From online store',
+    apiIcon = 'Integration',
     statusContent,
     actions,
     timeStepperContent,
@@ -432,6 +443,20 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
             <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
             <Truncate className="text-body-m-regular" color="var(--text-default-sub-body)">{email}</Truncate>
+          </div>
+        </div>
+      );
+      break;
+    case 'api-cell':
+      // Featured Icon (Large, Teal, Integration glyph) + title (heading)
+      // + source subtext (muted sub-body). Figma Cell "API" 10787:17505 — the
+      // machine/integration counterpart of user-cell.
+      inner = (
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-12px)', minWidth: 0 }}>
+          <FeaturedIcon icon={apiIcon} color="teal" size="large" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
+            <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{apiTitle}</Truncate>
+            <Truncate className="text-body-m-regular" color="var(--text-default-sub-body)">{apiSubtext}</Truncate>
           </div>
         </div>
       );

@@ -156,7 +156,7 @@ export const DesktopMetricCard = React.forwardRef<HTMLButtonElement, DesktopMetr
       justifyContent: 'center',
       width: '100%',
       boxSizing: 'border-box',
-      padding: 'var(--padding-16px) var(--padding-20px)',
+      padding: 'var(--padding-20px)',
       // Reset the native <button> border/appearance so the only edge is our
       // inset box-shadow border (the UA default is a 2px outset border).
       border: 'none',

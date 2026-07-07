@@ -1,210 +1,210 @@
 {
- "_meta": {
-  "scanned_at": "2026-07-03T07:29:34.000Z",
-  "figma_file_key": "Kxbgc2KoJSmTxvSV3PwNEu",
-  "skill_version": "0.3.0"
- },
- "annotations": {
-  "9752:20357": {
-   "name": "Radio Button",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: radio (native input)"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Group: shared name attribute"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Space selects, Arrows move within group"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
-    }
-   ]
+  "_meta": {
+    "scanned_at": "2026-07-07T06:15:00.000Z",
+    "figma_file_key": "Kxbgc2KoJSmTxvSV3PwNEu",
+    "skill_version": "0.3.0"
   },
-  "4445:96840": {
-   "name": "Checkbox",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: checkbox (native input)"
+  "annotations": {
+    "9752:20357": {
+      "name": "Radio Button",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: radio (native input)"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Group: shared name attribute"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Space selects, Arrows move within group"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
+        }
+      ]
     },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: required aria-label or wrapping <label>"
+    "4445:96840": {
+      "name": "Checkbox",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: checkbox (native input)"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: required aria-label or wrapping <label>"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Space toggles"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Indeterminate: set imperatively on the input element"
+        }
+      ]
     },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Space toggles"
+    "1956:29506": {
+      "name": "Toggle",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: switch"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: required aria-label prop"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Space toggles"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Hit area: extend via parent for the use case"
+        }
+      ]
     },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
+    "2887:26272": {
+      "name": "Mobile Button",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: button (native)"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: children, OR aria-label when iconOnly"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Enter + Space activate"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset (mobile Focus variant pending in design)"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Small (32\u00d732): intentional for dense mobile UI (transit / rideshare toolbars)"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "FAB: has no Disabled state"
+        }
+      ]
     },
-    {
-     "categoryId": "3030:0",
-     "label": "Indeterminate: set imperatively on the input element"
+    "28:38245": {
+      "name": "Desktop Button",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: button (native)"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: children, OR aria-label when iconOnly"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Enter + Space activate"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Small (32\u00d732): intentional for dense UI contexts"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "FAB: has no Disabled state"
+        },
+        {
+          "categoryId": "9790:0",
+          "label": "Extra small buttons exist only as Secondary variant and Icon Only type. Primarily to be used within table cells"
+        }
+      ]
+    },
+    "8398:6917": {
+      "name": "Leta Logo",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: img"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: hardcoded \"LETA\""
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Decorative when nested in interactive parent: aria-hidden=\"true\""
+        }
+      ]
+    },
+    "9132:34635": {
+      "name": "Collapsed Sidebar Logo",
+      "annotations": [
+        {
+          "categoryId": "3030:2",
+          "label": "Role: button (native)"
+        },
+        {
+          "categoryId": "3030:2",
+          "label": "Name: required aria-label, e.g. \"Expand sidebar\""
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Keyboard: Enter + Space activate"
+        },
+        {
+          "categoryId": "3030:1",
+          "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset; visual swap to Hover state"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "Brand-as-control: SR perceives only as expand button, not logo"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "40\u00d740: desktop sidebar context"
+        }
+      ]
+    },
+    "7973:17061": {
+      "name": "Bulk Actions Toolbar",
+      "annotations": [
+        {
+          "categoryId": "3030:0",
+          "label": "The toolbar is fixed relative to the viewport with an 80px bottom offset on all screen sizes.\u201d"
+        },
+        {
+          "categoryId": "3030:0",
+          "label": "The toolbar is a centered container with a maximum width of 800px. It holds all actions and elements in a single horizontal row. When the available width is insufficient to display all actions within the 680px constraint, excess items are moved into an overflow menu accessed via a \u2018more\u2019 (ellipsis/kebab) button. Items do not wrap."
+        }
+      ]
+    },
+    "4445:105200": {
+      "name": "Data Rows",
+      "annotations": [
+        {
+          "categoryId": "3030:0",
+          "label": "Basic Rows have a max height of 52px while Complex Rows have a max height of 80px to accommodate complex dynamic content within cells."
+        }
+      ]
     }
-   ]
-  },
-  "1956:29506": {
-   "name": "Toggle",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: switch"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: required aria-label prop"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Space toggles"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "Hit area: extend via parent for the use case"
-    }
-   ]
-  },
-  "2887:26272": {
-   "name": "Mobile Button",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: button (native)"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: children, OR aria-label when iconOnly"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Enter + Space activate"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset (mobile Focus variant pending in design)"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "Small (32\u00d732): intentional for dense mobile UI (transit / rideshare toolbars)"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "FAB: has no Disabled state"
-    }
-   ]
-  },
-  "28:38245": {
-   "name": "Desktop Button",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: button (native)"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: children, OR aria-label when iconOnly"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Enter + Space activate"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "Small (32\u00d732): intentional for dense UI contexts"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "FAB: has no Disabled state"
-    },
-    {
-     "categoryId": "9790:0",
-     "label": "Extra small buttons exist only as Secondary variant and Icon Only type. Primarily to be used within table cells"
-    }
-   ]
-  },
-  "8398:6917": {
-   "name": "Leta Logo",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: img"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: hardcoded \"LETA\""
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "Decorative when nested in interactive parent: aria-hidden=\"true\""
-    }
-   ]
-  },
-  "9132:34635": {
-   "name": "Collapsed Sidebar Logo",
-   "annotations": [
-    {
-     "categoryId": "3030:2",
-     "label": "Role: button (native)"
-    },
-    {
-     "categoryId": "3030:2",
-     "label": "Name: required aria-label, e.g. \"Expand sidebar\""
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Keyboard: Enter + Space activate"
-    },
-    {
-     "categoryId": "3030:1",
-     "label": "Focus: 1.5px outline, --border-secondary-component-focus, 4px offset; visual swap to Hover state"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "Brand-as-control: SR perceives only as expand button, not logo"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "40\u00d740: desktop sidebar context"
-    }
-   ]
-  },
-  "7973:17061": {
-   "name": "Bulk Actions Toolbar",
-   "annotations": [
-    {
-     "categoryId": "3030:0",
-     "label": "The toolbar is fixed relative to the viewport with an 80px bottom offset on all screen sizes.\u201d"
-    },
-    {
-     "categoryId": "3030:0",
-     "label": "The toolbar is a centered container with a maximum width of 800px. It holds all actions and elements in a single horizontal row. When the available width is insufficient to display all actions within the 680px constraint, excess items are moved into an overflow menu accessed via a \u2018more\u2019 (ellipsis/kebab) button. Items do not wrap."
-    }
-   ]
-  },
-  "4445:105200": {
-   "name": "Data Rows",
-   "annotations": [
-    {
-     "categoryId": "3030:0",
-     "label": "Basic Rows have a max height of 52px while Complex Rows have a max height of 80px to accommodate complex dynamic content within cells."
-    }
-   ]
   }
- }
 }

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Icon } from '@leta/icons';
 import type { IconName } from '@leta/icons';
 
-export type FeaturedIconColor = 'information' | 'highlight' | 'error' | 'success' | 'neutral' | 'warning';
+export type FeaturedIconColor = 'information' | 'highlight' | 'error' | 'success' | 'neutral' | 'warning' | 'teal';
 export type FeaturedIconSize  = 'medium' | 'large';
 
 export interface FeaturedIconProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -16,7 +16,7 @@ export interface FeaturedIconProps extends React.HTMLAttributes<HTMLSpanElement>
   /**
    * Size variant.
    * - medium: 32 × 32 px container, 16 px icon
-   * - large:  44 × 44 px container, 20 px icon
+   * - large:  40 × 40 px container, 20 px icon
    * @default 'medium'
    */
   size?: FeaturedIconSize;
@@ -29,6 +29,8 @@ const BG: Record<FeaturedIconColor, string> = {
   success:     'var(--surface-success-bg-subtle)',
   neutral:     'var(--surface-neutral-bg-muted)',
   warning:     'var(--surface-warning-bg-subtle)',
+  // Figma variant "Teal" maps to the `notice` token family (LETA's teal).
+  teal:        'var(--surface-notice-bg-subtle)',
 };
 
 const ICON_COLOR: Record<FeaturedIconColor, string> = {
@@ -38,12 +40,13 @@ const ICON_COLOR: Record<FeaturedIconColor, string> = {
   success:     'var(--icons-success-default)',
   neutral:     'var(--icons-neutral-default)',
   warning:     'var(--icons-warning-default)',
+  teal:        'var(--icons-notice-default)',
 };
 
 /** CSS variable for the outer container dimension per size. */
 const CONTAINER_SIZE: Record<FeaturedIconSize, string> = {
   medium: 'var(--featured-icon-container-medium)', // 32px
-  large:  'var(--featured-icon-container-large)',  // 44px
+  large:  'var(--featured-icon-container-large)',  // 40px
 };
 
 /** Icon pixel size per size variant (matches --featured-icon-icon-{size} token values). */

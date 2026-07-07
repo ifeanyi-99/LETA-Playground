@@ -196,7 +196,7 @@ function textClass(type: DesktopMenuOptionType, active: boolean): string {
 const SIZE: Partial<Record<DesktopMenuOptionType, React.CSSProperties>> = {
   combobox: { width: '100%', minHeight: 40 },
   'dropdown-basic': { width: '100%', minHeight: 40 },
-  'dropdown-advanced': { width: '100%', minHeight: 64 },
+  'dropdown-advanced': { width: '100%', minHeight: 68 },
   'dropdown-destructive': { width: '100%', minHeight: 40 },
   'checkbox-selection': { width: '100%', minHeight: 50 },
   'radio-selection': { width: '100%', minHeight: 50 },
@@ -314,7 +314,9 @@ export const DesktopMenuOptions = React.forwardRef<HTMLDivElement, DesktopMenuOp
             ? 'var(--padding-6px) var(--padding-8px)'
             : isCell
               ? 0
-              : 'var(--padding-10px)',
+              : type === 'dropdown-advanced'
+                ? 'var(--padding-12px)'
+                : 'var(--padding-10px)',
     backgroundColor: bg ? V(bg) : 'transparent',
     boxShadow: bd ? `inset 0 0 0 var(--stroke-sm) ${V(bd)}` : undefined,
     transition: 'background-color 120ms ease',

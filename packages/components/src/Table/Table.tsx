@@ -195,17 +195,38 @@ const SR_ONLY: React.CSSProperties = {
 // - `.leta-table-scrollx` — the scrollX viewport scrolls both axes: the VERTICAL bar is
 //   killed via `width: 0` on `::-webkit-scrollbar` (the `width` dimension only applies
 //   to the vertical scrollbar, `height` only to the horizontal — no `:vertical`
-//   pseudo-class needed, which some engines drop), while the HORIZONTAL bar stays as a
-//   slim styled 8px thumb — the §4.3 overflow cue. `scrollbar-width` is intentionally
-//   omitted here (it is all-or-nothing; Firefox degrades to showing both bars).
+//   pseudo-class needed, which some engines drop), while the HORIZONTAL bar stays as the
+//   §4.3 overflow cue — a **6px rounded pill on a track inset 16px from each side**
+//   (small + not edge-to-edge, per the design review). `scrollbar-width` is
+//   intentionally omitted here (it is all-or-nothing; Firefox degrades to both bars).
+//
+// Pinned-edge fades (§4.3 affordance):
+// - `.leta-table-pin-left/right` mark the pinned anchor cells. Each paints a soft
+//   14px gradient (`::after`) over the scrolling middle at its inner edge — the
+//   "content continues under here" fade (replaces the old hard 2px box-shadow).
+// - The fades live INSIDE the cells (top/bottom bound to the cell box), so they can
+//   never overlay the horizontal scrollbar at the viewport's bottom edge — the
+//   "fade edge doesn't override scrollbar" rule.
+// - They fade out at the scroll extremes: the viewport tracks `data-at-start` /
+//   `data-at-end` (scroll listener) and the matching side's gradient hides — no
+//   affordance when there is nothing more to reveal on that side.
 const TABLE_STYLE_ID = 'leta-table-scroll';
 const TABLE_CSS = `
 .leta-table-noscrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .leta-table-noscrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
-.leta-table-scrollx::-webkit-scrollbar { width: 0; height: 8px; }
-.leta-table-scrollx::-webkit-scrollbar-track { background: transparent; }
+.leta-table-scrollx::-webkit-scrollbar { width: 0; height: 6px; }
+.leta-table-scrollx::-webkit-scrollbar-track { background: transparent; margin: 0 16px; }
 .leta-table-scrollx::-webkit-scrollbar-corner { background: transparent; }
-.leta-table-scrollx::-webkit-scrollbar-thumb { background: var(--border-neutral-default); border-radius: 4px; }
+.leta-table-scrollx::-webkit-scrollbar-thumb { background: var(--border-neutral-default); border-radius: 999px; }
+.leta-table-scrollx::-webkit-scrollbar-thumb:hover { background: var(--icons-neutral-idle); }
+.leta-table-pin-left::after, .leta-table-pin-right::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 14px;
+  pointer-events: none; opacity: 1; transition: opacity 160ms ease;
+}
+.leta-table-pin-left::after { left: 100%; background: linear-gradient(to right, rgba(16,16,16,0.07), rgba(16,16,16,0)); }
+.leta-table-pin-right::after { right: 100%; background: linear-gradient(to left, rgba(16,16,16,0.07), rgba(16,16,16,0)); }
+.leta-table-scrollx[data-at-start="true"] .leta-table-pin-left::after { opacity: 0; }
+.leta-table-scrollx[data-at-end="true"] .leta-table-pin-right::after { opacity: 0; }
 `;
 function ensureTableStyles(): void {
   if (typeof document === 'undefined' || document.getElementById(TABLE_STYLE_ID)) return;
@@ -258,6 +279,10 @@ function Col({
     width != null ? { width, flexShrink: 0 } : flex != null ? { flex: `${flex} 1 ${basis}` } : { flex: '1 1 0' };
   return (
     <div
+      // Pinned cells carry the edge-fade class — a soft gradient (::after) over
+      // the scrolling middle replaces the old hard box-shadow; the viewport's
+      // data-at-start/end attributes hide it at the scroll extremes.
+      className={pinned ? `leta-table-pin-${pinned}` : undefined}
       style={{
         display: 'flex',
         minWidth: minWidth ?? 0,
@@ -265,17 +290,13 @@ function Col({
         ...sizing,
         // Pinned header cell — corner (sticky top + side), so it sits above the
         // sticky header row (z1) and the pinned body cells (z2). Opaque header
-        // background + soft edge shadow occlude the scrolling middle.
+        // background occludes the scrolling middle.
         ...(pinned
           ? {
               position: 'sticky',
               [pinned]: pinInset ?? 0,
               zIndex: 3,
               backgroundColor: 'var(--surface-neutral-table-header-idle)',
-              boxShadow:
-                pinned === 'left'
-                  ? '2px 0 4px -2px rgba(16,16,16,0.12)'
-                  : '-2px 0 4px -2px rgba(16,16,16,0.12)',
             }
           : null),
       }}
@@ -456,6 +477,27 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
   }, [design.designTotal, minTotal]);
   // Resolved scroll mode: 'auto' → measured (§4.3), booleans pass through.
   const scrollActive = scrollX === 'auto' ? needScroll : scrollX;
+
+  // Scroll-extreme tracking for the pinned-edge fades: `data-at-start`/`data-at-end`
+  // on the scroll viewport hide the left/right gradient when there is nothing more
+  // to reveal on that side. Written straight to the DOM (dataset) — scroll events
+  // must not re-render the table.
+  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const updateScrollEdges = React.useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.dataset.atStart = String(el.scrollLeft <= 1);
+    el.dataset.atEnd = String(el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
+  }, []);
+  React.useEffect(() => {
+    if (!scrollActive) return;
+    updateScrollEdges();
+    const el = scrollerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(updateScrollEdges);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [scrollActive, columns, updateScrollEdges]);
   const effective = React.useMemo(() => {
     if (!wide) return resolved;
     return resolved.map((r, i) => {
@@ -651,7 +693,9 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
         // a slim horizontal scrollbar stays visible as the overflow cue. No phantom bar:
         // horizontal only scrolls on real overflow.
         <div
+          ref={scrollerRef}
           className="leta-table-scrollx"
+          onScroll={updateScrollEdges}
           style={{
             flex: maxBodyHeight == null ? '1 1 auto' : undefined,
             maxHeight: maxBodyHeight,

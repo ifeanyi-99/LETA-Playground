@@ -163,6 +163,10 @@ export const DataRows = React.forwardRef<HTMLDivElement, DataRowsProps>(function
         items.map(({ width, flex, minWidth, maxWidth, pinned, pinInset, style: cellStyle, ...cellProps }, i) => (
           <div
             key={i}
+            // Pinned cells carry the Table's edge-fade class (`leta-table-pin-*`,
+            // styles injected by Table): a soft gradient over the scrolling middle
+            // replaces the old hard box-shadow, hidden at the scroll extremes.
+            className={pinned ? `leta-table-pin-${pinned}` : undefined}
             style={{
               display: 'flex',
               minWidth: minWidth ?? 0,
@@ -176,17 +180,13 @@ export const DataRows = React.forwardRef<HTMLDivElement, DataRowsProps>(function
                 : { flex: '1 1 0' }),
               // Sticky anchor during horizontal scroll (spec §4.3). The Cell paints
               // an opaque state background that fills the wrapper, occluding the
-              // scrolling middle; a soft edge shadow separates the pinned column.
+              // scrolling middle.
               ...(pinned
                 ? {
                     position: 'sticky',
                     [pinned]: pinInset ?? 0,
                     zIndex: 2,
                     backgroundColor: 'var(--surface-neutral-bg-default)',
-                    boxShadow:
-                      pinned === 'left'
-                        ? '2px 0 4px -2px rgba(16,16,16,0.12)'
-                        : '-2px 0 4px -2px rgba(16,16,16,0.12)',
                   }
                 : null),
             }}

@@ -22,6 +22,14 @@ export interface NotificationBannerProps
   onDismiss?: () => void;
   children?: React.ReactNode;
   showContentButtons?: boolean;
+  /**
+   * Optional trailing call-to-action, pinned to the **bottom-right** of the
+   * trailing section (Figma `CTA` frame — a Primary/Small button, e.g. Dispatch).
+   * The dismiss × sits top-right; when both are present they are pushed to
+   * opposite ends of the full-height trailing column. Hidden by default
+   * (mirrors the Figma `CTA` frame's `visible: false`).
+   */
+  cta?: React.ReactNode;
 }
 
 const TYPE_CONFIG: Record<
@@ -78,6 +86,7 @@ export const NotificationBanner = React.forwardRef<
     onDismiss,
     children,
     showContentButtons = true,
+    cta,
     style,
     ...rest
   },
@@ -98,7 +107,7 @@ export const NotificationBanner = React.forwardRef<
     ...(isFilled
       ? {
           padding: 'var(--padding-16px)',
-          borderRadius: 'var(--rounding-lg)',
+          borderRadius: 'var(--rounding-xl)',
           backgroundColor: config.filledBg,
           boxShadow: `inset 0 0 0 1px ${config.filledBorder}`,
         }
@@ -139,6 +148,18 @@ export const NotificationBanner = React.forwardRef<
     gap: 12,
   };
 
+  // Trailing section (Figma `Trailing section`): a full-height, right-aligned
+  // vertical column with SPACE_BETWEEN — the Dismiss × grows to pin top-right,
+  // the optional CTA pins bottom-right.
+  const trailingSectionStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignSelf: 'stretch',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    flexShrink: 0,
+  };
+
   return (
     <div ref={ref} role="status" style={rootStyle} {...rest}>
       <div style={leadingElementStyle}>
@@ -170,17 +191,22 @@ export const NotificationBanner = React.forwardRef<
         </div>
       </div>
 
-      {/* Dismiss */}
-      {onDismiss && (
-        <div style={{ flexShrink: 0 }}>
-          <Button
-            variant="plain"
-            size="small"
-            iconOnly="Cancel"
-            showUnderline={false}
-            onClick={onDismiss}
-            aria-label="Dismiss"
-          />
+      {/* Trailing section — Dismiss × (top-right) + optional CTA (bottom-right) */}
+      {(onDismiss || cta) && (
+        <div style={trailingSectionStyle}>
+          {onDismiss && (
+            <div style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
+              <Button
+                variant="plain"
+                size="small"
+                iconOnly="Cancel"
+                showUnderline={false}
+                onClick={onDismiss}
+                aria-label="Dismiss"
+              />
+            </div>
+          )}
+          {cta && <div style={{ display: 'flex', justifyContent: 'flex-end' }}>{cta}</div>}
         </div>
       )}
     </div>

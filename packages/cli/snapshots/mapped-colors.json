@@ -8178,6 +8178,24 @@
           "id": "VariableID:5838:400954"
         }
       }
+    },
+    {
+      "id": "VariableID:10805:69234",
+      "name": "Border/primary/default",
+      "type": "COLOR",
+      "scopes": [
+        "STROKE_COLOR"
+      ],
+      "valuesByMode": {
+        "5841:4": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:5838:400961"
+        },
+        "6371:0": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:5838:400956"
+        }
+      }
     }
   ]
 }

@@ -619,6 +619,18 @@ Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-02.md`. Diff vs the 2026-
 - [x] Storybook docs updated (ContentPrimitives meta + SectionHeading story); `@leta/components` dist rebuilt; baseline snapshots refreshed (catalog now stores 486 top-level entries — variant children no longer duplicated as separate COMPONENT rows; 92/93 sets carry `variants`).
 - [ ] **Publish the Figma library** — the preferredValues sweep dirtied it (user action).
 
+## Pending Figma sync (2026-07-08)
+
+Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-08.md`. Full `--deep` scan (all 93 sets) vs the 2026-07-07 baseline. No token/structural changes; one component edited:
+
+- [x] **Notification Banners** ([3811:65015](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=3811-65015)) — trailing section restructured + corner radius. `NotificationBanner.tsx`:
+  - Trailing section is now a full-height, right-aligned, `space-between` column: **Dismiss × pinned top-right** (`layoutGrow: 1`), optional **CTA pinned bottom-right** (Primary/Small, hidden by default). New **`cta?: ReactNode`** prop + `WithCTA` story.
+  - Filled corner radius `--rounding-lg` (8) → **`--rounding-xl` (12)**.
+  - typecheck clean, dist rebuilt, verified in Storybook (dismiss top / CTA bottom / radius 12px).
+- The only other deep-diff hit (Flags, 256 variants) was a capture-shape artifact (baseline lacked the `leaves` field), not a design change. Baseline recaptured deep (Flags now includes leaves).
+- [x] **New color token** (follow-up scan): **`Border/primary/default`** → `--border-primary-default` (coral-red `#ff3941` light / `#ff6167` dark). Refreshed `mapped-colors.json` (431→432) + `tokens:generate`; `tokens:check` clean. No consumer yet — newly-available token, no component change.
+- Read-only scan — no Figma library dirtied.
+
 ## Pending Figma sync (2026-07-07)
 
 Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-07.md`. Diff vs the 2026-07-03 baseline. Tokens byte-identical (no drift). Two additive variant-axis changes; implemented in-session:

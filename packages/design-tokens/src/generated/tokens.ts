@@ -1605,6 +1605,8 @@ export const tokens = {
   surfacePrimaryAltDesktopBadge: '--surface-primary-alt-desktop-badge',
   /** Border/primary/alt-desktop-badge */
   borderPrimaryAltDesktopBadge: '--border-primary-alt-desktop-badge',
+  /** Border/primary/default */
+  borderPrimaryDefault: '--border-primary-default',
   /** Inter Family */
   interFamily: '--inter-family',
   /** Breakpoint */

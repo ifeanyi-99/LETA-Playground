@@ -64,6 +64,26 @@ export const Subtle: Story = {
   },
 };
 
+/**
+ * Trailing CTA — a Primary/Small button pinned to the bottom-right of the
+ * trailing section (dismiss × stays top-right). Mirrors the Figma `CTA` frame.
+ */
+export const WithCTA: Story = {
+  args: {
+    type: 'info',
+    variant: 'filled',
+    title: 'Title',
+    description: 'Enter Text',
+    onDismiss: () => {},
+    children: <LearnMore />,
+    cta: (
+      <Button variant="primary" size="small" iconLeft="Proceed">
+        Dispatch
+      </Button>
+    ),
+  },
+};
+
 /** All 5 types in Filled variant. */
 export const AllTypes: Story = {
   render: () => (

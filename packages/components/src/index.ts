@@ -113,6 +113,8 @@ export { FooterFrame, useScrollShadow } from './FooterFrame/index.js';
 export type { FooterFrameProps, FooterFrameVariant } from './FooterFrame/index.js';
 export { ModalHeaders } from './ModalHeaders/index.js';
 export type { ModalHeadersProps, ModalHeadersVariant } from './ModalHeaders/index.js';
+export { ModalShell } from './Modal/ModalShell.js';
+export type { ModalShellProps } from './Modal/ModalShell.js';
 export { ContentPrimitives } from './ContentPrimitives/index.js';
 export type { ContentPrimitivesProps, ContentPrimitivesType } from './ContentPrimitives/index.js';
 export { NotificationBanner } from './NotificationBanner/index.js';
@@ -195,6 +197,7 @@ export type { DataRowsProps, DataRowsVariant, DataRowsState, DataRowCell } from 
 export {
   Table,
   ORDER_TABLE_COLUMNS,
+  ORDER_TABLE_COLUMNS_FINISHED,
   UNASSIGNED_ORDER_COLUMNS,
   BROADCASTED_ORDER_COLUMNS,
   SCHEDULED_ORDER_COLUMNS,

@@ -13,7 +13,7 @@ import {
   LAST_UPDATED_COLUMN,
   LoadingOverlay,
   ORDER_TABLE_COLUMNS,
-  PageTabsControl,
+  ORDER_TABLE_COLUMNS_FINISHED,
   SCHEDULED_ORDER_COLUMNS,
   Table,
   TableContainer,
@@ -27,9 +27,11 @@ import {
 } from '@leta/components';
 import type { IconName } from '@leta/icons';
 import { useStore } from '../store/useStore.js';
+import type { NewOrderInput } from '../store/useStore.js';
 import type { Order, OrderStatus } from '../store/types.js';
 import { ORDER_STATUS_BADGE, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../store/types.js';
 import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
+import { AddOrderDrawer } from '../components/AddOrderDrawer.js';
 
 // ── Filter groups ───────────────────────────────────────────────────────────────
 type FilterTab = 'unassigned' | 'dispatched' | 'finished' | 'all';
@@ -58,26 +60,29 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 // Clustered/randomized creators — some carry a photo (the exact Figma Avatar
 // Photo 1/2/3 images, shipped as @leta/components assets), the rest render the
 // empty-teal avatar with their initials. Assigned deterministically per order.
-const CREATORS: { name: string; email: string; avatarSrc?: string }[] = [
-  { name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: AVATAR_PHOTOS[0] },
-  { name: 'Grace Wanjiru', email: 'grace.wanjiru@leta.ai' },
-  { name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: AVATAR_PHOTOS[1] },
-  { name: 'Fatuma Hassan', email: 'fatuma.hassan@leta.ai' },
-  { name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: AVATAR_PHOTOS[2] },
+// Two automated sources are mixed in (spec §2.2): "Storefront" orders (renders
+// the `api-cell` default — Auto-created / From online store / Integration icon)
+// and "API" orders (Auto-created / From connected app / Code icon — distinct
+// from Integration, which stays reserved for Storefront/automatic-order use).
+type Creator =
+  | { source: 'human'; name: string; email: string; avatarSrc?: string }
+  | { source: 'storefront' }
+  | { source: 'api' };
+
+const CREATORS: Creator[] = [
+  { source: 'human', name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: AVATAR_PHOTOS[0] },
+  { source: 'human', name: 'Grace Wanjiru', email: 'grace.wanjiru@leta.ai' },
+  { source: 'human', name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: AVATAR_PHOTOS[1] },
+  { source: 'human', name: 'Fatuma Hassan', email: 'fatuma.hassan@leta.ai' },
+  { source: 'human', name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: AVATAR_PHOTOS[2] },
+  { source: 'storefront' },
+  { source: 'api' },
 ];
 type ExtraColumnKey = 'lastUpdated' | 'createdBy';
 const EXTRA_COLUMN_OPTIONS: { key: ExtraColumnKey; label: string }[] = [
   { key: 'lastUpdated', label: 'Last Updated' },
   { key: 'createdBy', label: 'Created By' },
 ];
-
-function elapsed(iso: string): string {
-  const diff = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  const h = Math.floor(diff / 3600);
-  const m = Math.floor((diff % 3600) / 60);
-  const s = diff % 60;
-  return `${h}h ${m}m ${s}s`;
-}
 
 function formatCreated(iso: string): string {
   const d = new Date(iso);
@@ -92,6 +97,37 @@ function formatCreated(iso: string): string {
 
 function canDispatch(o: Order): boolean {
   return GROUP_STATUSES.unassigned.includes(o.status);
+}
+
+// ── Mock SLA state + duration (Table spec §2.3, Doc 4) ───────────────────────────
+// Deterministic per order until the Configuration spec (Doc 2) defines real SLA
+// values — then slaStateFor/mockDurationFor are replaced by stage-clock logic.
+// §2.3.1 in-progress: Status and Duration double the SAME three-state signal —
+// At Risk → warning icon on the badge + warning-colored duration; Delayed →
+// error icon + error-colored duration. §2.3.2 completed (Delivered/Cancelled):
+// binary Within/Beyond OFT — no Status icon, finished DurationLabel only.
+// Scheduled/Returned carry neither (no running SLA; counter reset on return).
+type SlaState = 'on-target' | 'at-risk' | 'delayed';
+function idHash(id: string): number {
+  let s = 0;
+  for (let i = 0; i < 5; i++) s += id.charCodeAt(i);
+  return s;
+}
+function slaStateFor(o: Order): SlaState {
+  const h = idHash(o.id) % 5;
+  return h === 3 ? 'at-risk' : h === 4 ? 'delayed' : 'on-target';
+}
+// Plausible per-state mock times (echoing the wireframe samples): on-target
+// short, at-risk near the SLA boundary, delayed/beyond past it.
+function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
+  const h = idHash(o.id);
+  const seconds = (h * 7) % 60;
+  let minutes: number;
+  if (finished) minutes = sla === 'delayed' ? 30 + (h % 31) : 8 + (h % 25);
+  else if (sla === 'delayed') minutes = 13 + (h % 22);
+  else if (sla === 'at-risk') minutes = 9 + (h % 5);
+  else minutes = 2 + (h % 10);
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m ${seconds}s`;
 }
 
 // ── Overlay model ────────────────────────────────────────────────────────────────
@@ -144,8 +180,10 @@ export function OrdersPage(): React.ReactElement {
   const updateOrderStatus = useStore((s) => s.updateOrderStatus);
   const cancelOrder = useStore((s) => s.cancelOrder);
   const pushToast = useStore((s) => s.pushToast);
+  const addOrder = useStore((s) => s.addOrder);
+  // Active client config — drives the Add Order drawer's fields/sections.
+  const clientConfig = useStore((s) => s.client.config);
 
-  const [pageTabIndex, setPageTabIndex] = React.useState(0);
   // Optional columns from the Columns control (all off by default = the Figma tables).
   // Extras just join the flex-fill; the table (scrollX="auto", spec §4.3) flips to
   // h-scroll + pinned anchors ONLY if the column minimums exceed the container.
@@ -184,9 +222,29 @@ export function OrdersPage(): React.ReactElement {
     }, 2000);
   };
   const handleRefresh = runLoad;
-  // Add Order — future side-drawer seam (wireframes + the order-management
-  // flows doc are pending); today it simulates the first fetch: loader → table.
-  const handleAddOrder = runLoad;
+  // Add Order — opens the config-aware side drawer (empty-state CTA + toolbar both
+  // route here). Submitting creates the order, reveals the table, and toasts.
+  const [addOrderOpen, setAddOrderOpen] = React.useState(false);
+  const handleAddOrder = () => setAddOrderOpen(true);
+  const handleOrderCreated = (input: NewOrderInput, scheduled: boolean) => {
+    const created = addOrder(input);
+    setAddOrderOpen(false);
+    // Land the new order in the view it belongs to so it's visible.
+    setFilterTab('unassigned');
+    setSubStatus(scheduled ? 'scheduled' : 'pending');
+    setPage(1);
+    setLoaded(true);
+    setTableKey((k) => k + 1);
+    pushToast({
+      type: 'success',
+      title: 'Order created',
+      subtitle: scheduled ? 'Your order is scheduled for delivery.' : 'Your order is ready for dispatch.',
+      cta: {
+        label: 'View Order',
+        onClick: () => pushToast({ type: 'success', title: created.id, subtitle: 'Order detail view is coming soon.' }),
+      },
+    });
+  };
   React.useEffect(() => () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); }, []);
   const [overlay, setOverlay] = React.useState<OverlayState | null>(null);
 
@@ -395,7 +453,9 @@ export function OrdersPage(): React.ReactElement {
   //        Returned shares this shape — no Trip/Batch/Duration — awaiting re-dispatch).
   //      – Broadcasted → BROADCASTED_ORDER_COLUMNS (adds Batch ID 90 after Order ID).
   //      – Pending → UNASSIGNED_ORDER_COLUMNS.
-  //  • Dispatched/Finished → ORDER_TABLE_COLUMNS (full: Driver + Trip + Duration; Actions overflow-only, 64).
+  //  • Dispatched → ORDER_TABLE_COLUMNS (full: Driver + Trip + Duration; Actions overflow-only, 64).
+  //  • Finished (Delivered/Cancelled) → ORDER_TABLE_COLUMNS_FINISHED — same shape,
+  //    but Actions renders a single "View Logs" button, no ⋯ menu (§2.1, 126px).
   const baseColumns: TableColumn[] =
     filterTab === 'all'
       ? ALL_ORDER_COLUMNS
@@ -405,7 +465,9 @@ export function OrdersPage(): React.ReactElement {
           : subStatus === 'broadcasted'
             ? BROADCASTED_ORDER_COLUMNS
             : UNASSIGNED_ORDER_COLUMNS
-        : ORDER_TABLE_COLUMNS;
+        : filterTab === 'finished'
+          ? ORDER_TABLE_COLUMNS_FINISHED
+          : ORDER_TABLE_COLUMNS;
   // Splice any active optional columns in between Created and Status (spec §4.3).
   const columns: TableColumn[] = React.useMemo(() => {
     const extras: TableColumn[] = [
@@ -421,9 +483,28 @@ export function OrdersPage(): React.ReactElement {
 
   const rows: TableRow[] = pageOrders.map((o) => {
     const driver = getDriver(o.driverId);
+    const isFinished = o.status === 'delivered' || o.status === 'cancelled';
+    // §2.3 SLA state — counting only for dispatched + pending/broadcasted rows;
+    // finished rows keep their final verdict (at-risk collapses to on-target).
+    const slaCounting = GROUP_STATUSES.dispatched.includes(o.status) || o.status === 'pending' || o.status === 'broadcasted';
+    const rawSla = slaStateFor(o);
+    const sla: SlaState = isFinished && rawSla === 'at-risk' ? 'on-target' : rawSla;
     const actionsCell: TableRow['cells'][number] = {
       type: 'actions',
-      actions: (
+      // Delivered/Cancelled are terminal — a single "View Logs" button replaces
+      // the overflow menu entirely (no ⋯ in these states), per §2.1.
+      actions: isFinished ? (
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            pushToast({ type: 'success', title: 'View Logs — coming soon', subtitle: 'This feature is in progress.' });
+          }}
+        >
+          View Logs
+        </Button>
+      ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
           {canDispatch(o) && (
             <Button
@@ -460,13 +541,34 @@ export function OrdersPage(): React.ReactElement {
       'Driver': { type: 'driver-cell', name: driver?.name ?? '—' },
       'Route': { type: 'address-cell', pickup: o.depot ?? o.pickup.label, dropoff: o.dropoff.label },
       'Recipient': { type: 'list-item', title: o.customer, subtext: o.phone },
-      'Duration': o.status === 'scheduled'
+      // Mock times until the Configuration spec lands (real stage-clock logic then).
+      // Scheduled has no SLA yet; Returned's counter reset on return — both show "—"
+      // when Duration surfaces in a mixed view (their own views drop the column).
+      'Duration': o.status === 'scheduled' || o.status === 'returned'
         ? { type: 'sample', text: '—' }
-        : { type: 'duration', durationVariant: 'active', durationStatus: 'on-target', durationTime: elapsed(o.createdAt) },
+        : {
+            type: 'duration',
+            durationVariant: isFinished ? 'finished' : 'active',
+            durationStatus: sla,
+            durationTime: mockDurationFor(o, sla, isFinished),
+          },
       'Created': { type: 'date', date: formatCreated(o.createdAt) },
       'Last Updated': { type: 'date', date: formatCreated(o.createdAt) }, // toggle column
-      'Created By': (() => { const u = CREATORS[o.id.charCodeAt(0) % CREATORS.length]!; return { type: 'user-cell', name: u.name, email: u.email, avatarSrc: u.avatarSrc }; })(), // toggle column → User cell
-      'Status': { type: 'status', statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} /> },
+      'Created By': (() => {
+        // toggle column → human (user-cell) or automated (api-cell) source (§2.2).
+        // Storefront and API share the same Featured Icon (Integration, api-cell's
+        // default) — only the subtext names the channel.
+        const c = CREATORS[o.id.charCodeAt(0) % CREATORS.length]!;
+        if (c.source === 'human') return { type: 'user-cell', name: c.name, email: c.email, avatarSrc: c.avatarSrc };
+        if (c.source === 'storefront') return { type: 'api-cell', apiTitle: 'Auto-created', apiSubtext: 'From online store' };
+        return { type: 'api-cell', apiTitle: 'Auto-created', apiSubtext: 'From connected app' };
+      })(),
+      'Status': {
+        type: 'status',
+        statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} />,
+        // §2.3: SLA icon trails the badge only while the SLA is actively counting.
+        statusIcon: slaCounting && sla === 'at-risk' ? 'warning' : slaCounting && sla === 'delayed' ? 'error' : undefined,
+      },
       '': actionsCell,
     };
     const cells: TableRow['cells'] = columns.map((c) => cellByLabel[c.label ?? ''] ?? { type: 'sample', text: '' });
@@ -495,33 +597,16 @@ export function OrdersPage(): React.ReactElement {
       }}
     >
       <Title text="Deliveries" variant="page-dialog" style={{ flexShrink: 0 }} />
-      <PageTabsControl
-        variant="basic"
-        value={pageTabIndex}
-        onChange={(i) => {
-          setPageTabIndex(i);
-          if (i === 1) pushToast({ type: 'success', title: 'Trips — coming soon', subtitle: 'This section is in progress.' });
-        }}
-        tabs={[{ label: 'Orders' }, { label: 'Trips' }]}
-        style={{ flexShrink: 0 }}
-      />
 
-      {pageTabIndex === 1 ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span className="text-body-m-regular" style={{ color: 'var(--text-default-label-idle)' }}>
-            Trips are coming soon.
-          </span>
-        </div>
-      ) : (
-        // Content frame — Figma pad [0,0,16,0]: reserves the 16px viewport gap below
-        // the table; the TableContainer fills it and the table scrolls internally.
-        // NOT keyed: the controls (search row + filter pills) must stay mounted
-        // across filter switches — the sliding active-filter ring can only animate
-        // between selections if TopFilterSection survives the switch. Only the
-        // table region below is keyed/remounted (replaying its enter animation).
-        // position:relative — the anchor for the contained LoadingOverlay, so the
-        // scrim dims only this region (toolbars + filters + table + pagination).
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 'var(--padding-16px)', position: 'relative' }}>
+      {/* Content frame — Figma pad [0,0,16,0]: reserves the 16px viewport gap below
+          the table; the TableContainer fills it and the table scrolls internally.
+          NOT keyed: the controls (search row + filter pills) must stay mounted
+          across filter switches — the sliding active-filter ring can only animate
+          between selections if TopFilterSection survives the switch. Only the
+          table region below is keyed/remounted (replaying its enter animation).
+          position:relative — the anchor for the contained LoadingOverlay, so the
+          scrim dims only this region (toolbars + filters + table + pagination). */}
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingBottom: 'var(--padding-16px)', position: 'relative' }}>
           {!loaded ? (
             // Boot state (wireframe 1176:171818): Search+Create toolbar only,
             // "No Orders Yet" + Add Order CTA. Add Order / Refresh trigger the
@@ -584,7 +669,10 @@ export function OrdersPage(): React.ReactElement {
               >
               <Table
                 rowVariant="complex"
-                selectable={filterTab !== 'all'}
+                // No Checkbox on All (mixed statuses, no bulk actions) or Finished
+                // (Delivered/Cancelled are terminal — nothing to bulk-action; matches
+                // the Figma finished tables, which carry no checkbox column).
+                selectable={filterTab !== 'all' && filterTab !== 'finished'}
                 // §4.3 measured scroll: the table flips to h-scroll (pinned Order
                 // ID/Actions) ONLY while its column minimums exceed the container —
                 // e.g. optional columns on a dense view, or a narrowed window. On a
@@ -606,13 +694,12 @@ export function OrdersPage(): React.ReactElement {
           />
           )}
 
-          {/* Region reload overlay (Add Order / Refresh) — contained: dims only
-              this table region, holds until the loader completes a full cycle.
-              Top edge extends up through the page column's 24px gap to sit 1px
-              below the Page Tabs control (its divider stays undimmed). */}
+          {/* Region reload overlay (Refresh) — contained: dims only this table
+              region, holds until the loader completes a full cycle. Top edge
+              extends up through the page column's 24px gap to sit 1px below the
+              Title row (its divider stays undimmed). */}
           <LoadingOverlay contained open={refreshing} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
         </div>
-      )}
 
       {/* Bulk actions toolbar — slides up in / down out as the selection changes.
           Centered via flex (not translateX) so it doesn't fight the animation's
@@ -650,6 +737,14 @@ export function OrdersPage(): React.ReactElement {
 
       {/* Overlays */}
       {overlay && <OverlayHost overlay={overlay} onClose={() => setOverlay(null)} pushToast={pushToast} cancelOrder={cancelOrder} subStatus={subStatus} onPickStatus={handlePickStatus} countByStatus={countByStatus} recipients={recipients} selectedOrderList={selectedOrders()} deselect={deselect} onCreatedLabel={setCreatedLabel} extraCols={extraCols} onToggleColumn={(k) => setExtraCols((p) => ({ ...p, [k]: !p[k] }))} />}
+
+      {/* Add Order side drawer — config-aware order creation. */}
+      <AddOrderDrawer
+        open={addOrderOpen}
+        config={clientConfig}
+        onClose={() => setAddOrderOpen(false)}
+        onSubmit={handleOrderCreated}
+      />
     </div>
   );
 }

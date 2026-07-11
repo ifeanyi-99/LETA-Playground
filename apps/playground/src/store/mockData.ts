@@ -31,10 +31,60 @@ function makeOrderId(seed: number): string {
   return id;
 }
 
+/**
+ * Per-client config profiles — hand-authored to demo how the platform manifests
+ * differently per company (Add Order drawer, and future config-driven UI). Switch
+ * via the breadcrumb client chip.
+ *   • Acme Corp   — multi-depot (4) + Products module (product-mode items) + payment
+ *   • Naivas Group — single depot + manual (free-text) items + payment
+ *   • Java House   — single depot + items module OFF + payment OFF (minimal)
+ */
 export const MOCK_CLIENTS: Client[] = [
-  { id: 'acme-corp', name: 'Acme Corp' },
-  { id: 'naivas', name: 'Naivas Group' },
-  { id: 'java-house', name: 'Java House' },
+  {
+    id: 'acme-corp',
+    name: 'Acme Corp',
+    config: {
+      depots: [
+        { id: 'dep-arc', name: 'Arc Kitisuru Depot', address: '13 Plums Lane Avenue, Nairobi, Kenya' },
+        { id: 'dep-wl', name: 'Westlands Fulfillment Hub', address: '23 Ring Rd, Westlands, Nairobi' },
+        { id: 'dep-cbd', name: 'CBD Pickup Point', address: 'Moi Ave, Nairobi CBD' },
+        { id: 'dep-kil', name: 'Kilimani Dispatch Hub', address: '5 Argwings Kodhek Rd, Kilimani' },
+      ],
+      items: { enabled: true, mode: 'product', valueRequired: true },
+      products: [
+        { id: 'p-water', name: 'Bottled Water (500ml)', price: 60 },
+        { id: 'p-bread', name: 'Bread Loaf', price: 75 },
+        { id: 'p-rice', name: 'Rice 2kg', price: 320 },
+        { id: 'p-milk', name: 'Milk 1L', price: 70 },
+        { id: 'p-sugar', name: 'Sugar 1kg', price: 180 },
+      ],
+      payment: { enabled: true },
+    },
+  },
+  {
+    id: 'naivas',
+    name: 'Naivas Group',
+    config: {
+      depots: [
+        { id: 'dep-parklands', name: 'Parklands Collection Center', address: '6 Parklands Ave, Parklands, Nairobi' },
+      ],
+      items: { enabled: true, mode: 'manual', valueRequired: true },
+      products: [],
+      payment: { enabled: true },
+    },
+  },
+  {
+    id: 'java-house',
+    name: 'Java House',
+    config: {
+      depots: [
+        { id: 'dep-karen', name: 'Karen Distribution Hub', address: 'Karen Rd, Nairobi' },
+      ],
+      items: { enabled: false, mode: 'manual', valueRequired: false },
+      products: [],
+      payment: { enabled: false },
+    },
+  },
 ];
 
 export const DEFAULT_CLIENT = MOCK_CLIENTS[0]!;

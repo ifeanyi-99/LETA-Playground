@@ -126,6 +126,10 @@ export interface CellProps
   /** `api-cell`: the Featured Icon glyph. Default "Integration". */
   apiIcon?: IconName;
 
+  /** `status`: SLA-state trailing icon (§2.3) — orange warning icon when the order
+   *  is At Risk, red error icon when Delayed, no icon when On-Time. Default undefined (no icon). */
+  statusIcon?: 'warning' | 'error';
+
   // SLOTs (caller-injected; defaults mirror the visible Figma instance)
   /** `status` SLOT — the status/delivery badge(s). Default a Scheduled badge. */
   statusContent?: React.ReactNode;
@@ -249,6 +253,7 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
     apiSubtext = 'From online store',
     apiIcon = 'Integration',
     statusContent,
+    statusIcon,
     actions,
     timeStepperContent,
     manualOrderContent,
@@ -334,7 +339,18 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
       );
       break;
     case 'status':
-      inner = statusContent ?? <Badge color="primary" label="Scheduled" />;
+      inner = (
+        <>
+          {statusContent ?? <Badge color="primary" label="Scheduled" />}
+          {statusIcon && (
+            <Icon
+              name={statusIcon === 'warning' ? 'Warning' : 'Error'}
+              size={16}
+              color={statusIcon === 'warning' ? 'var(--icons-warning-default)' : 'var(--icons-error-default)'}
+            />
+          )}
+        </>
+      );
       break;
     case 'actions':
       inner = actions ?? <Button variant="ghost" size="small" iconOnly="More" aria-label="More actions" />;

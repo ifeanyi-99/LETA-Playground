@@ -6,11 +6,13 @@ import {
   TopBar,
   Breadcrumbs,
   Toast,
+  Button,
   type SideBarGroup,
   type BreadcrumbCrumb,
 } from '@leta/components';
 import { useStore } from '../store/useStore.js';
 import { UserMenuDropdown } from '../components/UserMenuDropdown.js';
+import { ClientSwitcherDropdown } from '../components/ClientSwitcherDropdown.js';
 
 /**
  * AppShell — the persistent chrome for every playground screen, mirroring the
@@ -156,9 +158,23 @@ function ToastRegion(): React.ReactElement {
             title={t.title}
             subtitle={t.subtitle}
             showSubtitle={Boolean(t.subtitle)}
+            showCTA={Boolean(t.cta)}
             duration={7000}
             onDismiss={() => beginExit(t.id)}
-          />
+          >
+            {t.cta ? (
+              <Button
+                variant="secondary"
+                size="medium"
+                onClick={() => {
+                  t.cta?.onClick();
+                  beginExit(t.id);
+                }}
+              >
+                {t.cta.label}
+              </Button>
+            ) : undefined}
+          </Toast>
         </div>
       ))}
     </div>
@@ -174,6 +190,8 @@ export function AppShell(): React.ReactElement {
 
   // User-menu overlay anchored to the clicked avatar (rect from the focused trigger).
   const [userMenuAnchor, setUserMenuAnchor] = React.useState<DOMRect | null>(null);
+  // Client-switcher overlay anchored to the breadcrumb client chip.
+  const [clientMenuAnchor, setClientMenuAnchor] = React.useState<DOMRect | null>(null);
 
   const groups: SideBarGroup[] = NAV_GROUPS.map((g) => ({
     label: g.label,
@@ -194,12 +212,16 @@ export function AppShell(): React.ReactElement {
     if (entry) navigate(entry.path);
   };
 
-  const handleClientClick = () =>
-    pushToast({
-      type: 'success',
-      title: client.name,
-      subtitle: 'Client switching arrives in a later iteration.',
-    });
+  // Breadcrumb client chip fires `onClientClick` (no event) — read the focused
+  // trigger's rect so the switcher Popover anchors to the chip.
+  const handleClientClick = () => {
+    if (clientMenuAnchor) {
+      setClientMenuAnchor(null);
+      return;
+    }
+    const el = document.activeElement as HTMLElement | null;
+    setClientMenuAnchor(el ? el.getBoundingClientRect() : null);
+  };
 
   // The TopBar avatar fires `onUserMenuClick` (no event) — read the focused
   // trigger's rect so the Popover anchors to the avatar.
@@ -260,6 +282,9 @@ export function AppShell(): React.ReactElement {
 
       {/* User menu dropdown — portal-positioned below the TopBar avatar. */}
       <UserMenuDropdown anchorRect={userMenuAnchor} onClose={() => setUserMenuAnchor(null)} />
+
+      {/* Account switcher — portal-positioned below the breadcrumb client chip. */}
+      <ClientSwitcherDropdown anchorRect={clientMenuAnchor} onClose={() => setClientMenuAnchor(null)} />
 
       <ToastRegion />
     </div>

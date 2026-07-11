@@ -21,8 +21,12 @@ import type { TableColumn } from './Table.js';
  *   truncating beside visibly free space on wide monitors.)
  * - The 52px checkbox/control column is added by `<Table selectable>`. Depot is NOT
  *   a column — it lives inside the Route cell (§3.5).
- * - **Actions is instance-specific:** 64px (overflow-only) on the Order table,
- *   154px (Dispatch + overflow) on the Unassigned views. No visible header label
+ * - **Actions width derives from cell content, not the view (§2.1):** 64px
+ *   (icon-only overflow ⋯), 126px (a single labelled button, e.g. "View Logs"),
+ *   or 154px (a labelled button + icon-only overflow, e.g. Dispatch + ⋯). On the
+ *   Order table this is 64px for every state except Delivered/Cancelled (Finished
+ *   — {@link ORDER_TABLE_COLUMNS_FINISHED}), which is 126px (View Logs only, no ⋯
+ *   menu); Unassigned views are 154px (Dispatch + ⋯). No visible header label
  *   (`label: ''`) but a screen-reader `accessibleName` (§8).
  * - **Pinned anchors (§4.3):** Order ID `pinned: 'left'`, Actions `pinned: 'right'`
  *   — sticky on horizontal scroll so every row stays identifiable (no-op unless
@@ -64,6 +68,8 @@ const STATUS: TableColumn = { label: 'Status', role: 'utility', width: 140 };
 const ACTIONS_OVERFLOW: TableColumn = { label: '', role: 'control', width: 64, accessibleName: 'Actions', pinned: 'right' };
 /** Unassigned views: Dispatch button + overflow — 154px (§ Instance B). */
 const ACTIONS_DISPATCH: TableColumn = { label: '', role: 'control', width: 154, accessibleName: 'Actions', pinned: 'right' };
+/** Order table, Delivered/Cancelled: single labelled "View Logs" button, no ⋯ menu — 126px (§2.1). */
+const ACTIONS_VIEW_LOGS: TableColumn = { label: '', role: 'control', width: 126, accessibleName: 'Actions', pinned: 'right' };
 
 /**
  * Instance A — Order Table (dispatched & finished: Assigned, At Depot, In Transit,
@@ -72,6 +78,19 @@ const ACTIONS_DISPATCH: TableColumn = { label: '', role: 'control', width: 154, 
  */
 export const ORDER_TABLE_COLUMNS: TableColumn[] = [
   ORDER_ID, TRIP, DRIVER, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_OVERFLOW,
+];
+
+/**
+ * Instance A — Order Table, **Delivered/Cancelled (Finished) view**. Same column
+ * *order* as {@link ORDER_TABLE_COLUMNS}, with two terminal-state differences:
+ * - Actions is a single labelled "View Logs" button, no ⋯ menu → 126px (§2.1).
+ * - **No Checkbox** (ruled 2026-07-09): terminal orders carry no bulk actions, so
+ *   like the All view they omit the selection target. **Consume with
+ *   `<Table selectable={false}>`** — passing `selectable` would re-add the 52px
+ *   checkbox column the finished shape must not have.
+ */
+export const ORDER_TABLE_COLUMNS_FINISHED: TableColumn[] = [
+  ORDER_ID, TRIP, DRIVER, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_VIEW_LOGS,
 ];
 
 /**

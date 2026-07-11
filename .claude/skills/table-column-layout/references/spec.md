@@ -33,6 +33,65 @@ Every column belongs to one of five categories.
 
 > **One exception for identifiers.** A Primary Identifier may be promoted to a **low-weight flexible** column in a specific instance (§3.3). Its floor plus its deliberately low weight are the governor — it can never starve the priority columns, because their floors are satisfied first and their higher weights always win the surplus. *(Revised 2026-07-05: this exception previously imposed a hard max — "bounded flexible". The cap was removed after wide-monitor review: it produced IDs truncating beside visibly free space, and the weight system already provides the protection the cap was for.)*
 
+## 2.1 Control-column width scale *(added 2026-07-06)*
+
+Control (Actions) column width derives from the **content the cell carries**, not from the view or instance it appears in — the same buttons cost the same width everywhere on the platform:
+
+| Cell content | Width |
+|---|---|
+| Icon-only button (e.g. overflow ⋯) | 64px |
+| Labelled button (e.g. "View Logs") | 126px |
+| Labelled button + icon-only button (e.g. Dispatch + ⋯) | 154px |
+
+An instance declares which content its rows carry; the width follows from this scale. New tables inherit widths for free.
+
+> **Shipped 2026-07-09:** the Order Table's Delivered/Cancelled (Finished) rows render a single "View Logs" button with no ⋯ menu — `ORDER_TABLE_COLUMNS_FINISHED` (126px, `ACTIONS_VIEW_LOGS`), distinct from every other dispatched state which stays on `ORDER_TABLE_COLUMNS` (64px, `ACTIONS_OVERFLOW`).
+
+## 2.2 Created By cell — human vs automated source *(added 2026-07-06)*
+
+The Created By (User) cell has two variants, same two-line shape so the column reads evenly:
+
+| Variant | Avatar | Line 1 (14px semibold) | Line 2 (14px regular, muted) |
+|---|---|---|---|
+| Human creator | Initials/photo | Full name | Email (truncates) |
+| Storefront order | Neutral system avatar + glyph | Auto-created | From online store |
+| API order | Neutral system avatar + glyph | Auto-created | From connected app |
+
+Line 1 stays "Auto-created" for both automated sources so the scan-answer (a person did not create this) is identical and instant; Line 2 carries the channel in plain language for non-technical dispatchers. The automated variant does not alter the ~200px floor. Sorting and the Created By filter still treat Storefront and API as distinct first-class values.
+
+> **Shipped 2026-07-09:** renders via two Cell types — `user-cell` (human) and `api-cell` (Storefront/API). Both automated sources use the **same** Featured Icon (`api-cell`'s default `apiIcon="Integration"`) — only the subtext (`apiSubtext`) names the channel ("From online store" vs "From connected app"); the glyph never varies.
+
+## 2.3 SLA-state indicators on Status and Duration *(added 2026-07-09; corrected 2026-07-09 — in-progress vs completed orders behave differently, see below)*
+
+The Status and Duration cells react to the order's SLA state (defined in Doc 4 — SLA & Fulfilment-Time Specification, §3) — but the mechanism and the state set both change once an order concludes, because **At Risk is a prediction about the future, and a completed order has no future left to predict.** In-progress orders get a three-state signal doubled across two cells; completed orders get a binary outcome shown once, in one cell.
+
+### 2.3.1 In-progress orders (Instance A: Assigned/At Depot/In Transit/Arrived/Returning; Instance B: Pending/Broadcasted) — three states, two cells
+
+| SLA state | Status cell | Duration cell |
+|---|---|---|
+| On-Time | No added icon | Default text color |
+| **At Risk** | Orange warning icon, trailing edge of the badge | `text/warning` color token applied to the duration label |
+| **Delayed** | Red error icon, trailing edge of the badge | `text/error` color token applied to the duration label |
+
+### 2.3.2 Completed orders (Instance A: Delivered, Cancelled) — binary outcome, Duration cell only
+
+- **Status cell carries no trailing icon at all** — not for either outcome. The order is finished; there's nothing left to flag on the identity read.
+- **Duration cell becomes a self-contained icon + label badge** (not a text-color change): a circular status icon beside the duration, both in the outcome's color, using the `text/disabled/label` color variable for the label text.
+
+| Outcome | Trigger | Duration cell |
+|---|---|---|
+| **Within OFT** | Actual fulfilment time ≤ Expected OFT | Green check-circle icon + duration label |
+| **Beyond OFT** | Actual fulfilment time > Expected OFT | Red error-circle icon + duration label |
+
+Only two outcomes exist here — On-Time or Delayed — because At Risk cannot apply retroactively to a finished order.
+
+Neither 2.3.1 nor 2.3.2 applies where Duration is absent entirely (Scheduled, Returned — no running or concluded SLA to show). See Instance A/B column notes.
+
+> **Shipped 2026-07-09** (verified against wireframe rows `1295:89475` / `1295:89501` / `1295:95052` / `1295:94737` / `1295:93661`):
+> - **§2.3.1** — `Cell` gained `statusIcon?: 'warning' | 'error'`: a trailing 16px filled `Icon/Warning` (`--icons-warning-default`) / `Icon/Error` (`--icons-error-default`) after the badge at the cell's 8px gap. Duration renders `DurationLabel variant="active"` — the `status` prop colors the time (`on-target` → `--text-default-label`, `at-risk` → `--text-warning-label`, `delayed` → `--text-error-label`).
+> - **§2.3.2** — exactly the pre-existing `DurationLabel variant="finished"`: `Icon/Check-Circle` (`--icons-success-default`) for Within OFT, `Icon/Cancel-Circle` (`--icons-error-default`) for Beyond OFT, time always `--text-disabled-label`. Status cell gets no `statusIcon`.
+> - SLA values are mock/deterministic in the playground until the Configuration spec (Doc 2) lands.
+
 ## 3. Width Model
 
 ### 3.1 Fixed vs flexible
@@ -210,31 +269,34 @@ Each instance declares its columns against the system in Part I, **in display or
 
 ## A. Order Table — dispatched & finished states
 
-The full-column shape, used for any state where a driver and a trip exist: Assigned, At Depot, In Transit, Arrived, Delivered, Returned, Cancelled.
+The full-column shape, used for any state where a driver and a trip exist: Assigned, At Depot, In Transit, Arrived, **Returning**, Delivered, Cancelled. *(Returned does **not** belong here — it has no driver or trip; see Instance B. Returning ≠ Returned: Returning is the in-motion Dispatched-group status, still driver/trip-bearing.)*
 
 | Column (in order) | Width | Notes |
 |---|---|---|
-| Checkbox | 52px | Selection target |
+| Checkbox | 52px | Selection target. **Dispatched states only** — **dropped for Delivered/Cancelled** (see below) |
 | Order ID | 150px+ flex 0.5 | Low-weight flexible (§3.3, no cap); pinned left on scroll |
 | Trip | 90px | Primary Identifier |
 | Driver | flex 33% | Primary flexible |
 | Route | flex 40% | Primary flexible; always widest |
 | Recipient | flex 27% | Primary flexible |
-| Duration | 110px | Carries the SLA |
+| Duration | 110px | Text-colored per §2.3.1 for in-progress rows (Assigned/At Depot/In Transit/Arrived/Returning); becomes an icon+label outcome badge per §2.3.2 for Delivered/Cancelled |
 | Created | 120px | Shown by default |
 | Last Updated | 120px | Toggle — off by default |
 | Created By | 200px+ flex 0.5 | Toggle — off by default; low-weight flexible Primary (§3.3), floor ~200, no cap; renders the User cell (avatar + name + email) |
-| Status | 140px | |
-| Actions | 64px | Overflow only; no header; pinned right on scroll |
+| Status | 140px | Trailing SLA icon when At Risk/Delayed, **in-progress rows only** (§2.3.1). **No icon on Delivered/Cancelled** (§2.3.2) |
+| Actions | per §2.1 | ⋯ only (64px) for Assigned/At Depot/In Transit/Arrived/Returning; single labelled **View Logs** button (126px) for Delivered and Cancelled — no ⋯ menu in those views. No header; pinned right on scroll |
 
-- **Actions is 64px here** — a single overflow button. Contrast Instance B, where Actions is 154px because the Unassigned view carries a Dispatch button plus overflow.
+- **Delivered/Cancelled drop the Checkbox column (ruled 2026-07-09).** The two terminal states carry **no bulk actions** — there is nothing to select a finished order *for* — so like the All view (§C) they omit the Checkbox entirely. This is the same "no selection target on a read-only-outcome row" reasoning. So Instance A is really two width shapes that share a column *order*: the **10-column dispatched shape** (with Checkbox, Actions 64) and the **9-column finished shape** (no Checkbox, Actions 126 — see below). At the 1320 design canvas the finished shape resolves to **Order ID 156 · Trip 90 · Driver 176 · Route 219 · Recipient 183 · Duration 110 · Created 120 · Status 140 · Actions 126** (floors-first, surplus by weight; Route widest). Code: consume `ORDER_TABLE_COLUMNS_FINISHED` with `<Table selectable={false}>`.
+- **Actions width follows the content scale (§2.1):** 64px where rows carry only ⋯; 126px for the Delivered and Cancelled views (single labelled View Logs button); 154px in Instance B (Dispatch + ⋯).
 - **Depot is shown inside the Route cell**, not as its own column.
 
 > **Worked example (assumptions stated).** 1440px screen, sidebar ~240px → content ~1200px. Fixed budget ≈ 576px (Last Updated off, Actions 64px). Remaining ~624px across Order ID + Route + Driver + Recipient. Order ID sits near its 150px floor when constrained → Route ≈ 190px, Driver ≈ 156px, Recipient ≈ 128px. On 1920px, Order ID grows by its 0.5 weight toward ~240px+ (enough for a full ~30-char ID) while Route ≈ 350px+ — the primaries still take the lion's share of the surplus. The 64px Actions column (down from 154px) is what buys Route its breathing room on dense laptops.
 
-## B. Unassigned Orders Table (Scheduled, Pending, Broadcasted)
+## B. Unassigned Orders Table (Scheduled, Pending, Broadcasted, Returned)
 
 An unassigned order has no driver and no trip, so **both columns are removed** — not shown empty, removed. Actions is wider here because the row carries a Dispatch button.
+
+> **Why Returned lives here (inlined rule, ruled 2026-07-07):** Returned is not a true terminal state — it's a pseudo-terminal holding bay. A returned order is functionally a fresh order awaiting redispatch, carrying the history of a failed attempt: no current driver, no current trip, and its fulfilment-time counter **resets to 0s** the moment it returns (the prior attempt is preserved separately as "Prev: {duration}," not carried in the live Duration cell). Because it has neither driver, trip, nor a running duration, it takes the Unassigned shape, not the driver/trip shape. Its detail-view footer carries the full Unassigned action set (Dispatch, Add to Trip, Edit, Cancel), which is why its Actions column matches every other B view at 154px, not the 64px overflow-only width used where a driver/trip already exists.
 
 | Column (in order) | Width | Notes |
 |---|---|---|
@@ -243,20 +305,23 @@ An unassigned order has no driver and no trip, so **both columns are removed** �
 | Batch ID | 90px | Broadcasted view only |
 | Route | flex 60% | Primary flexible; always widest |
 | Recipient | flex 40% | Primary flexible |
-| Duration | 110px | Pending & Broadcasted; absent for Scheduled |
+| Duration | 110px | Pending & Broadcasted only; absent for Scheduled (not yet queued) and Returned (counter resets on return, see rule above) |
 | Created | 120px | Shown by default |
 | Last Updated | 120px | Toggle — off by default |
 | Created By | 200px+ flex 0.5 | Toggle — off by default; low-weight flexible Primary (§3.3), floor ~200, no cap; renders the User cell (avatar + name + email) |
-| Status | 140px | |
+| Status | 140px | Trailing SLA icon when At Risk/Delayed (§2.3.1) — Pending and Broadcasted rows only; Scheduled/Returned have no running SLA to flag |
 | Actions | 154px | Dispatch + overflow; pinned right on scroll |
 
-Route/Recipient are re-weighted **60 / 40** — Driver's 33-point share redistributed proportionally per Rule 6. The three views differ only as below:
+Route/Recipient are re-weighted **60 / 40** — Driver's 33-point share redistributed proportionally per Rule 6. The four views differ only as below:
 
 | View | Vs the full set above | Flexible split |
 |---|---|---|
 | Pending | no Batch ID | Route 60% · Recipient 40% |
 | Broadcasted | Batch ID present | Route 60% · Recipient 40% |
 | Scheduled | no Batch ID, no Duration | Route 60% · Recipient 40% |
+| Returned | no Batch ID, no Duration | Route 60% · Recipient 40% |
+
+> **Shipped:** one shared preset — `SCHEDULED_ORDER_COLUMNS` covers both Scheduled and Returned (identical shape), not a separately named `RETURNED_ORDER_COLUMNS` constant (a naming/DRY choice, not a functional gap).
 
 ## C. All — search / triage view
 
@@ -304,4 +369,8 @@ The takeaway: a modal table is the same system at a smaller width with fewer col
 
 ---
 
-*Order ID is low-weight flexible with a 150px floor and no cap (§3.3, revised 2026-07-05); the Driver cell exposes the phone as a call action, not text (§3.4, §6). All decisions in this document are confirmed in review.*
+*Order ID is low-weight flexible with a 150px floor and no cap (§3.3, revised 2026-07-05); the Driver cell exposes the phone as a call action, not text (§3.4, §6). Returned is Instance B's fourth view, not Instance A (§B, ruled 2026-07-07 — see the inlined rule for why). Status/Duration carry SLA-state indicators per §2.3, split between in-progress (§2.3.1, three-state, both cells) and completed (§2.3.2, binary, Duration-only) orders (2026-07-09). Delivered/Cancelled drop the Checkbox (§A, ruled 2026-07-09 — terminal, no bulk actions). All decisions in this document are confirmed in review.*
+
+**Revision note (2026-07-09):** consolidation pass against an agent-held copy surfaced and corrected: Returned incorrectly still listed under Instance A (intro sentence + Actions row) — removed, now Instance B-only with 154px Actions (not 64px); Returning was missing entirely from Instance A — added (Returning ≠ Returned: Returning is the in-motion Dispatched-group status, still driver/trip-bearing); external "OM spec" citations for the Returned rule and SLA-reset rule inlined so this document is self-contained; new §2.3 added for the Status/Duration SLA-indicator correlation, previously undocumented in any spec.
+
+**Revision note (2026-07-09, later):** Figma table-parity audit ruled and applied — Delivered/Cancelled (Finished) tables **drop the Checkbox column** (terminal, no bulk actions; matches the All view's reasoning) and their widths were corrected to the 9-column finished shape at 1320 (Order ID 156 · Trip 90 · Driver 176 · Route 219 · Recipient 183 · Duration 110 · Created 120 · Status 140 · Actions 126). Every other Order Table already matched spec. Code: playground Finished tab now renders `<Table selectable={false}>`; `ORDER_TABLE_COLUMNS_FINISHED` JSDoc documents the no-checkbox contract. **This document is now the authoritative source of truth for the table column layout** (ahead of the design-copilot copy).

@@ -11,6 +11,8 @@ import { DEFAULT_CLIENT, MOCK_CLIENTS, MOCK_DRIVERS, MOCK_ORDERS } from './mockD
 export interface NewOrderInput {
   customer: string;
   phone: string;
+  /** Pickup depot name (route-origin header). */
+  depot?: string;
   pickup: Order['pickup'];
   dropoff: Order['dropoff'];
   package: string;
@@ -76,6 +78,7 @@ export const useStore = create<StoreState>((set, get) => ({
       id: `ORD-${seq}`,
       customer: input.customer,
       phone: input.phone,
+      depot: input.depot,
       pickup: input.pickup,
       dropoff: input.dropoff,
       package: input.package,

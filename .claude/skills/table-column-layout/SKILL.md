@@ -20,13 +20,15 @@ Use `Table` from `@leta/components` — never build a custom table.
 - **`minWidth`** = the column's **floor** (§3.4).
 - **`maxWidth`** = an optional hard cap on a flexible column. *(No current instance uses it — Order ID's former 224px cap was removed 2026-07-05; §3.3.)*
 - **`accessibleName`** = SR-only header name for a no-visible-label column (Actions/checkbox, §8) — the header cell still exists and reserves width; it is never deleted.
+- **Actions width is content-derived, not view-derived (§2.1):** 64px icon-only overflow, 126px a single labelled button, 154px labelled + icon-only. Shipped as three named constants in `columnPresets.ts` — `ACTIONS_OVERFLOW` (64), `ACTIONS_VIEW_LOGS` (126, Order table's Delivered/Cancelled), `ACTIONS_DISPATCH` (154, Unassigned views).
+- **SLA-state indicators on Status + Duration (§2.3, split 2026-07-09):** governed by Doc 4 (`docs/specs/sla-and-fulfilment-time-specification.md`). **In-progress rows (§2.3.1** — Assigned/At Depot/In Transit/Arrived/Returning + Pending/Broadcasted**)**: three states doubled across two cells — the Status cell takes `Cell`'s `statusIcon?: 'warning' | 'error'` (trailing 16px filled Warning/Error icon after the badge) and the Duration cell renders `DurationLabel variant="active"` with `status` coloring the time (at-risk → `--text-warning-label`, delayed → `--text-error-label`). **Completed rows (§2.3.2** — Delivered/Cancelled**)**: binary Within/Beyond OFT shown once — NO `statusIcon`, and Duration renders `DurationLabel variant="finished"` (Check-Circle/success or Cancel-Circle/error + `--text-disabled-label` time). At Risk never applies to a finished order. Scheduled/Returned carry neither (Duration absent/`—`).
 - The 52px checkbox column is added by `<Table selectable>`. A dev-warn fires if a table has no flexible column.
 
 **CRITICAL — header and body must share every column's sizing.** In `<Table>` this is automatic (columns are defined once and applied to the header cell AND every body-row cell). When editing a Figma wireframe by hand, the header row and each body row are sized *independently* — you MUST set each column's width/FILL/weight/min/max on the header cell **and every body row cell at that index**, or the body columns drift and stop matching the header (the classic "Recipient header flexes but the body cell stays fixed / dead gap on the right / Actions header missing" failure).
 
 > ✅ **Presets are reconciled to this spec (2026-07-03).** `columnPresets.ts` exports one preset per Figma instance — `ORDER_TABLE_COLUMNS`, `UNASSIGNED_ORDER_COLUMNS`, `BROADCASTED_ORDER_COLUMNS`, `SCHEDULED_ORDER_COLUMNS`, `ALL_ORDER_COLUMNS`, `LAST_UPDATED_COLUMN` — with instance-specific Actions widths and `pinned` anchors. See "Code reconciliation" at the bottom for the mapping.
 
-> ✅ **Created By (User) column — optional, all Order-family instances.** A **low-weight Primary** column (flex 0.5, ~200px floor, no cap) toggled from the Columns control, spliced **between Last Updated and Status**. It renders the **`user-cell`** Cell type — avatar (photo, or empty-teal initials from the user's name) + name + email. Toggling it on raises the table minimum — which triggers scroll **only if** that minimum then exceeds the container (§4.3; `scrollX="auto"`). **Shipped** as `CREATED_BY_COLUMN` in `columnPresets.ts` (reconciled 2026-07-06 — was previously a playground-local one-off, moved into the shared presets alongside `LAST_UPDATED_COLUMN`).
+> ✅ **Created By (User) column — optional, all Order-family instances.** A **low-weight Primary** column (flex 0.5, ~200px floor, no cap) toggled from the Columns control, spliced **between Last Updated and Status**. It renders one of two Cell types depending on the creator's source (§2.2): **`user-cell`** for a human creator (avatar — photo, or empty-teal initials — + name + email), or **`api-cell`** for an automated order — Storefront (`apiSubtext="From online store"`) or API (`apiSubtext="From connected app"`) — **both use the same default Featured Icon** (`apiIcon="Integration"`); only the subtext names the channel. Toggling it on raises the table minimum — which triggers scroll **only if** that minimum then exceeds the container (§4.3; `scrollX="auto"`). **Shipped** as `CREATED_BY_COLUMN` in `columnPresets.ts` (reconciled 2026-07-06 — was previously a playground-local one-off, moved into the shared presets alongside `LAST_UPDATED_COLUMN`); the human/Storefront/API branching shipped 2026-07-09 in the playground's row-building code (`OrdersPage.tsx`'s `CREATORS` mock data).
 
 ---
 
@@ -91,7 +93,7 @@ The full-column shape — used for any state where a driver and a trip exist.
 
 | # | Column | Width | Notes |
 |---|---|---|---|
-| 1 | Checkbox | 52 | Selection target |
+| 1 | Checkbox | 52 | Selection target. **Dispatched only — dropped for Delivered/Cancelled** (terminal, no bulk actions) |
 | 2 | Order ID | 150+ flex 0.5 | Low-weight flexible, no cap; **pinned left on scroll** |
 | 3 | Trip | 90 | Primary Identifier |
 | 4 | Driver | flex 33% (1.22) | Primary flexible, floor ~160 |
@@ -101,11 +103,11 @@ The full-column shape — used for any state where a driver and a trip exist.
 | 8 | Created | 120 | Shown by default |
 | 9 | Last Updated | 120 | Toggle — **off by default** |
 | 10 | Status | 140 | |
-| 11 | Actions | **64** | Overflow only; **no header**; **pinned right on scroll** |
+| 11 | Actions | **64** (126 Delivered/Cancelled) | Overflow only for Assigned/At Depot/In Transit/Returning/Arrived; a single labelled **View Logs** button (no ⋯) for Delivered/Cancelled; **no header**; **pinned right on scroll** |
 
-**Actions is 64 here** — a single overflow button (the ~64px, down from 154, is what buys Route its breathing room on dense laptops). Depot lives inside the Route cell.
+**Actions is 64 here** — a single overflow button (the ~64px, down from 154, is what buys Route its breathing room on dense laptops). **Delivered/Cancelled widen to 126** (§2.1) AND **drop the Checkbox** (ruled 2026-07-09 — terminal states have no bulk actions, same as the All view) — shipped as the separate `ORDER_TABLE_COLUMNS_FINISHED` preset (same column *order*, `ACTIONS_VIEW_LOGS` swapped in), **consumed with `<Table selectable={false}>`**. The playground selects it when `filterTab === 'finished'` and passes `selectable={filterTab !== 'all' && filterTab !== 'finished'}`. At 1320 the 9-column finished shape resolves to Order ID 156 · Trip 90 · Driver 176 · Route 219 · Recipient 183 · Duration 110 · Created 120 · Status 140 · Actions 126. Depot lives inside the Route cell.
 
-### B. Unassigned Orders (Scheduled, Pending, Broadcasted)
+### B. Unassigned Orders (Scheduled, Pending, Broadcasted, Returned)
 No driver and no trip exist yet → **both columns removed** (not shown empty — removed). Actions is wider (154) because the row carries a **Dispatch** button + overflow. Route/Recipient re-weighted **60 / 40** (Driver's 33 pts redistributed per Rule 6).
 
 | # | Column | Width | Notes |
@@ -121,10 +123,11 @@ No driver and no trip exist yet → **both columns removed** (not shown empty �
 | 9 | Status | 140 | |
 | 10 | Actions | **154** | Dispatch + overflow; pinned right |
 
-Three views differ only here (all Route 60% / Recipient 40%):
+Four views differ only here (all Route 60% / Recipient 40%):
 - **Pending** — no Batch ID.
 - **Broadcasted** — Batch ID present.
 - **Scheduled** — no Batch ID, no Duration.
+- **Returned** *(added 2026-07-07 — reclassified from Finished to Unassigned)* — same shape as Scheduled: no Batch ID, no Duration (SLA resets on return). Shares `SCHEDULED_ORDER_COLUMNS` — no separate preset.
 
 ### C. All — search / triage view
 The dispatcher doesn't know which group an order is in, so they open **All** and search. Primary interaction is search + the Status column.
@@ -154,8 +157,8 @@ A table inside a modal, drawer, or panel (e.g. the broadcast-to-drivers dialog) 
 
 `packages/components/src/Table/columnPresets.ts` now matches this spec. What shipped:
 
-1. **Order Table Actions 154 → 64.** Actions is **instance-specific**: `ACTIONS_OVERFLOW` = 64 (Order table, overflow only), `ACTIONS_DISPATCH` = 154 (Unassigned, Dispatch + overflow). Presets are explicit named constants (built DRY from shared column parts), no longer derived by filtering.
-2. **Unassigned = one instance, three views.** `UNASSIGNED_ORDER_COLUMNS` (Pending), `BROADCASTED_ORDER_COLUMNS` (Pending **+ Batch ID 90** after Order ID), `SCHEDULED_ORDER_COLUMNS` (Pending **− Duration**, no Batch — pre-queue). `BATCH_ID` is a Primary Identifier (90).
+1. **Order Table Actions 154 → 64, plus a 126 tier for Finished.** Actions is **instance-specific** and content-derived (§2.1): `ACTIONS_OVERFLOW` = 64 (Order table, every dispatched status, overflow only), `ACTIONS_VIEW_LOGS` = 126 (Order table's Delivered/Cancelled — single "View Logs" button, no ⋯ — shipped 2026-07-09 as `ORDER_TABLE_COLUMNS_FINISHED`), `ACTIONS_DISPATCH` = 154 (Unassigned, Dispatch + overflow). Presets are explicit named constants (built DRY from shared column parts), no longer derived by filtering.
+2. **Unassigned = one instance, four views.** `UNASSIGNED_ORDER_COLUMNS` (Pending), `BROADCASTED_ORDER_COLUMNS` (Pending **+ Batch ID 90** after Order ID), `SCHEDULED_ORDER_COLUMNS` (Pending **− Duration**, no Batch — pre-queue **and Returned**, added 2026-07-07). `BATCH_ID` is a Primary Identifier (90).
 3. **`ALL_ORDER_COLUMNS`** — Order ID · Route · Recipient · Duration · Created · Status; no Checkbox / Driver / Trip / Batch ID / Actions. Consume with `<Table selectable={false}>`.
 4. **`LAST_UPDATED_COLUMN`** (utility, 120, off-by-default toggle) splices between Created and Status.
 5. **Pinned anchors** — `TableColumn.pinned` (`'left'`/`'right'`) + a sticky-pin capability in `Table` (and `DataRows`). Order ID pins left, Actions pins right (All pins Order ID only), computed offsets stack after the checkbox. **Active only while scroll mode is active** (a no-op in flex-fill mode). Scrollbar chrome: the table's vertical scrollbar is always hidden (scroll works, pagination reads as the boundary); in scroll mode a **6px rounded horizontal pill, inset 16px from each side** is the overflow cue. **Pinned-edge fades (2026-07-07):** each pinned anchor paints a soft 14px gradient over the scrolling middle (replaces the old hard 2px box-shadow), hidden at the scroll extremes via `data-at-start`/`data-at-end` on the viewport; the fades live inside the cells so they never overlay the scrollbar (the "fade edge doesn't override scrollbar" rule). See the `ScrollPinned` Storybook story.
@@ -163,8 +166,14 @@ A table inside a modal, drawer, or panel (e.g. the broadcast-to-drivers dialog) 
 7. **Playground** (`OrdersPage.tsx`) routes each tab/sub-status to the matching preset (dispatched/finished → `ORDER_TABLE_COLUMNS`; unassigned scheduled/returned/broadcasted/pending → the Unassigned views; all → `ALL_ORDER_COLUMNS`), so it matches the Figma wireframes 1:1 per status. The table passes **`scrollX="auto"`**: optional columns (Last Updated / Created By) splice in before Status and simply join the flex-fill — pinned horizontal scroll engages only if the enlarged minimum no longer fits the container.
 8. **§4.1 floors-first + §4.4 wide-mode scaling (2026-07-04).** Flexible columns' CSS is `flex: <weight> 1 <floor>px` — the **floor is the flex-basis**, so floors are satisfied first and only the *surplus* is shared by weight (a `0` basis had been splitting the whole pool by weight, squeezing Order ID and over-widening Route vs the approved design; at 1320 every instance now renders its Figma design px exactly). `Table` also computes each column's **design width** (running §4.1 at the 1320 canvas via `computeDesignWidths`) and watches its container: beyond the design width it switches to the scaled model — information columns `flex: <designPx> 1 <designPx>px` (proportional growth, design px as the floor), control columns fixed. *(Order ID's former 224 cap participated here until 2026-07-05; with the cap removed it scales like the other information columns.)*
 
-## Created By / User cell — shipped (2026-07-06)
+## Created By / User cell — shipped (2026-07-06, human/automated branching 2026-07-09)
 
-The `user-cell` Cell type (`packages/components/src/Cell/Cell.tsx`), the `CREATED_BY_COLUMN` preset (`packages/components/src/Table/columnPresets.ts`, exported from `@leta/components`), and the playground's Columns-control toggle + mock creator data (name + email + optional `avatarSrc`, some photo / some empty-teal initials) are all built and verified in Storybook + the playground. `CREATED_BY_COLUMN` was originally a playground-local one-off — reconciled into the shared presets 2026-07-06 so it's imported like `LAST_UPDATED_COLUMN`, not redefined per screen.
+The `user-cell` Cell type (`packages/components/src/Cell/Cell.tsx`), the `CREATED_BY_COLUMN` preset (`packages/components/src/Table/columnPresets.ts`, exported from `@leta/components`), and the playground's Columns-control toggle + mock creator data are all built and verified in Storybook + the playground. `CREATED_BY_COLUMN` was originally a playground-local one-off — reconciled into the shared presets 2026-07-06 so it's imported like `LAST_UPDATED_COLUMN`, not redefined per screen.
+
+**2026-07-09 — human vs automated source (§2.2).** `OrdersPage.tsx`'s `CREATORS` mock array now carries a tagged `source: 'human' | 'storefront' | 'api'` union instead of only human creators. Human rows render `user-cell` (name/email/avatarSrc) as before; `storefront` and `api` rows render the existing `api-cell` Cell type — Storefront uses its default (`apiTitle="Auto-created"`, `apiSubtext="From online store"`), API overrides only `apiSubtext="From connected app"`. **Both use the same default Featured Icon** (`apiIcon="Integration"`) — corrected same-day after an initial pass wrongly gave API a distinct `Code` icon; the spec's own §2.2 table only varies Line 2 text, not the glyph. Verified in the playground: Delivered/Cancelled + All views show all three variants correctly, Storefront and API sharing one icon.
+
+**2026-07-09 — Actions content-derived width scale (§2.1).** Added `ACTIONS_VIEW_LOGS` (126px) + the `ORDER_TABLE_COLUMNS_FINISHED` preset; the playground's `filterTab === 'finished'` branch selects it, and Delivered/Cancelled rows render a single Secondary "View Logs" button (stubbed to a "coming soon" toast) instead of the Dispatch/overflow row. Verified 126px in the DOM.
+
+**2026-07-09 — SLA-state indicators (§2.3.1/§2.3.2).** `Cell` gained `statusIcon?: 'warning' | 'error'` (trailing icon after `statusContent`); the playground derives a deterministic mock SLA state per order (`slaStateFor` in `OrdersPage.tsx` — real values await the Configuration spec) and wires it to both cells: counting rows (dispatched + pending/broadcasted) get the three-state treatment, finished rows the binary `DurationLabel variant="finished"` outcome with no Status icon, scheduled/returned show `—`. Verified against wireframe rows `1295:89475/89501/95052/94737/93661`.
 
 **Still outstanding (separate, not this spec):** swap the Unassigned **Basic Filter** dropdown → **Filter Group** (Recipient name + Created By options). Tracked as a later code task.

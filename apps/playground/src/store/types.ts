@@ -68,14 +68,49 @@ export interface Driver {
   currentOrderId: string | null;
 }
 
+/** A pickup depot the client operates. */
+export interface DepotOption {
+  id: string;
+  name: string;
+  /** Street address, shown as the single-depot field's helper line. */
+  address: string;
+}
+
+/** A product in the client's Products module catalogue (product-mode Items). */
+export interface ProductOption {
+  id: string;
+  name: string;
+  /** Unit price in KES — summed into the derived Items value in product mode. */
+  price: number;
+}
+
+/**
+ * Per-client configuration — the platform manifests differently per company based
+ * on the modules it uses and the depots/roles a user has access to. Until the
+ * Configuration spec + wireframes exist, this is a hand-authored profile per client
+ * that config-driven UI (starting with the Add Order drawer) reads. Switching the
+ * active client (breadcrumb chip) swaps this profile.
+ */
+export interface ClientConfig {
+  /** Depots this user can pick from. 1 → locked field; 2+ → searchable select. */
+  depots: DepotOption[];
+  /** Items module. `manual` → free-text item name; `product` → select from `products`. */
+  items: { enabled: boolean; mode: 'manual' | 'product'; valueRequired: boolean };
+  /** Product catalogue (product-mode only). */
+  products: ProductOption[];
+  /** Payment module — the Add Order "Payment Info" section. */
+  payment: { enabled: boolean };
+}
+
 /**
  * A client tenant. The playground represents the LETA SaaS product *for* a given
- * client (e.g. Acme Studios). The Top Bar's breadcrumb client chip is the
- * (future) switcher between client instances — see [[client-instance-switching]].
+ * client (e.g. Acme Studios). The Top Bar's breadcrumb client chip switches between
+ * client instances, swapping the active {@link ClientConfig}.
  */
 export interface Client {
   id: string;
   name: string;
+  config: ClientConfig;
 }
 
 /** A transient toast surfaced bottom-right by the AppShell. */
@@ -84,6 +119,8 @@ export interface ToastItem {
   type: 'success' | 'warning' | 'error';
   title: string;
   subtitle?: string;
+  /** Optional trailing CTA (e.g. the "Order created" toast's "View Order"). */
+  cta?: { label: string; onClick: () => void };
 }
 
 /**

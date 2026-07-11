@@ -2,6 +2,7 @@ export { Table } from './Table.js';
 export type { TableProps, TableColumn, TableColumnRole, TableRow } from './Table.js';
 export {
   ORDER_TABLE_COLUMNS,
+  ORDER_TABLE_COLUMNS_FINISHED,
   UNASSIGNED_ORDER_COLUMNS,
   BROADCASTED_ORDER_COLUMNS,
   SCHEDULED_ORDER_COLUMNS,

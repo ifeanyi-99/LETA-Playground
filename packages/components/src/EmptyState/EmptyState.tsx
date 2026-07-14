@@ -49,7 +49,7 @@ interface Preset {
 // Each scenario maps to one of the 13 LETA illustrations + its default copy.
 // `no-products` reuses the `no-items` illustration (as in Figma).
 const PRESET: Record<EmptyStateType, Preset> = {
-  'no-results':        { illustration: 'no-results',       heading: 'No Matching Results', description: 'All reviews will be displayed here' },
+  'no-results':        { illustration: 'no-results',       heading: 'No Matching Results', description: 'Try adjusting your search.' },
   'no-reviews':        { illustration: 'no-reviews',       heading: 'No Reviews',          description: 'All reviews will be displayed here' },
   'no-broadcast-logs': { illustration: 'no-broadcast-logs', heading: 'No Broadcast Logs',  description: 'All info will be displayed here' },
   'image-upload':      { illustration: 'image-upload',     heading: 'Select image to upload', description: 'Or drag and drop here' },

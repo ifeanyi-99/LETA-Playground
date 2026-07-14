@@ -14,7 +14,10 @@ import { FooterFrame } from '../FooterFrame/FooterFrame.js';
  *
  * - `combobox` — a scrollable single-select list with a pagination footer.
  * - `combobox-search` — the same list with a search box on top.
- * - `combobox-search-empty` — the search state shown when nothing matches.
+ * - `combobox-search-empty` — the search state shown when nothing matches. Its results
+ *   region is the **same height as `combobox-search`** (Figma `8230:26475` — both variants
+ *   are 352px tall) so the panel does not resize between states; the "No Matching Results" /
+ *   "Try adjusting your search." message is centered in that region.
  * - `combobox-create` — a list plus an 'Add "…"' action to create a new entry.
  * - `combobox-create-empty` — the create state when nothing matches, with a hint.
  * - `actions` — a context / "⋯" menu of commands, ending in a red destructive action.
@@ -165,12 +168,15 @@ function FilterFooter({
   showLeading,
   secondaryLabel,
   secondaryDisabled,
+  primaryDisabled,
 }: {
   resultsText: string;
   /** Show the Data Summary leading count (Filter Group). Default false (Basic Filter). */
   showLeading?: boolean;
   secondaryLabel: string;
   secondaryDisabled?: boolean;
+  /** Disable the primary "Show Results" CTA (Basic Filter empty search — nothing to show). */
+  primaryDisabled?: boolean;
 }) {
   return (
     <FooterFrame
@@ -180,7 +186,7 @@ function FilterFooter({
       style={{ flexShrink: 0 }}
     >
       <Button variant="secondary" size="medium" disabled={secondaryDisabled}>{secondaryLabel}</Button>
-      <Button variant="primary" size="medium">Show Results</Button>
+      <Button variant="primary" size="medium" disabled={primaryDisabled}>Show Results</Button>
     </FooterFrame>
   );
 }
@@ -439,8 +445,10 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
                 ))}
               </div>
             )}
-            {/* Footer Frame Default — Reset + Show Results, no leading count (Figma). */}
-            <FilterFooter resultsText={resultsText} secondaryLabel="Reset" />
+            {/* Footer Frame Default — Reset + Show Results, no leading count (Figma).
+                Empty search → nothing to show, so "Show Results" is disabled (Figma
+                `8230:26475` Basic Filter-Search (Empty) — the primary CTA is greyed). */}
+            <FilterFooter resultsText={resultsText} secondaryLabel="Reset" primaryDisabled={searchEmpty} />
           </>
         );
         break;

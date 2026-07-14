@@ -619,6 +619,16 @@ Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-02.md`. Diff vs the 2026-
 - [x] Storybook docs updated (ContentPrimitives meta + SectionHeading story); `@leta/components` dist rebuilt; baseline snapshots refreshed (catalog now stores 486 top-level entries — variant children no longer duplicated as separate COMPONENT rows; 92/93 sets carry `variants`).
 - [ ] **Publish the Figma library** — the preferredValues sweep dirtied it (user action).
 
+## Pending Figma sync (2026-07-14)
+
+Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-14.md`. Full `--deep` scan (all 93 sets / 486 catalog entries) vs the 2026-07-08 baseline. No token/effect/structural/doc changes; **one** component edited + one already-in-code content change:
+
+- [x] **Desktop Button** ([28:38245](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=28-38245)) — **all 65 Plain variants `cornerRadius 8/12 → 0`** (designer squared off the Plain link style). `Button.tsx`: `radius = isPlain ? 0 : (platform==='mobile' ? PILL : layout.desktopRadius)`.
+- [x] **Desktop Button — Plain underline now spans the full content row** (icons + label), fixing the reported bug where the underline stopped short of the leading/trailing icons. `Button.tsx`: `.leta-btn--plain.leta-btn--underline` uses `border-bottom: 1px solid currentColor` (was `text-decoration: underline`, which only underlines the text run, not the flex-item icons); Icon-Only Plain excluded from the underline. Mirrors Figma's dedicated full-width `Underline` VECTOR (label TEXT is `textDecoration: NONE`).
+- [x] **Desktop Dropdowns** ([8230:26475](https://figma.com/design/Kxbgc2KoJSmTxvSV3PwNEu/?node-id=8230-26475)) — Combobox-Search Empty / Basic-Filter-Search Empty / Filter-Group Empty copy → "Try adjusting your search." **Already in code** (`EmptyState` `no-results` default); verified live in Storybook. (Not in the variant-prop diff — it's a nested composed-content change below diff granularity.)
+- [x] `@leta/components` dist rebuilt (playground consumes it). Both packages typecheck clean.
+- Read-only scan — no Figma library dirtied by the sync.
+
 ## Pending Figma sync (2026-07-08)
 
 Full report: `docs/figma-changes/FIGMA_CHANGES_2026-07-08.md`. Full `--deep` scan (all 93 sets) vs the 2026-07-07 baseline. No token/structural changes; one component edited:

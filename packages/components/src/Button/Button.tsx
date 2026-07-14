@@ -431,8 +431,13 @@ const BUTTON_STYLES = `
     border-color: var(--leta-btn-edge-pressed, var(--leta-btn-edge, transparent));
     box-shadow: var(--leta-btn-drop, 0 0 0 0 transparent);
   }
+  /* Plain underline spans the whole content row (icons + label), not just the
+     text run — text-decoration:underline only underlines inline text, leaving
+     the flex-item icons un-underlined. A bottom border on the flex container
+     draws one continuous line under the leading icon, label, gap, and trailing
+     icon, matching Figma. currentColor tracks --leta-btn-text across states. */
   .leta-btn--plain.leta-btn--underline {
-    text-decoration: underline;
+    border-bottom: 1px solid currentColor;
   }
 `;
 
@@ -622,8 +627,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   cssVars['--leta-btn-edge-w'] = isPlain ? '0' : `${layout.borderWidth}px`;
   if (isFab) cssVars['--leta-btn-drop'] = 'var(--shadow-neutral-3)';
 
-  // Mobile is always pill; desktop uses the per-size radius from the layout table.
-  const radius = platform === 'mobile' ? PILL : layout.desktopRadius;
+  // Plain is a squared-off link style — Figma removed its corner radius (all Plain
+  // variants are cornerRadius 0), so the full-width underline draws straight, un-rounded
+  // ends. Mobile is always pill; other desktop buttons use the per-size layout radius.
+  const radius = isPlain ? 0 : platform === 'mobile' ? PILL : layout.desktopRadius;
 
   // Dashed keeps a real CSS border (so it shrinks content area by ~1px on
   // each side). For all other variants, the visible edge is painted via the
@@ -651,7 +658,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
   const classes = [
     'leta-btn',
     `leta-btn--${variant}`,
-    isPlain && showUnderline ? 'leta-btn--underline' : null,
+    isPlain && showUnderline && !isIconOnly ? 'leta-btn--underline' : null,
     className,
   ]
     .filter(Boolean)

@@ -6,21 +6,20 @@ import { SearchInput } from '../SearchInput/SearchInput.js';
 import { EmptyState } from '../EmptyState/EmptyState.js';
 import { NotificationBanner } from '../NotificationBanner/NotificationBanner.js';
 import { Avatar } from '../Avatar/Avatar.js';
-import { Pagination } from '../Pagination/Pagination.js';
 import { FooterFrame } from '../FooterFrame/FooterFrame.js';
 
 /**
  * Which ready-made dropdown panel to render:
  *
- * - `combobox` — a scrollable single-select list with a pagination footer.
+ * - `combobox` — a scrollable single-select list (no pagination footer; Figma `8230:26475` — 350×248).
  * - `combobox-empty` — the plain combobox with no options at all: the whole card body is a
  *   centered text-only Empty State ("No Matching Results" / "Try adjusting your search."),
- *   no search box and no pagination footer (Figma `8230:26475` — 350×296, same card height
+ *   no search box and no pagination footer (Figma `8230:26475` — 350×248, same card height
  *   as `combobox`).
- * - `combobox-search` — the same list with a search box on top.
+ * - `combobox-search` — the same list with a search box on top (no pagination footer; 350×304).
  * - `combobox-search-empty` — the search state shown when nothing matches. Its results
  *   region is the **same height as `combobox-search`** (Figma `8230:26475` — both variants
- *   are 352px tall) so the panel does not resize between states; the "No Matching Results" /
+ *   are 304px tall) so the panel does not resize between states; the "No Matching Results" /
  *   "Try adjusting your search." message is centered in that region.
  * - `combobox-create` — a list plus an 'Add "…"' action to create a new entry.
  * - `combobox-create-empty` — the create state when nothing matches, with a hint.
@@ -145,7 +144,7 @@ function List({ children }: { children: React.ReactNode }) {
 /** Fixed-height scroll viewport so long lists actually scroll. */
 function ScrollList({ height, children }: { height: number; children: React.ReactNode }) {
   return (
-    <div style={{ ...col4, padding: 'var(--padding-8px)', maxHeight: height, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+    <div style={{ ...col4, padding: 'var(--padding-8px) var(--padding-8px) 0', maxHeight: height, overflowY: 'auto', overscrollBehavior: 'contain' }}>
       {children}
     </div>
   );
@@ -196,16 +195,6 @@ function FilterFooter({
     </FooterFrame>
   );
 }
-function ComboboxPagination() {
-  // Figma `Pagination/Combobox` centers the count + prev/next as one group across
-  // the full footer width (Content frame is primaryAxis=CENTER, gap 12).
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '0 var(--padding-8px) var(--padding-8px)', flexShrink: 0 }}>
-      <Pagination variant="combobox" page={1} pageCount={1} countLabel="1 - 10 of 10" onPageChange={() => {}} />
-    </div>
-  );
-}
-
 /**
  * Desktop Dropdowns — a ready-made floating panel that appears when you open a
  * menu, select, filter, or picker. It's the white rounded card with a soft shadow
@@ -292,22 +281,19 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
     switch (variant) {
       case 'combobox':
         body = (
-          <>
-            <ScrollList height={240}>
-              {opts.map((l, i) => (
-                <DesktopMenuOptions key={i} type="combobox" label={l} active={i === active} onSelect={() => setActive(i)} />
-              ))}
-            </ScrollList>
-            <ComboboxPagination />
-          </>
+          <ScrollList height={240}>
+            {opts.map((l, i) => (
+              <DesktopMenuOptions key={i} type="combobox" label={l} active={i === active} onSelect={() => setActive(i)} />
+            ))}
+          </ScrollList>
         );
         break;
 
       case 'combobox-empty':
-        // No options at all: the whole 296-tall card is the centered text-only
+        // No options at all: the whole 248-tall card is the centered text-only
         // Empty State — no search box, no pagination footer (Figma `10845:11406`).
         body = (
-          <div style={{ height: 296, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-8px)' }}>
+          <div style={{ height: 248, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-8px)' }}>
             <EmptyState type="no-results" size="desktop" showIcon={false} />
           </div>
         );
@@ -324,7 +310,6 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
                 <DesktopMenuOptions key={i} type="combobox" label={l} active={i === active} onSelect={() => setActive(i)} />
               ))}
             </ScrollList>
-            <ComboboxPagination />
           </>
         );
         break;
@@ -335,10 +320,9 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
             <div style={{ padding: 'var(--padding-8px)', borderBottom: 'var(--stroke-xs) solid var(--border-neutral-default)' }}>
               <SearchInput defaultValue="Xyzzy" onClear={() => {}} style={{ width: '100%' }} />
             </div>
-            <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-16px)' }}>
+            <div style={{ height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-16px)' }}>
               <EmptyState type="no-results" size="desktop" showIcon={false} />
             </div>
-            <ComboboxPagination />
           </>
         );
         break;

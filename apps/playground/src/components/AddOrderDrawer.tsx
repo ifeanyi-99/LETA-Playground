@@ -19,7 +19,7 @@ import {
   LeadingInputFieldElement,
   AlertDialog,
 } from '@leta/components';
-import type { ClientConfig } from '../store/types.js';
+import type { ClientConfig, DepotOption } from '../store/types.js';
 import type { NewOrderInput } from '../store/useStore.js';
 import { Popover, MenuPanel } from './Popover.js';
 
@@ -161,7 +161,11 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
   const hasRightColumn = config.items.enabled || config.payment.enabled;
 
   // form state
-  const [depotId, setDepotId] = React.useState(config.depots[0]?.id ?? '');
+  // Single depot → locked field shows the one depot; multi → starts unselected (the
+  // dispatcher searches + picks).
+  const [depotId, setDepotId] = React.useState(config.depots.length === 1 ? config.depots[0]!.id : '');
+  const [depotQuery, setDepotQuery] = React.useState(''); // multi-depot search field text
+  const [depotOpen, setDepotOpen] = React.useState(false); // depot autocomplete dropdown
   const [recipient, setRecipient] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [phone, setPhone] = React.useState('');
@@ -179,25 +183,27 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
   const [confirmExit, setConfirmExit] = React.useState(false);
   const [closing, setClosing] = React.useState(false); // playing the exit animation
   const [recipientOpen, setRecipientOpen] = React.useState(false); // autocomplete dropdown
-  const [pickerQuery, setPickerQuery] = React.useState(''); // depot/product combobox-search filter
+  const [pickerQuery, setPickerQuery] = React.useState(''); // product combobox-search filter
   const itemSeq = React.useRef(0);
   const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const recipientBlurTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const depotBlurTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset whenever the drawer (re)opens or the client config changes.
   React.useEffect(() => {
     if (!open) return;
-    setDepotId(config.depots[0]?.id ?? '');
+    setDepotId(config.depots.length === 1 ? config.depots[0]!.id : '');
+    setDepotQuery(''); setDepotOpen(false);
     setRecipient(''); setAddress(''); setPhone(''); setEmail('');
     setDateLabel(''); setDeliveryAt(null); setOrderRef(''); setInstructions('');
     setItems([]); setManualValue(''); setDeliveryFee(''); setPaymentType('');
     setSubmitted(false); setDirty(false); setConfirmExit(false); setClosing(false); setRecipientOpen(false);
   }, [open, config]);
-  React.useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); if (recipientBlurTimer.current) clearTimeout(recipientBlurTimer.current); }, []);
+  React.useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); if (recipientBlurTimer.current) clearTimeout(recipientBlurTimer.current); if (depotBlurTimer.current) clearTimeout(depotBlurTimer.current); }, []);
 
-  // Single portal picker overlay (depot / product-row / payment-type / date).
+  // Single portal picker overlay (product-row / payment-type / date). The depot is a
+  // field-anchored SearchInput + combobox dropdown (like recipient), not a Popover picker.
   type Picker =
-    | { kind: 'depot'; anchor: DOMRect }
     | { kind: 'product'; anchor: DOMRect; rowKey: number }
     | { kind: 'payment'; anchor: DOMRect }
     | { kind: 'date'; anchor: DOMRect };
@@ -281,6 +287,21 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
     setRecipientOpen(false);
   };
 
+  // Multi-depot pickup autocomplete — the SearchInput field is the query; the
+  // dropdown is a combobox (matches) / combobox-empty (no match). The selected
+  // depot's address shows in the field's helper text.
+  const depotQ = depotQuery.trim();
+  const depotMatches = depotQ
+    ? config.depots.filter((d) => d.name.toLowerCase().includes(depotQ.toLowerCase()))
+    : config.depots;
+  const selectedDepot = config.depots.find((d) => d.id === depotId);
+  const pickDepot = (d: DepotOption) => {
+    touch();
+    setDepotId(d.id);
+    setDepotQuery(d.name);
+    setDepotOpen(false);
+  };
+
   // sections
   const pickupField = singleDepot ? (
     <InputField
@@ -293,18 +314,46 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
       readOnly
     />
   ) : (
-    <div data-picker-field onClickCapture={captureRect} style={{ position: 'relative' }}>
-      <Select
-        showLabel={false}
-        leadingFieldIcon="Search"
+    // Multi-depot: a Search field the dispatcher types into; a combobox dropdown of
+    // matching depots (combobox-empty when none) opens below. Picking one fills the
+    // field + shows that depot's address in the helper text.
+    <div
+      style={{ position: 'relative' }}
+      onBlurCapture={() => { depotBlurTimer.current = setTimeout(() => setDepotOpen(false), 120); }}
+      onFocusCapture={() => { if (depotBlurTimer.current) clearTimeout(depotBlurTimer.current); }}
+    >
+      <SearchInput
         placeholder="Search depot"
-        value={config.depots.find((d) => d.id === depotId)?.name ?? ''}
-        showHelper={false}
-        error={submitted && !depotId ? 'Select a depot' : undefined}
-        onSelectClick={() => openPicker({ kind: 'depot', anchor: anchor() })}
-        readOnly
+        value={depotQuery}
+        helperText={selectedDepot?.address}
+        error={submitted && !depotId}
+        errorMessage="Select a depot"
+        onChange={(e) => { touch(); setDepotQuery(e.target.value); setDepotId(''); setDepotOpen(true); }}
+        onFocus={() => setDepotOpen(true)}
+        onClear={() => { setDepotQuery(''); setDepotId(''); setDepotOpen(true); }}
         style={{ width: '100%' }}
       />
+      {depotOpen && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 'var(--spacing-4px)', zIndex: 20 }}>
+          <DesktopDropdowns
+            variant={depotMatches.length ? 'combobox' : 'combobox-empty'}
+            options={depotMatches.map((d) => d.name)}
+            activeIndex={depotMatches.findIndex((d) => d.id === depotId)}
+            emptyDescription="No depots found"
+            style={{ width: '100%' }}
+            onClickCapture={(e: React.MouseEvent) => {
+              let el = e.target as HTMLElement | null;
+              const stop = e.currentTarget as HTMLElement;
+              while (el && el !== stop) {
+                const t = (el.textContent ?? '').trim();
+                const d = depotMatches.find((x) => x.name === t);
+                if (d) { pickDepot(d); return; }
+                el = el.parentElement;
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 
@@ -603,25 +652,6 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
         </ModalShell>
       </div>
 
-      {picker?.kind === 'depot' && (() => {
-        const q = pickerQuery.trim().toLowerCase();
-        const rows = config.depots.filter((d) => !q || d.name.toLowerCase().includes(q));
-        return (
-          <Popover anchorRect={picker.anchor} onClose={() => setPicker(null)} placement="bottom-start">
-            <ComboSearchPanel width={Math.max(320, picker.anchor.width)} query={pickerQuery} onQuery={setPickerQuery} placeholder="Search depot">
-              {rows.map((d) => (
-                <DesktopMenuOptions
-                  key={d.id}
-                  type="combobox"
-                  label={d.name}
-                  active={d.id === depotId}
-                  onClick={() => { touch(); setDepotId(d.id); setPicker(null); }}
-                />
-              ))}
-            </ComboSearchPanel>
-          </Popover>
-        );
-      })()}
       {picker?.kind === 'product' && (() => {
         const q = pickerQuery.trim().toLowerCase();
         const rows = products.filter((p) => !q || p.name.toLowerCase().includes(q));

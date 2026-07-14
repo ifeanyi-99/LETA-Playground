@@ -69,6 +69,12 @@ export interface DesktopDropdownsProps
   resultsText?: string;
   /** Combobox-Create "Add" footer label. */
   createLabel?: string;
+  /**
+   * Override the empty-state message for the `combobox-empty` / `combobox-search-empty`
+   * variants (e.g. "No depots found"). Defaults to the `no-results` preset copy
+   * ("Try adjusting your search.").
+   */
+  emptyDescription?: string;
   /** User Menu display name. */
   userName?: string;
   /** User Menu email shown under the name. */
@@ -233,6 +239,7 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
     activeIndex = 0,
     resultsText = '30 results',
     createLabel = 'Add “Input”',
+    emptyDescription,
     userName = 'Ify Kiplimo',
     userEmail = 'ifykiplimo@gmail.com',
     sortOptions = DEFAULT_SORT_OPTIONS,
@@ -294,7 +301,7 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
         // Empty State — no search box, no pagination footer (Figma `10845:11406`).
         body = (
           <div style={{ height: 248, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-8px)' }}>
-            <EmptyState type="no-results" size="desktop" showIcon={false} />
+            <EmptyState type="no-results" size="desktop" showIcon={false} description={emptyDescription} />
           </div>
         );
         break;
@@ -321,7 +328,7 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
               <SearchInput defaultValue="Xyzzy" onClear={() => {}} style={{ width: '100%' }} />
             </div>
             <div style={{ height: 248, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-16px)' }}>
-              <EmptyState type="no-results" size="desktop" showIcon={false} />
+              <EmptyState type="no-results" size="desktop" showIcon={false} description={emptyDescription} />
             </div>
           </>
         );

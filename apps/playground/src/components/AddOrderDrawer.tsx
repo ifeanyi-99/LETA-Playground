@@ -123,15 +123,16 @@ function ComboSearchPanel({ width, query, onQuery, placeholder, children }: {
         <SearchInput placeholder={placeholder} value={query} autoFocus onChange={(e) => onQuery(e.target.value)} onClear={() => onQuery('')} style={{ width: '100%' }} />
       </div>
       {React.Children.count(children) === 0 ? (
-        // Combobox-search-empty state — same fixed results-region height as the
-        // default state (below), with the message centered, so the panel doesn't
-        // resize between states. (Overrides the DS no-results preset's placeholder
-        // "All reviews…" copy — see EmptyState.tsx.)
+        // Combobox-search-EMPTY — locks to the FULL max results height (search-empty
+        // variants always render at max, never hug), message centered. (Overrides the
+        // DS no-results preset's placeholder "All reviews…" copy — see EmptyState.tsx.)
         <div style={{ height: COMBO_RESULTS_HEIGHT, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-16px)' }}>
           <EmptyState type="no-results" size="desktop" showIcon={false} description="Try adjusting your search." />
         </div>
       ) : (
-        <div style={{ height: COMBO_RESULTS_HEIGHT, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', padding: 'var(--padding-8px)', overflowY: 'auto', overscrollBehavior: 'contain' }}>
+        // Populated — HUGS its rows, then locks at the max height and scrolls
+        // (design-system dropdown height model; see DesktopDropdowns JSDoc).
+        <div style={{ maxHeight: COMBO_RESULTS_HEIGHT, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', padding: 'var(--padding-8px)', overflowY: 'auto', overscrollBehavior: 'contain' }}>
           {children}
         </div>
       )}

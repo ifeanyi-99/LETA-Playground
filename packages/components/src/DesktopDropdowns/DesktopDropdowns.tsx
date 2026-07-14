@@ -13,6 +13,10 @@ import { FooterFrame } from '../FooterFrame/FooterFrame.js';
  * Which ready-made dropdown panel to render:
  *
  * - `combobox` — a scrollable single-select list with a pagination footer.
+ * - `combobox-empty` — the plain combobox with no options at all: the whole card body is a
+ *   centered text-only Empty State ("No Matching Results" / "Try adjusting your search."),
+ *   no search box and no pagination footer (Figma `8230:26475` — 350×296, same card height
+ *   as `combobox`).
  * - `combobox-search` — the same list with a search box on top.
  * - `combobox-search-empty` — the search state shown when nothing matches. Its results
  *   region is the **same height as `combobox-search`** (Figma `8230:26475` — both variants
@@ -33,6 +37,7 @@ import { FooterFrame } from '../FooterFrame/FooterFrame.js';
  */
 export type DesktopDropdownVariant =
   | 'combobox'
+  | 'combobox-empty'
   | 'combobox-search'
   | 'combobox-search-empty'
   | 'combobox-create'
@@ -86,6 +91,7 @@ export interface DesktopDropdownsProps
 
 const WIDTH: Record<DesktopDropdownVariant, number> = {
   combobox: 350,
+  'combobox-empty': 350,
   'combobox-search': 350,
   'combobox-search-empty': 350,
   'combobox-create': 350,
@@ -214,6 +220,19 @@ function ComboboxPagination() {
  * scroll. Pass `options` for the row labels and `onSelectionChange` to mirror the
  * footer result count from your data.
  *
+ * **Height & scroll model (Figma `8230:26475`).** The scrollable results region
+ * **hugs its content** by default, growing row-by-row until it reaches the variant's
+ * own **max height** — then the height locks and the list **scrolls** (the rest sits
+ * below the fold). Per-variant scroll-region maxes: Combobox / Combobox-Create /
+ * Combobox-Search = **240**; Basic Filter = **256**; Basic Filter-Search = **200**
+ * (the search row eats 56 of the 256). This same hug→max→scroll rule governs the
+ * bulk-toolbar "N selected" combobox. **Exception — the search-empty variants**
+ * (`combobox-search-empty`, `basic-filter-search-empty`) do **not** hug: they render
+ * at the **full max height** with the "No Matching Results / Try adjusting your
+ * search." message centered, so the panel does not shrink when a query returns
+ * nothing. **Create-empty** (`combobox-create-empty`) is NOT a search-empty state —
+ * it **hugs** its short content (hint banner + "Add …").
+ *
  * **When to use:** for any overlay that lets the user pick or filter something.
  * **When not to use:** for full pages or confirmation dialogs (use a Modal), or for
  * content shown inline on the page.
@@ -274,13 +293,23 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
       case 'combobox':
         body = (
           <>
-            <ScrollList height={248}>
+            <ScrollList height={240}>
               {opts.map((l, i) => (
                 <DesktopMenuOptions key={i} type="combobox" label={l} active={i === active} onSelect={() => setActive(i)} />
               ))}
             </ScrollList>
             <ComboboxPagination />
           </>
+        );
+        break;
+
+      case 'combobox-empty':
+        // No options at all: the whole 296-tall card is the centered text-only
+        // Empty State — no search box, no pagination footer (Figma `10845:11406`).
+        body = (
+          <div style={{ height: 296, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--padding-8px)' }}>
+            <EmptyState type="no-results" size="desktop" showIcon={false} />
+          </div>
         );
         break;
 

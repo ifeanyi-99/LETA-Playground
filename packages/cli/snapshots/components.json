@@ -41360,7 +41360,7 @@
           ]
         }
       },
-      "childCount": 15,
+      "childCount": 16,
       "bbox": {
         "x": 50,
         "y": 3555,
@@ -41381,59 +41381,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "10664:20157",
-              "name": "Basic Filter Container2",
-              "type": "SLOT",
-              "width": 350,
-              "height": 256,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:17556",
-              "name": "Footer Frame",
-              "type": "INSTANCE",
-              "width": 350,
-              "height": 72,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": "__MIXED__"
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "10666:8926",
@@ -41448,82 +41397,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "10666:8927",
-              "name": "Search",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:8929",
-              "name": "Basic Filter Container2",
-              "type": "SLOT",
-              "width": 350,
-              "height": 200,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:17719",
-              "name": "Footer Frame",
-              "type": "INSTANCE",
-              "width": 350,
-              "height": 72,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": "__MIXED__"
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "10666:15897",
@@ -41538,82 +41413,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "10666:15898",
-              "name": "Search",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:15900",
-              "name": "Basic Filter Container2",
-              "type": "SLOT",
-              "width": 350,
-              "height": 200,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:17732",
-              "name": "Footer Frame",
-              "type": "INSTANCE",
-              "width": 350,
-              "height": 72,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": "__MIXED__"
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "7339:15580",
@@ -41628,86 +41429,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7339:15680",
-              "name": "Actions Dropdown Container",
-              "type": "SLOT",
-              "width": 250,
-              "height": 232,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7361:58475",
-              "name": "Special Options Group",
-              "type": "FRAME",
-              "width": 250,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7361:57606",
-              "name": "Destructive Action",
-              "type": "FRAME",
-              "width": 250,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "7485:25713",
@@ -41722,109 +41445,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7485:25714",
-              "name": "Hero",
-              "type": "FRAME",
-              "width": 250,
-              "height": 80,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7485:26023",
-              "name": "Special Options Group",
-              "type": "FRAME",
-              "width": 250,
-              "height": 144,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7485:26058",
-              "name": "Special Options Group",
-              "type": "FRAME",
-              "width": 250,
-              "height": 100,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7485:26122",
-              "name": "Special Options Group",
-              "type": "FRAME",
-              "width": 250,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "7339:33133",
@@ -41839,40 +41461,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7339:33134",
-              "name": "Stacked List Container",
-              "type": "SLOT",
-              "width": 480,
-              "height": 336.0001220703125,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "3828:60951",
@@ -41887,40 +41477,8 @@
           "cornerRadius": 16,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "3828:60514",
-              "name": "Scroll Frame",
-              "type": "FRAME",
-              "width": 234,
-              "height": 232,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "4677:106673",
@@ -41935,69 +41493,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "4735:106733",
-              "name": "Filter Group Container",
-              "type": "SLOT",
-              "width": 480,
-              "height": 288,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:17604",
-              "name": "Footer Frame",
-              "type": "INSTANCE",
-              "width": 480,
-              "height": 72,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": "__MIXED__"
-            },
-            {
-              "nodeId": "4654:52638",
-              "name": "Content",
-              "type": "FRAME",
-              "width": 672,
-              "height": 497,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "7312:88700",
@@ -42012,69 +41509,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7312:88701",
-              "name": "Filter Group Container",
-              "type": "SLOT",
-              "width": 480,
-              "height": 288,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "10666:17699",
-              "name": "Footer Frame",
-              "type": "INSTANCE",
-              "width": 480,
-              "height": 72,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": "__MIXED__"
-            },
-            {
-              "nodeId": "7312:88732",
-              "name": "Content",
-              "type": "FRAME",
-              "width": 672,
-              "height": 497,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "4853:195535",
@@ -42089,81 +41525,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "4853:195406",
-              "name": "Sort Options",
-              "type": "FRAME",
-              "width": 250,
-              "height": 174,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "4853:75904",
-              "name": "Sort Direction",
-              "type": "FRAME",
-              "width": 250,
-              "height": 100,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": 1,
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "73:37852",
@@ -42178,59 +41541,24 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "1478:8193",
-              "name": "Scroll Frame",
-              "type": "FRAME",
-              "width": 334,
-              "height": 240,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7304:87034",
-              "name": "Pagination",
-              "type": "INSTANCE",
-              "width": 334,
-              "height": 48,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
+        },
+        {
+          "nodeId": "10845:11406",
+          "variantName": "Variant=Combobox (Empty)",
+          "width": 350,
+          "height": 296,
+          "paddingLeft": 8,
+          "paddingRight": 8,
+          "paddingTop": 8,
+          "paddingBottom": 8,
+          "itemSpacing": 0,
+          "cornerRadius": 12,
+          "fills": {
+            "type": "SOLID",
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "5397:176566",
@@ -42245,63 +41573,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7317:89531",
-              "name": "Scroll Frame",
-              "type": "FRAME",
-              "width": 350,
-              "height": 240,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7328:90361",
-              "name": "Footer",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "7317:89748",
@@ -42316,72 +41589,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "7317:89749",
-              "name": "Content",
-              "type": "FRAME",
-              "width": 350,
-              "height": 52,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "7317:89761",
-              "name": "Footer",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": {
-                "type": "SOLID",
-                "tokenId": "VariableID:5848:401166",
-                "color": {
-                  "r": 0.9958333373069763,
-                  "g": 0.9958333373069763,
-                  "b": 0.9958333373069763
-                },
-                "opacity": 1
-              },
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "1076:8343",
@@ -42396,63 +41605,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "3202:41241",
-              "name": "Search",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "3205:41879",
-              "name": "Body",
-              "type": "FRAME",
-              "width": 350,
-              "height": 296,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         },
         {
           "nodeId": "3363:25930",
@@ -42467,63 +41621,8 @@
           "cornerRadius": 12,
           "fills": {
             "type": "SOLID",
-            "tokenId": "VariableID:5848:401166",
-            "color": {
-              "r": 0.9958333373069763,
-              "g": 0.9958333373069763,
-              "b": 0.9958333373069763
-            },
-            "opacity": 1
-          },
-          "strokes": {
-            "fill": {
-              "type": "SOLID",
-              "tokenId": "VariableID:6056:72633",
-              "color": {
-                "r": 0.8901960849761963,
-                "g": 0.8901960849761963,
-                "b": 0.8901960849761963
-              },
-              "opacity": 1
-            },
-            "weight": 1,
-            "align": "INSIDE"
-          },
-          "leaves": [
-            {
-              "nodeId": "3363:25931",
-              "name": "Header",
-              "type": "FRAME",
-              "width": 350,
-              "height": 56,
-              "fills": null,
-              "strokes": {
-                "fill": {
-                  "type": "SOLID",
-                  "tokenId": "VariableID:6056:72633",
-                  "color": {
-                    "r": 0.8901960849761963,
-                    "g": 0.8901960849761963,
-                    "b": 0.8901960849761963
-                  },
-                  "opacity": 1
-                },
-                "weight": "__MIXED__",
-                "align": "INSIDE"
-              },
-              "cornerRadius": 0
-            },
-            {
-              "nodeId": "3363:25933",
-              "name": "Body",
-              "type": "FRAME",
-              "width": 350,
-              "height": 296,
-              "fills": null,
-              "strokes": null,
-              "cornerRadius": 0
-            }
-          ]
+            "tokenId": "VariableID:5848:401166"
+          }
         }
       ]
     },

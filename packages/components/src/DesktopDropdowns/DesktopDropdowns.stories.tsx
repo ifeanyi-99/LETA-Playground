@@ -15,6 +15,7 @@ export default meta;
 type Story = StoryObj<typeof DesktopDropdowns>;
 
 export const Combobox: Story = { args: { variant: 'combobox', activeIndex: 2 } };
+export const ComboboxEmpty: Story = { args: { variant: 'combobox-empty' } };
 export const ComboboxSearch: Story = { args: { variant: 'combobox-search' } };
 export const ComboboxSearchEmpty: Story = { args: { variant: 'combobox-search-empty' } };
 export const ComboboxCreate: Story = { args: { variant: 'combobox-create' } };

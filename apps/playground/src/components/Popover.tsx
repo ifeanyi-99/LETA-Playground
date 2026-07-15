@@ -97,22 +97,32 @@ export function Popover({
     const margin = 8;
     const isEnd = placement === 'bottom-end' || placement === 'top-end';
     const above = placement === 'top-start' || placement === 'top-end';
+    // Panel cards carry a drop shadow whose dominant lobe falls *downward*
+    // (`0px 5px 8px -4px`, ~13px of visible bleed) — the convention for a card
+    // sitting below its trigger, where that bleed just fades into empty space.
+    // When the panel instead sits ABOVE the trigger (explicit `top-*` placement,
+    // or the dynamic flip-above below), that same downward bleed now falls
+    // directly onto the trigger/field beneath it, reading as if the panel is
+    // overlapping it even though the boxes have a clean `offset` gap. Give
+    // above-placed panels extra clearance so the shadow fades out before
+    // reaching the trigger.
+    const aboveOffset = offset + 8;
 
     let left = isEnd ? anchorRect.right - panel.width : anchorRect.left;
     left = Math.max(margin, Math.min(left, vw - panel.width - margin));
 
     if (above) {
       // Bottom-anchored to the trigger's top: the panel opens upward and its bottom
-      // edge stays a fixed `offset` above the trigger regardless of content height.
-      const bottom = Math.max(margin, vh - anchorRect.top + offset);
+      // edge stays a fixed `aboveOffset` above the trigger regardless of content height.
+      const bottom = Math.max(margin, vh - anchorRect.top + aboveOffset);
       setPos({ left, bottom });
       return;
     }
 
     let top = anchorRect.bottom + offset;
     // Flip above the trigger if it would overflow the bottom edge.
-    if (top + panel.height > vh - margin && anchorRect.top - offset - panel.height > margin) {
-      top = anchorRect.top - offset - panel.height;
+    if (top + panel.height > vh - margin && anchorRect.top - aboveOffset - panel.height > margin) {
+      top = anchorRect.top - aboveOffset - panel.height;
     }
     top = Math.max(margin, Math.min(top, vh - panel.height - margin));
     setPos({ left, top });

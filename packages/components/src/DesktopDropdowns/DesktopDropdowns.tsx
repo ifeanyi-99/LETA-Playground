@@ -52,6 +52,14 @@ export type DesktopDropdownVariant =
   | 'timepicker'
   | 'stacked-list';
 
+/** One rail dimension of a `filter-group` panel — its label plus the full option list shown when it's active. */
+export interface FilterGroupDimension {
+  /** Rail label, e.g. "Recipient", "Depot", "Driver", "Created By". */
+  label: string;
+  /** Full option list for this dimension (checkbox rows on the right when it's the active rail selection). */
+  options: string[];
+}
+
 export interface DesktopDropdownsProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   /** Which assembled dropdown panel to render (Figma `8230:26475`). Default `combobox`. */
@@ -60,6 +68,31 @@ export interface DesktopDropdownsProps
   options?: string[];
   /** Initially-selected option index (combobox / timepicker). */
   activeIndex?: number;
+  /**
+   * Dimension definitions for `filter-group`/`filter-group-empty` — rail label +
+   * its full option list. Falls back to a 3-dimension demo set when omitted.
+   */
+  groups?: FilterGroupDimension[];
+  /**
+   * Pre-checked option values per group, index-aligned with `groups` — restores
+   * a previously-applied filter when the panel is reopened (the panel itself
+   * remounts fresh each time it opens, so this is the host's hook to persist
+   * selections across opens).
+   */
+  initialGroupSelections?: string[][];
+  /**
+   * Fires with the full current per-group selection (index-aligned with
+   * `groups`) whenever any checkbox toggles. These are a live/draft preview —
+   * per Doc 3 §9, nothing is applied to the host's data until `onApply` fires;
+   * use this to recompute and pass back a live `resultsText` preview count.
+   */
+  onGroupSelectionChange?: (selected: string[][]) => void;
+  /** "Show Results" clicked (`filter-group`) — the host should commit the last selection reported via `onGroupSelectionChange` and typically close the panel. */
+  onApply?: () => void;
+  /** "Reset" clicked (`filter-group`) — clears every dimension's selection (both here and on the host's applied filter). */
+  onReset?: () => void;
+  /** Disable "Show Results" (`filter-group`) — e.g. the host's live preview count is 0. */
+  showResultsDisabled?: boolean;
   /**
    * Footer summary for the filter panels (basic-filter / filter-group). This is
    * the host table's current matching-row count — a placeholder the consuming
@@ -115,6 +148,21 @@ const WIDTH: Record<DesktopDropdownVariant, number> = {
 
 const DEFAULT_OPTIONS = Array.from({ length: 18 }, () => 'Insert Text');
 const DEFAULT_FILTER_OPTIONS = Array.from({ length: 12 }, () => 'Label');
+/** Storybook/demo default for `filter-group` when the host doesn't supply real `groups`. */
+const DEFAULT_FILTER_GROUPS: FilterGroupDimension[] = [
+  { label: 'Recipient', options: Array.from({ length: 8 }, (_, i) => `Recipient ${i + 1}`) },
+  { label: 'Driver', options: Array.from({ length: 6 }, (_, i) => `Driver ${i + 1}`) },
+  { label: 'Depot', options: Array.from({ length: 4 }, (_, i) => `Depot ${i + 1}`) },
+];
+/**
+ * The no-match sub-copy names the real dimension (Doc 3 §9: "All {dimension}s
+ * will be displayed here" — never a placeholder). Most labels pluralize by
+ * appending "s"; a couple of compound labels read better as a fixed phrase.
+ */
+const DIMENSION_PLURALS: Record<string, string> = { 'Created By': 'creators' };
+function pluralizeDimension(label: string): string {
+  return DIMENSION_PLURALS[label] ?? `${label.toLowerCase()}s`;
+}
 const TIMES = [
   '12:00 AM', '12:30 AM', '1:00 AM', '1:30 AM', '2:00 AM', '2:30 AM', '3:00 AM', '3:30 AM',
   '4:00 AM', '4:30 AM', '5:00 AM', '5:30 AM', '6:00 AM', '6:30 AM', '7:00 AM', '7:30 AM',
@@ -147,10 +195,16 @@ const col4: React.CSSProperties = { display: 'flex', flexDirection: 'column', ga
 function List({ children }: { children: React.ReactNode }) {
   return <div style={{ ...col4, padding: 'var(--padding-8px)' }}>{children}</div>;
 }
-/** Fixed-height scroll viewport so long lists actually scroll. */
-function ScrollList({ height, children }: { height: number; children: React.ReactNode }) {
+/**
+ * Fixed-height scroll viewport so long lists actually scroll. Bottom padding
+ * matches the other three sides by default (the list is the last element in
+ * the card); pass `flushBottom` only when a bordered footer follows immediately
+ * (its own top padding/border provides the separation — a second 8px here would
+ * double the gap).
+ */
+function ScrollList({ height, flushBottom, children }: { height: number; flushBottom?: boolean; children: React.ReactNode }) {
   return (
-    <div style={{ ...col4, padding: 'var(--padding-8px) var(--padding-8px) 0', maxHeight: height, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+    <div style={{ ...col4, padding: `var(--padding-8px) var(--padding-8px) ${flushBottom ? '0px' : 'var(--padding-8px)'}`, maxHeight: height, overflowY: 'auto', overscrollBehavior: 'contain' }}>
       {children}
     </div>
   );
@@ -180,6 +234,8 @@ function FilterFooter({
   secondaryLabel,
   secondaryDisabled,
   primaryDisabled,
+  onSecondaryClick,
+  onPrimaryClick,
 }: {
   resultsText: string;
   /** Show the Data Summary leading count (Filter Group). Default false (Basic Filter). */
@@ -188,6 +244,8 @@ function FilterFooter({
   secondaryDisabled?: boolean;
   /** Disable the primary "Show Results" CTA (Basic Filter empty search — nothing to show). */
   primaryDisabled?: boolean;
+  onSecondaryClick?: () => void;
+  onPrimaryClick?: () => void;
 }) {
   return (
     <FooterFrame
@@ -196,8 +254,8 @@ function FilterFooter({
       scrollShadow
       style={{ flexShrink: 0 }}
     >
-      <Button variant="secondary" size="medium" disabled={secondaryDisabled}>{secondaryLabel}</Button>
-      <Button variant="primary" size="medium" disabled={primaryDisabled}>Show Results</Button>
+      <Button variant="secondary" size="medium" disabled={secondaryDisabled} onClick={onSecondaryClick}>{secondaryLabel}</Button>
+      <Button variant="primary" size="medium" disabled={primaryDisabled} onClick={onPrimaryClick}>Show Results</Button>
     </FooterFrame>
   );
 }
@@ -245,6 +303,12 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
     sortOptions = DEFAULT_SORT_OPTIONS,
     onSortChange,
     onSelectionChange,
+    groups,
+    initialGroupSelections,
+    onGroupSelectionChange,
+    onApply,
+    onReset,
+    showResultsDisabled,
     children,
     style,
     ...rest
@@ -253,6 +317,7 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
 ) {
   const opts = options ?? DEFAULT_OPTIONS;
   const filterOpts = options ?? DEFAULT_FILTER_OPTIONS;
+  const dims = groups ?? DEFAULT_FILTER_GROUPS;
   // The two-pane filter panels are a fixed height (Figma 480×360) so their inner
   // panes can flex and the right-hand list scrolls beneath a pinned footer.
   const fixedHeight =
@@ -264,10 +329,39 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
 
   // Interactive state (hooks declared unconditionally; used per variant).
   const [active, setActive] = React.useState(activeIndex);
-  const [checked, setChecked] = React.useState<Set<number>>(() =>
-    variant === 'filter-group' ? new Set([0, 1, 2]) : new Set(),
-  );
+  const [checked, setChecked] = React.useState<Set<number>>(() => new Set());
   const [sortField, setSortField] = React.useState(0);
+
+  // filter-group: which rail dimension is showing on the right, its own
+  // in-panel search, and per-dimension checked VALUES (index-aligned with `dims`).
+  const [activeGroup, setActiveGroup] = React.useState(0);
+  const [groupSearch, setGroupSearch] = React.useState(variant === 'filter-group-empty' ? 'Xyzzy' : '');
+  const [groupChecked, setGroupChecked] = React.useState<string[][]>(
+    () => dims.map((_, i) => initialGroupSelections?.[i] ?? []),
+  );
+  // Compute-then-set (not the `setGroupChecked(prev => ...)` functional-updater
+  // form) deliberately: `onGroupSelectionChange` calls back into the HOST's own
+  // setState (e.g. OrdersPage's draft-filter state). Calling a different
+  // component's setState from inside a state updater function is invalid — React
+  // may invoke updater functions outside a committed render — so the state
+  // update and the host notification must be two plain statements in the event
+  // handler, not one nested inside the other.
+  const toggleGroupChecked = (groupIdx: number, value: string) => {
+    const next = groupChecked.map((arr, i) => (i === groupIdx ? (arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]) : arr));
+    setGroupChecked(next);
+    onGroupSelectionChange?.(next);
+  };
+  const clearGroupChecked = (groupIdx: number) => {
+    const next = groupChecked.map((arr, i) => (i === groupIdx ? [] : arr));
+    setGroupChecked(next);
+    onGroupSelectionChange?.(next);
+  };
+  const clearAllGroups = () => {
+    const next = groupChecked.map(() => []);
+    setGroupChecked(next);
+    onGroupSelectionChange?.(next);
+    onReset?.();
+  };
   const [sortDir, setSortDir] = React.useState(1);
 
   const toggleChecked = (i: number) => {
@@ -337,7 +431,7 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
       case 'combobox-create':
         body = (
           <>
-            <ScrollList height={240}>
+            <ScrollList height={240} flushBottom>
               {opts.map((l, i) => (
                 <DesktopMenuOptions key={i} type="combobox" label={l} active={i === active} onSelect={() => setActive(i)} />
               ))}
@@ -476,42 +570,62 @@ export const DesktopDropdowns = React.forwardRef<HTMLDivElement, DesktopDropdown
 
       case 'filter-group':
       case 'filter-group-empty': {
-        const empty = variant === 'filter-group-empty';
+        // Real per-dimension search: filter the ACTIVE dimension's options by
+        // `groupSearch` (case-insensitive substring). `filter-group-empty` just
+        // seeds a query ("Xyzzy") that matches nothing, for a deterministic
+        // Storybook demo of the same reactive path everything else uses.
+        const activeDim = dims[activeGroup];
+        const q = groupSearch.trim().toLowerCase();
+        const visibleOptions = activeDim ? activeDim.options.filter((o) => o.toLowerCase().includes(q)) : [];
+        const noMatch = visibleOptions.length === 0;
         body = (
           <>
             <div style={{ display: 'flex', flexDirection: 'row', flex: 1, minHeight: 0, justifyContent: 'space-between' }}>
-              {/* Left: filter-group rows; the active one shows the "{n} selected" chip.
-                  Figma "Options" pane is 196px TOTAL (box-border) → 164px rows; right pane gets 284px. */}
+              {/* Left: one rail row per dimension; the active one shows the "{n} selected" chip. */}
               <div style={{ width: 196, flexShrink: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12px)', padding: '16px 16px 0 16px', borderRight: 'var(--stroke-xs) solid var(--border-neutral-default)', overflowY: 'auto', overscrollBehavior: 'contain' }}>
-                {['Table Filter', 'Table Filter', 'Table Filter', 'Table Filter', 'Table Filter'].map((l, i) => (
+                {dims.map((d, i) => (
                   <DesktopMenuOptions
-                    key={i}
+                    key={d.label}
                     type="filter-group"
-                    label={l}
-                    active={i === 0}
-                    selected={i === 0 && checked.size > 0}
-                    selectedCount={i === 0 ? checked.size : 0}
-                    onDeselectAll={clearChecked}
+                    label={d.label}
+                    active={i === activeGroup}
+                    selected={(groupChecked[i]?.length ?? 0) > 0}
+                    selectedCount={groupChecked[i]?.length ?? 0}
+                    onSelect={() => { setActiveGroup(i); setGroupSearch(''); }}
+                    onDeselectAll={() => clearGroupChecked(i)}
                   />
                 ))}
               </div>
-              {/* Right: search + scrollable checkbox list (or empty state) */}
+              {/* Right: search + scrollable checkbox list (or the no-match empty state) for the active dimension. */}
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12px)', padding: '16px 16px 0 16px' }}>
-                <SearchInput {...(empty ? { defaultValue: 'Xyzzy', onClear: () => {} } : { placeholder: 'Search here...' })} style={{ width: '100%' }} />
-                {empty ? (
+                <SearchInput placeholder="Search here..." value={groupSearch} onChange={(e) => setGroupSearch(e.target.value)} onClear={() => setGroupSearch('')} style={{ width: '100%' }} />
+                {noMatch ? (
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <EmptyState type="no-results" size="desktop" showIcon={false} style={{ maxWidth: '100%' }} />
+                    <EmptyState
+                      type="no-results"
+                      size="desktop"
+                      showIcon={false}
+                      description={activeDim ? `All ${pluralizeDimension(activeDim.label)} will be displayed here.` : undefined}
+                      style={{ maxWidth: '100%' }}
+                    />
                   </div>
                 ) : (
                   <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', ...col4 }}>
-                    {filterOpts.map((l, i) => (
-                      <DesktopMenuOptions key={i} type="checkbox-selection" label={l} selected={checked.has(i)} onSelect={() => toggleChecked(i)} />
+                    {visibleOptions.map((l) => (
+                      <DesktopMenuOptions key={l} type="checkbox-selection" label={l} selected={groupChecked[activeGroup]?.includes(l) ?? false} onSelect={() => toggleGroupChecked(activeGroup, l)} />
                     ))}
                   </div>
                 )}
               </div>
             </div>
-            <FilterFooter resultsText={resultsText} showLeading secondaryLabel="Reset" secondaryDisabled={empty} />
+            <FilterFooter
+              resultsText={resultsText}
+              showLeading
+              secondaryLabel="Reset"
+              onSecondaryClick={clearAllGroups}
+              onPrimaryClick={onApply}
+              primaryDisabled={noMatch || showResultsDisabled}
+            />
           </>
         );
         break;

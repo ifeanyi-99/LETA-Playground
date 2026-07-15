@@ -7,6 +7,12 @@ import { FieldChrome } from '../InputField/FieldChrome.js';
  * trailing chevron that opens a menu/overlay (owned by the consumer). The
  * `Select` type of Data Entry `38:42` (Variant=Basic). Visually identical to
  * the field box of Input Field; clicking the box fires `onSelectClick`.
+ *
+ * The field box carries `data-field-box` — a stable hook for consumers that
+ * anchor a popover/overlay to this control. Anchoring to the outer (labelled)
+ * wrapper instead measures a rect that includes the label above the box, which
+ * throws off overlay flip-above positioning (the panel lands level with the
+ * label, not the visible field).
  */
 export interface SelectProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -137,7 +143,7 @@ export const Select = React.forwardRef<HTMLInputElement, SelectProps>(function S
       className={className}
       style={style}
     >
-      <div style={fieldBoxStyle} onClick={disabled ? undefined : onSelectClick}>
+      <div data-field-box style={fieldBoxStyle} onClick={disabled ? undefined : onSelectClick}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)', flex: 1, minWidth: 0 }}>
           {leadingFieldIcon && (
             <span style={{ flexShrink: 0, display: 'flex', color: 'var(--icons-neutral-idle)' }}>

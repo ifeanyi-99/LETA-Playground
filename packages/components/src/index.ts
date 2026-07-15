@@ -88,6 +88,8 @@ export type {
 } from './SelectionControl/index.js';
 export { Shortcut } from './Shortcut/index.js';
 export type { ShortcutProps } from './Shortcut/index.js';
+export { Skeleton } from './Skeleton/index.js';
+export type { SkeletonProps } from './Skeleton/index.js';
 export { DesktopProgressIndicator } from './DesktopProgressIndicator/index.js';
 export type {
   DesktopProgressIndicatorProps,
@@ -185,7 +187,7 @@ export type { MobileMenuOptionsProps, MobileMenuOptionType } from './MobileMenuO
 export { MobileDropdown } from './MobileDropdown/index.js';
 export type { MobileDropdownProps, MobileDropdownOption } from './MobileDropdown/index.js';
 export { DesktopDropdowns } from './DesktopDropdowns/index.js';
-export type { DesktopDropdownsProps, DesktopDropdownVariant } from './DesktopDropdowns/index.js';
+export type { DesktopDropdownsProps, DesktopDropdownVariant, FilterGroupDimension } from './DesktopDropdowns/index.js';
 export { DurationLabel } from './DurationLabel/index.js';
 export type { DurationLabelProps, DurationLabelVariant, DurationLabelStatus } from './DurationLabel/index.js';
 export { Cell } from './Cell/index.js';

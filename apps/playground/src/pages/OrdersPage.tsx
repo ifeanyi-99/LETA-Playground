@@ -21,6 +21,7 @@ import {
   Title,
   TopFilterSection,
   UNASSIGNED_ORDER_COLUMNS,
+  type FilterGroupDimension,
   type TableColumn,
   type TableRow,
   type TopFilterSectionItem,
@@ -28,9 +29,10 @@ import {
 import type { IconName } from '@leta/icons';
 import { useStore } from '../store/useStore.js';
 import type { NewOrderInput } from '../store/useStore.js';
-import type { Order, OrderStatus } from '../store/types.js';
+import type { DepotOption, Order, OrderStatus } from '../store/types.js';
 import { ORDER_STATUS_BADGE, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../store/types.js';
 import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
+import { SkeletonTableRows } from '../components/SkeletonTableRows.js';
 import { AddOrderDrawer } from '../components/AddOrderDrawer.js';
 
 // ── Filter groups ───────────────────────────────────────────────────────────────
@@ -99,6 +101,32 @@ function canDispatch(o: Order): boolean {
   return GROUP_STATUSES.unassigned.includes(o.status);
 }
 
+// ── Client-scoped pickup depot (Route cell) ──────────────────────────────────────
+// MOCK_ORDERS is a single shared pool (switching clients doesn't swap the order
+// list — only the account config), and its seed `depot` field is drawn from a
+// large client-agnostic pool for mock variety, unrelated to any client's actual
+// depot access. That's wrong: the Route cell's pickup must only ever be a depot
+// the ACTIVE client's dispatcher can actually access — a single-depot client
+// (Naivas, Java House) should show that ONE depot for every order. An order the
+// dispatcher created themselves (via Add Order) already stores a real depot from
+// their own client's list — that's kept as-is; only a seed order whose depot
+// name isn't one of the active client's own is remapped, deterministically (by
+// order id, so it's stable) onto one of the client's depots.
+function depotForOrder(order: Order, depots: DepotOption[]): DepotOption | undefined {
+  if (depots.length === 0) return undefined;
+  const owned = depots.find((d) => d.name === order.depot);
+  if (owned) return owned;
+  return depots.length === 1 ? depots[0] : depots[idHash(order.id) % depots.length];
+}
+
+// ── Created By label (Table spec §2.2 — also the Created By filter dimension) ────
+// Deterministic per order (same hash the Created By column already used inline);
+// factored out so the filter dimension and the column cell can't drift apart.
+function creatorLabelFor(order: Order): string {
+  const c = CREATORS[order.id.charCodeAt(0) % CREATORS.length]!;
+  return c.source === 'human' ? c.name : c.source === 'storefront' ? 'Storefront' : 'API';
+}
+
 // ── Mock SLA state + duration (Table spec §2.3, Doc 4) ───────────────────────────
 // Deterministic per order until the Configuration spec (Doc 2) defines real SLA
 // values — then slaStateFor/mockDurationFor are replaced by stage-clock logic.
@@ -118,8 +146,10 @@ function slaStateFor(o: Order): SlaState {
   return h === 3 ? 'at-risk' : h === 4 ? 'delayed' : 'on-target';
 }
 // Plausible per-state mock times (echoing the wireframe samples): on-target
-// short, at-risk near the SLA boundary, delayed/beyond past it.
-function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
+// short, at-risk near the SLA boundary, delayed/beyond past it. Exposed as a
+// raw second count (`durationSecondsFor`) too, so the Sort dropdown's
+// "Duration" field can order by the exact same value the column displays.
+function durationSecondsFor(o: Order, sla: SlaState, finished: boolean): number {
   const h = idHash(o.id);
   const seconds = (h * 7) % 60;
   let minutes: number;
@@ -127,7 +157,29 @@ function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
   else if (sla === 'delayed') minutes = 13 + (h % 22);
   else if (sla === 'at-risk') minutes = 9 + (h % 5);
   else minutes = 2 + (h % 10);
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m ${seconds}s`;
+  return minutes * 60 + seconds;
+}
+function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
+  const total = durationSecondsFor(o, sla, finished);
+  const minutes = Math.floor(total / 60);
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m ${total % 60}s`;
+}
+
+// ── Sort (Table spec's Sort dropdown — Created / Duration / Last modified) ───
+// "Last modified" has no distinct field in this mock data (the Last Updated
+// *column* already just aliases createdAt too — see the cellByLabel map
+// below), so it orders by the same value as Created; that's consistent with
+// what's actually displayed, not a stand-in for a missing feature.
+type SortField = 'created' | 'duration' | 'lastModified';
+const SORT_FIELDS: SortField[] = ['created', 'duration', 'lastModified'];
+function sortValueFor(o: Order, field: SortField): number {
+  if (field === 'duration') {
+    const isFinished = o.status === 'delivered' || o.status === 'cancelled';
+    const rawSla = slaStateFor(o);
+    const sla: SlaState = isFinished && rawSla === 'at-risk' ? 'on-target' : rawSla;
+    return durationSecondsFor(o, sla, isFinished);
+  }
+  return new Date(o.createdAt).getTime();
 }
 
 // ── Overlay model ────────────────────────────────────────────────────────────────
@@ -204,24 +256,65 @@ export function OrdersPage(): React.ReactElement {
   const [createdLabel, setCreatedLabel] = React.useState('Created: Today');
   // Live search query — matches Order ID, recipient name, or recipient phone.
   const [search, setSearch] = React.useState('');
+  // The Filter Group (Doc 3 §9): `appliedFilters` is what actually narrows the
+  // table (AND across dimensions); `draftFilters` is the panel's live/uncommitted
+  // selection while it's open, only committed to `appliedFilters` on "Show
+  // Results" — checking boxes must not reflow the table on every tick. Both are
+  // keyed by dimension LABEL (not index) since which dimensions exist varies by
+  // status view/client. `filterPreviewCount` is what the footer's "N results"
+  // shows while the panel is open — a live preview of `draftFilters`, computed
+  // against the status-scoped order pool (independent of the free-text search).
+  const [appliedFilters, setAppliedFilters] = React.useState<Record<string, Set<string>>>({});
+  const [draftFilters, setDraftFilters] = React.useState<Record<string, Set<string>>>({});
+  const [filterPreviewCount, setFilterPreviewCount] = React.useState(0);
+  // Sort — null field = no active sort (the natural order); only becomes active
+  // once the user actually picks a field/direction from the Sort dropdown, so
+  // opening it doesn't silently reorder the table the user hasn't touched yet.
+  const [sortFieldIndex, setSortFieldIndex] = React.useState<number | null>(null);
+  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('desc');
   // The Orders view boots into the Empty State (wireframe 1176:171818); the
-  // populated table appears only after a load is triggered (Add Order/Refresh).
+  // populated table appears only after a load is triggered (Import).
   const [loaded, setLoaded] = React.useState(false);
-  // Region reload: Add Order / Refresh show the LETA loader over the table
-  // region for a ~2s simulated re-fetch; the overlay itself holds until the
-  // loader animation completes its full cycle, then the (re)loaded table shows.
-  const [refreshing, setRefreshing] = React.useState(false);
-  const refreshTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const runLoad = () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    refreshTimer.current = setTimeout(() => {
-      setRefreshing(false);
+  // Loading pattern (applies going forward, not just here): a FIRST load, with
+  // nothing to show yet, blocks behind the page-level LoadingOverlay scrim — the
+  // LETA loader holds until it completes a full animation cycle, then the table
+  // reveals. A SUBSEQUENT update to already-visible content (filter, sort, tab
+  // switch, table refresh) never uses that scrim — it shows Skeleton rows in the
+  // table region only, so the toolbars/search/filters stay mounted and fully
+  // usable throughout. These are two distinct pieces of state on purpose: they
+  // drive different visual treatments and can't be unified into one boolean.
+  const [firstLoading, setFirstLoading] = React.useState(false);
+  const firstLoadTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const runFirstLoad = () => {
+    if (firstLoading) return;
+    setFirstLoading(true);
+    firstLoadTimer.current = setTimeout(() => {
+      setFirstLoading(false);
       setLoaded(true);
       setTableKey((k) => k + 1);
     }, 2000);
   };
-  const handleRefresh = runLoad;
+  // Every "subsequent update" trigger shares this one flash — status/sub-status
+  // switch, Filter Group apply, sort pick, search (debounced), and the manual
+  // Refresh button. Restarts the timer rather than ignoring a re-trigger (e.g.
+  // picking a sort field then a direction in quick succession still reflects
+  // the latest action) — the trailing tableKey bump remounts the real Table
+  // (replaying its enter animation, reseeding index-based selection) exactly
+  // when the Skeleton swaps back out, not before.
+  const [tableRefreshing, setTableRefreshing] = React.useState(false);
+  const tableRefreshTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flashTableLoading = (duration = 450) => {
+    if (tableRefreshTimer.current) clearTimeout(tableRefreshTimer.current);
+    setTableRefreshing(true);
+    tableRefreshTimer.current = setTimeout(() => {
+      tableRefreshTimer.current = null;
+      setTableRefreshing(false);
+      setTableKey((k) => k + 1);
+    }, duration);
+  };
+  // A manual Refresh is a more deliberate action than an automatic re-filter —
+  // slightly longer so it reads as "did something", not just a flicker.
+  const handleRefresh = () => flashTableLoading(1200);
   // Add Order — opens the config-aware side drawer (empty-state CTA + toolbar both
   // route here). Submitting creates the order, reveals the table, and toasts.
   const [addOrderOpen, setAddOrderOpen] = React.useState(false);
@@ -245,7 +338,10 @@ export function OrdersPage(): React.ReactElement {
       },
     });
   };
-  React.useEffect(() => () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); }, []);
+  React.useEffect(() => () => {
+    if (firstLoadTimer.current) clearTimeout(firstLoadTimer.current);
+    if (tableRefreshTimer.current) clearTimeout(tableRefreshTimer.current);
+  }, []);
   const [overlay, setOverlay] = React.useState<OverlayState | null>(null);
 
   // Live duration timer — recompute each second; `duration` cells re-render.
@@ -273,15 +369,69 @@ export function OrdersPage(): React.ReactElement {
   }, [selectedIds]);
 
   // ── Filtering + pagination ─────────────────────────────────────────────────
+  // Search debounces ~300ms after the last keystroke (Doc 3 §8) before it
+  // actually re-filters — `search` itself stays instant (the field's own typed
+  // value), only the value that drives `query`/the Skeleton flash is delayed.
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+  const searchDebounceTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => {
+    if (searchDebounceTimer.current) clearTimeout(searchDebounceTimer.current);
+    searchDebounceTimer.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => { if (searchDebounceTimer.current) clearTimeout(searchDebounceTimer.current); };
+  }, [search]);
   // Search matches the field's promise ("Search orders by ID or recipient"):
   // Order ID, recipient name, or recipient phone — case-insensitive substring;
   // phones compare digits-only so "0712 345" matches "+254 712 345 678".
-  const query = search.trim().toLowerCase();
+  const query = debouncedSearch.trim().toLowerCase();
   const queryDigits = query.replace(/\D/g, '');
+
+  // Orders in the current status view (filterTab + subStatus), before search or
+  // the Filter Group — the pool the filter dimensions' option lists and live
+  // preview count are drawn from.
+  const ordersInView = React.useMemo(
+    () => orders.filter((o) => (filterTab === 'all' || GROUP_STATUSES[filterTab].includes(o.status)) && (!subStatus || o.status === subStatus)),
+    [orders, filterTab, subStatus],
+  );
+
+  // AND-across-dimensions predicate for the Filter Group's applied selections.
+  const matchesFilters = React.useCallback((o: Order, filters: Record<string, Set<string>>): boolean => {
+    if (filters['Recipient']?.size && !filters['Recipient'].has(o.customer)) return false;
+    if (filters['Created By']?.size && !filters['Created By'].has(creatorLabelFor(o))) return false;
+    if (filters['Depot']?.size) {
+      const name = depotForOrder(o, clientConfig.depots)?.name;
+      if (!name || !filters['Depot'].has(name)) return false;
+    }
+    if (filters['Driver']?.size) {
+      const name = getDriver(o.driverId)?.name;
+      if (!name || !filters['Driver'].has(name)) return false;
+    }
+    return true;
+  }, [clientConfig.depots, getDriver]);
+
+  // Filter Group dimensions — Recipient + Created By always; Depot only for a
+  // multi-depot client (single-depot clients have nothing to filter by there —
+  // every order shows the same one); Driver only where orders actually have an
+  // assigned driver (Dispatched/Finished — Unassigned has none yet, All mixes
+  // too many statuses to stay meaningful).
+  const filterGroups = React.useMemo(() => {
+    const dims: { label: string; options: string[] }[] = [];
+    dims.push({ label: 'Recipient', options: [...new Set(ordersInView.map((o) => o.customer))] });
+    dims.push({ label: 'Created By', options: [...new Set(ordersInView.map(creatorLabelFor))] });
+    if (clientConfig.depots.length > 1) {
+      dims.push({ label: 'Depot', options: clientConfig.depots.map((d) => d.name) });
+    }
+    if (filterTab === 'dispatched' || filterTab === 'finished') {
+      const driverNames = [...new Set(ordersInView.map((o) => getDriver(o.driverId)?.name).filter((n): n is string => Boolean(n)))];
+      if (driverNames.length) dims.push({ label: 'Driver', options: driverNames });
+    }
+    return dims;
+  }, [ordersInView, clientConfig.depots, filterTab, getDriver]);
+
   const filtered = React.useMemo(() => {
     return orders.filter((o) => {
       if (filterTab !== 'all' && !GROUP_STATUSES[filterTab].includes(o.status)) return false;
       if (subStatus && o.status !== subStatus) return false;
+      if (!matchesFilters(o, appliedFilters)) return false;
       if (query) {
         const idMatch = o.id.toLowerCase().includes(query);
         const nameMatch = o.customer.toLowerCase().includes(query);
@@ -296,26 +446,49 @@ export function OrdersPage(): React.ReactElement {
       }
       return true;
     });
-  }, [orders, filterTab, subStatus, query, queryDigits]);
+  }, [orders, filterTab, subStatus, query, queryDigits, matchesFilters, appliedFilters]);
+
+  // Sort — applied on top of the filtered set, ahead of pagination; the count
+  // (`filtered.length`) and dimension option lists are unaffected by it.
+  const sortedFiltered = React.useMemo(() => {
+    if (sortFieldIndex == null) return filtered;
+    const field = SORT_FIELDS[sortFieldIndex]!;
+    const dir = sortDir === 'asc' ? 1 : -1;
+    return [...filtered].sort((a, b) => (sortValueFor(a, field) - sortValueFor(b, field)) * dir);
+  }, [filtered, sortFieldIndex, sortDir]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
   const clampedPage = Math.min(page, pageCount);
-  const pageOrders = filtered.slice((clampedPage - 1) * ROWS_PER_PAGE, clampedPage * ROWS_PER_PAGE);
+  const pageOrders = sortedFiltered.slice((clampedPage - 1) * ROWS_PER_PAGE, clampedPage * ROWS_PER_PAGE);
 
-  // Reset page + clear selection (remount Table) when the filter changes.
+  // Status/sub-status switch (Doc 3 §9's "tab switch") — reset page + clear
+  // selection immediately, but the Skeleton flash owns the actual table
+  // remount (see `flashTableLoading`): it lands at the end of the flash, not
+  // the moment the tab changes, so the swap-back and the flash finishing
+  // coincide instead of remounting the (still-hidden) Table early.
   React.useEffect(() => {
     setPage(1);
     setSelectedIds(new Set());
-    setTableKey((k) => k + 1);
+    flashTableLoading();
   }, [filterTab, subStatus]);
 
-  // On search change: back to page 1 and remount the Table so its index-based
-  // internal selection re-seeds against the new row slice. Selection is KEPT
-  // (it's ID-based across pages) — matching rows stay checked, and orders
-  // filtered out of view remain selected in the bulk toolbar.
+  // Which dimensions exist depends on the status view — a filter applied on one
+  // view (e.g. a Driver selection while in Dispatched) has no meaning on another
+  // (Unassigned has no Driver dimension at all), so switching views clears both
+  // the applied and draft filter state.
+  React.useEffect(() => {
+    setAppliedFilters({});
+    setDraftFilters({});
+  }, [filterTab, subStatus]);
+
+  // On (debounced) search change: back to page 1; the Skeleton flash owns the
+  // table remount that reseeds the Table's index-based internal selection
+  // against the new row slice. Selection itself is KEPT (it's ID-based across
+  // pages) — matching rows stay checked, and orders filtered out of view
+  // remain selected in the bulk toolbar.
   React.useEffect(() => {
     setPage(1);
-    setTableKey((k) => k + 1);
+    flashTableLoading();
   }, [query]);
 
   const clearSelection = () => {
@@ -356,11 +529,6 @@ export function OrdersPage(): React.ReactElement {
     return m;
   }, [orders]);
 
-  // Unique recipient names — drive the Basic Filter (Search) dropdown's checklist.
-  const recipients = React.useMemo(
-    () => [...new Set(orders.map((o) => o.customer))],
-    [orders],
-  );
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const dispatchOrder = (orderId: string) => {
@@ -539,7 +707,7 @@ export function OrdersPage(): React.ReactElement {
       'Batch ID': { type: 'sample', text: o.batchId ?? '—' }, // Broadcasted view only
       'Trip': { type: 'sample', text: '—' }, // no trip data in mock yet
       'Driver': { type: 'driver-cell', name: driver?.name ?? '—' },
-      'Route': { type: 'address-cell', pickup: o.depot ?? o.pickup.label, dropoff: o.dropoff.label },
+      'Route': { type: 'address-cell', pickup: depotForOrder(o, clientConfig.depots)?.name ?? o.pickup.label, dropoff: o.dropoff.label },
       'Recipient': { type: 'list-item', title: o.customer, subtext: o.phone },
       // Mock times until the Configuration spec lands (real stage-clock logic then).
       // Scheduled has no SLA yet; Returned's counter reset on return — both show "—"
@@ -576,10 +744,19 @@ export function OrdersPage(): React.ReactElement {
     return { selected: selectedIds.has(o.id), cells };
   });
 
-  // The "Filter" toolbar button reflects advanced filter *rules* (its own dropdown),
-  // not the status sub-filter (which shows as the badge on the Unassigned pill). No
-  // advanced filter rules are applied yet → no count badge.
-  const activeFilterCount = 0;
+  // The "Filter" toolbar button badge reflects the total applied Filter Group
+  // selections across every dimension (not the status sub-filter, which shows
+  // as the badge on the Unassigned/Dispatched/Finished pill instead).
+  const activeFilterCount = Object.values(appliedFilters).reduce((n, s) => n + s.size, 0);
+
+  // Opens the Filter Group, seeding its draft + live preview count from whatever
+  // is currently applied (the panel remounts fresh each open, so this is what
+  // makes a previously-applied filter still show checked/reflected on reopen).
+  const handleOpenFilter = () => {
+    setDraftFilters(appliedFilters);
+    setFilterPreviewCount(ordersInView.filter((o) => matchesFilters(o, appliedFilters)).length);
+    openFromFocus('filter');
+  };
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -622,7 +799,7 @@ export function OrdersPage(): React.ReactElement {
                   searchPlaceholder="Search by order or recipient..."
                   createdLabel={createdLabel}
                   onCreatedClick={() => openFromFocus('created')}
-                  onFilterClick={() => openFromFocus('filter')}
+                  onFilterClick={handleOpenFilter}
                   onSortClick={() => openFromFocus('sort')}
                   onImportExportClick={() => openFromFocus('importExport')}
                 />
@@ -645,7 +822,7 @@ export function OrdersPage(): React.ReactElement {
                   filterCount={activeFilterCount}
                   createdLabel={createdLabel}
                   onCreatedClick={() => openFromFocus('created')}
-                  onFilterClick={() => openFromFocus('filter')}
+                  onFilterClick={handleOpenFilter}
                   onSortClick={() => openFromFocus('sort')}
                   onAddOrderClick={handleAddOrder}
                   onImportExportClick={() => openFromFocus('importExport')}
@@ -660,45 +837,56 @@ export function OrdersPage(): React.ReactElement {
               </>
             }
             table={
-              // Keyed wrapper: remounts (and replays the enter animation on) the
-              // table alone when the view, page, or a reset changes — the controls
-              // above stay mounted so the filter ring slides.
-              <div
-                key={`${filterTab}-${clampedPage}-${tableKey}`}
-                style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'leta-table-in 200ms ease-in' }}
-              >
-              <Table
-                rowVariant="complex"
-                // No Checkbox on All (mixed statuses, no bulk actions) or Finished
-                // (Delivered/Cancelled are terminal — nothing to bulk-action; matches
-                // the Figma finished tables, which carry no checkbox column).
-                selectable={filterTab !== 'all' && filterTab !== 'finished'}
-                // §4.3 measured scroll: the table flips to h-scroll (pinned Order
-                // ID/Actions) ONLY while its column minimums exceed the container —
-                // e.g. optional columns on a dense view, or a narrowed window. On a
-                // sparse view (Returned/Scheduled) extras just join the flex-fill.
-                scrollX="auto"
-                columns={columns}
-                rows={rows}
-                onSelectionChange={handleSelectionChange}
-                page={clampedPage}
-                pageCount={pageCount}
-                onPageChange={setPage}
-                countLabel={`Showing ${pageOrders.length} of ${filtered.length}`}
-                rowsPerPage={ROWS_PER_PAGE}
-                onRowsPerPageClick={() => noop('Rows per page')}
-                fillHeight
-              />
-              </div>
+              tableRefreshing ? (
+                // Subsequent update (Refresh) — Skeleton rows only, no scrim; the
+                // toolbars above stay mounted and interactive throughout.
+                <SkeletonTableRows
+                  columns={columns}
+                  selectable={filterTab !== 'all' && filterTab !== 'finished'}
+                  rows={Math.min(ROWS_PER_PAGE, pageOrders.length || ROWS_PER_PAGE)}
+                />
+              ) : (
+                // Keyed wrapper: remounts (and replays the enter animation on) the
+                // table alone when the view, page, or a reset changes — the controls
+                // above stay mounted so the filter ring slides.
+                <div
+                  key={`${filterTab}-${clampedPage}-${tableKey}`}
+                  style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'leta-table-in 200ms ease-in' }}
+                >
+                <Table
+                  rowVariant="complex"
+                  // No Checkbox on All (mixed statuses, no bulk actions) or Finished
+                  // (Delivered/Cancelled are terminal — nothing to bulk-action; matches
+                  // the Figma finished tables, which carry no checkbox column).
+                  selectable={filterTab !== 'all' && filterTab !== 'finished'}
+                  // §4.3 measured scroll: the table flips to h-scroll (pinned Order
+                  // ID/Actions) ONLY while its column minimums exceed the container —
+                  // e.g. optional columns on a dense view, or a narrowed window. On a
+                  // sparse view (Returned/Scheduled) extras just join the flex-fill.
+                  scrollX="auto"
+                  columns={columns}
+                  rows={rows}
+                  onSelectionChange={handleSelectionChange}
+                  page={clampedPage}
+                  pageCount={pageCount}
+                  onPageChange={setPage}
+                  countLabel={`Showing ${pageOrders.length} of ${filtered.length}`}
+                  rowsPerPage={ROWS_PER_PAGE}
+                  onRowsPerPageClick={() => noop('Rows per page')}
+                  fillHeight
+                />
+                </div>
+              )
             }
           />
           )}
 
-          {/* Region reload overlay (Refresh) — contained: dims only this table
-              region, holds until the loader completes a full cycle. Top edge
+          {/* First-load overlay (Import from empty) — contained: dims only this
+              table region, holds until the loader completes a full cycle. Top edge
               extends up through the page column's 24px gap to sit 1px below the
-              Title row (its divider stays undimmed). */}
-          <LoadingOverlay contained open={refreshing} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
+              Title row (its divider stays undimmed). Never shown for a Refresh —
+              that's a subsequent update, handled by the Skeleton rows above. */}
+          <LoadingOverlay contained open={firstLoading} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
         </div>
 
       {/* Bulk actions toolbar — slides up in / down out as the selection changes.
@@ -736,7 +924,38 @@ export function OrdersPage(): React.ReactElement {
       )}
 
       {/* Overlays */}
-      {overlay && <OverlayHost overlay={overlay} onClose={() => setOverlay(null)} pushToast={pushToast} cancelOrder={cancelOrder} subStatus={subStatus} onPickStatus={handlePickStatus} countByStatus={countByStatus} recipients={recipients} selectedOrderList={selectedOrders()} deselect={deselect} onCreatedLabel={setCreatedLabel} extraCols={extraCols} onToggleColumn={(k) => setExtraCols((p) => ({ ...p, [k]: !p[k] }))} />}
+      {overlay && (
+        <OverlayHost
+          overlay={overlay}
+          onClose={() => setOverlay(null)}
+          pushToast={pushToast}
+          cancelOrder={cancelOrder}
+          subStatus={subStatus}
+          onPickStatus={handlePickStatus}
+          countByStatus={countByStatus}
+          selectedOrderList={selectedOrders()}
+          deselect={deselect}
+          onCreatedLabel={setCreatedLabel}
+          extraCols={extraCols}
+          onToggleColumn={(k) => setExtraCols((p) => ({ ...p, [k]: !p[k] }))}
+          filterGroups={filterGroups}
+          appliedFilters={appliedFilters}
+          filterPreviewCount={filterPreviewCount}
+          onFilterSelectionChange={(selected) => {
+            const next: Record<string, Set<string>> = {};
+            filterGroups.forEach((g, i) => { next[g.label] = new Set(selected[i] ?? []); });
+            setDraftFilters(next);
+            setFilterPreviewCount(ordersInView.filter((o) => matchesFilters(o, next)).length);
+          }}
+          onFilterApply={() => { setAppliedFilters(draftFilters); setOverlay(null); flashTableLoading(); }}
+          onFilterReset={() => {
+            setDraftFilters({});
+            setFilterPreviewCount(ordersInView.length);
+          }}
+          onImport={runFirstLoad}
+          onSortChange={(sel) => { setSortFieldIndex(sel.index); setSortDir(sel.direction); flashTableLoading(); }}
+        />
+      )}
 
       {/* Add Order side drawer — config-aware order creation. */}
       <AddOrderDrawer
@@ -759,15 +978,27 @@ interface OverlayHostProps {
   subStatus: OrderStatus | null;
   onPickStatus: (group: Exclude<FilterTab, 'all'>, status: OrderStatus) => void;
   countByStatus: Record<OrderStatus, number>;
-  recipients: string[];
   selectedOrderList: Order[];
   deselect: (id: string) => void;
   onCreatedLabel: (label: string) => void;
   extraCols: Record<ExtraColumnKey, boolean>;
   onToggleColumn: (key: ExtraColumnKey) => void;
+  filterGroups: FilterGroupDimension[];
+  appliedFilters: Record<string, Set<string>>;
+  filterPreviewCount: number;
+  onFilterSelectionChange: (selected: string[][]) => void;
+  onFilterApply: () => void;
+  onFilterReset: () => void;
+  /** "Import" clicked (Import/Export dropdown) — a dev-convenience stand-in for a real
+   * data import: populates/refreshes the table via the same load-and-reveal path as
+   * Refresh, rather than requiring an Add Order submission first. */
+  onImport: () => void;
+  /** A Sort field/direction pick — DesktopDropdowns fires this on every pick (field
+   * and direction are independently selectable, panel stays open, per its own design). */
+  onSortChange: (sel: { index: number; label: string; direction: 'asc' | 'desc' }) => void;
 }
 
-function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPickStatus, countByStatus, recipients, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn }: OverlayHostProps): React.ReactElement {
+function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange }: OverlayHostProps): React.ReactElement {
   const { kind, anchor, orderId, group } = overlay;
 
   if (kind === 'selection') {
@@ -834,17 +1065,31 @@ function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPi
   }
 
   if (kind === 'sort') {
+    // Stays open on its own (field and direction are independently selectable —
+    // DesktopDropdowns' own design, not something this call site controls).
     return (
       <Popover anchorRect={anchor} onClose={onClose} placement="bottom-start">
-        <DesktopDropdowns variant="sort" />
+        <DesktopDropdowns variant="sort" onSortChange={onSortChange} />
       </Popover>
     );
   }
 
   if (kind === 'filter') {
+    // Doc 3 §9: 1 dimension → Basic Filter Search, 2+ → Filter Group. Every
+    // status view has at least Recipient + Created By, so Filter Group always
+    // applies here — Basic Filter Search stays available in the DS for a future
+    // screen with genuinely only one dimension.
     return (
       <Popover anchorRect={anchor} onClose={onClose} placement="bottom-start">
-        <DesktopDropdowns variant="basic-filter-search" options={recipients} resultsText={`${recipients.length} results`} />
+        <DesktopDropdowns
+          variant="filter-group"
+          groups={filterGroups}
+          initialGroupSelections={filterGroups.map((g) => [...(appliedFilters[g.label] ?? [])])}
+          resultsText={`${filterPreviewCount} results`}
+          onGroupSelectionChange={onFilterSelectionChange}
+          onApply={onFilterApply}
+          onReset={onFilterReset}
+        />
       </Popover>
     );
   }
@@ -861,7 +1106,15 @@ function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPi
               showLeadingIcon
               leadingIcon={label === 'Import' ? 'Download' : 'Upload'}
               showChevron={false}
-              onSelect={() => { pushToast({ type: 'success', title: label, subtitle: 'This feature is in progress.' }); onClose(); }}
+              onSelect={() => {
+                // Import is a dev-convenience stand-in for a real data import: it
+                // populates/refreshes the table (same load-and-reveal path as
+                // Refresh) instead of requiring an Add Order submission first.
+                // Export has no real target yet, so it stays a placeholder toast.
+                if (label === 'Import') onImport();
+                else pushToast({ type: 'success', title: label, subtitle: 'This feature is in progress.' });
+                onClose();
+              }}
             />
           ))}
         </MenuPanel>

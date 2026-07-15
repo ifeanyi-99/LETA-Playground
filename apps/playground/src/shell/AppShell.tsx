@@ -40,9 +40,9 @@ const NAV_GROUPS: { label?: string; items: NavEntry[] }[] = [
   {
     items: [
       { label: 'Dashboard', icon: 'Dashboard', path: '/dashboard' },
-      { label: 'Deliveries', icon: 'Orders', path: '/orders' },
+      { label: 'Deliveries', icon: 'Open-Box', path: '/orders' },
       { label: 'Live Map', icon: 'Map', path: '/map' },
-      { label: 'Fleet', icon: 'Fleet', path: '/fleet' },
+      { label: 'Fleet', icon: 'Truck', path: '/fleet' },
       { label: 'Team', icon: 'Team', path: '/team' },
     ],
   },

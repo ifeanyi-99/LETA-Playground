@@ -29,6 +29,11 @@ const STYLES = `
   .leta-search-field__input {
     border: 0; outline: none; background: transparent; padding: 0; margin: 0;
     width: 100%; min-width: 0; flex: 1;
+    /* A selected result (e.g. a full geocoded address) can be much longer than
+       the field — truncate with an ellipsis instead of letting the browser
+       hard-clip/scroll the text, which read as the value colliding with the
+       trailing clear (×) button. */
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .leta-search-field__input::placeholder { color: var(--text-default-placeholder); opacity: 1; }
   .leta-search-field__input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }

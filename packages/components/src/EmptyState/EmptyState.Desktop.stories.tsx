@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { EmptyState } from './EmptyState.js';
+import { Button } from '../Button/Button.js';
 
 /**
  * Desktop (full-page) empty states — the `Size=Desktop` variants of Figma `7339:29150`
@@ -24,3 +25,12 @@ export const NoData: Story = { args: { type: 'no-data' } };
 export const NoTrips: Story = { args: { type: 'no-trips' } };
 export const NoDrivers: Story = { args: { type: 'no-drivers' } };
 export const NoProducts: Story = { args: { type: 'no-products' } };
+/** "Error" — desktop-only (Figma `10865:20872`); ships with a "Reload Page" CTA (Container slot). */
+export const Error: Story = {
+  args: { type: 'error' },
+  render: (args) => (
+    <EmptyState {...args}>
+      <Button variant="primary" size="medium">Reload Page</Button>
+    </EmptyState>
+  ),
+};

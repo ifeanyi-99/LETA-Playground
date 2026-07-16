@@ -29,7 +29,8 @@ export type EmptyStateIllustration =
   | 'new-update'
   | 'no-data'
   | 'no-trips'
-  | 'no-drivers';
+  | 'no-drivers'
+  | 'error';
 
 export const EMPTY_STATE_ILLUSTRATIONS: Record<EmptyStateIllustration, string> = {
   'no-results': new URL('./assets/no-results.png', import.meta.url).href,
@@ -45,6 +46,7 @@ export const EMPTY_STATE_ILLUSTRATIONS: Record<EmptyStateIllustration, string> =
   'no-data': new URL('./assets/no-data.png', import.meta.url).href,
   'no-trips': new URL('./assets/no-trips.png', import.meta.url).href,
   'no-drivers': new URL('./assets/no-drivers.png', import.meta.url).href,
+  'error': new URL('./assets/error.png', import.meta.url).href,
 };
 
 export const EMPTY_STATE_ILLUSTRATIONS_WEBP: Record<EmptyStateIllustration, string> = {
@@ -61,4 +63,5 @@ export const EMPTY_STATE_ILLUSTRATIONS_WEBP: Record<EmptyStateIllustration, stri
   'no-data': new URL('./assets/no-data.webp', import.meta.url).href,
   'no-trips': new URL('./assets/no-trips.webp', import.meta.url).href,
   'no-drivers': new URL('./assets/no-drivers.webp', import.meta.url).href,
+  'error': new URL('./assets/error.webp', import.meta.url).href,
 };

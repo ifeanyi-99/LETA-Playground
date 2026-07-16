@@ -19,7 +19,8 @@ export type EmptyStateType =
   | 'no-data'
   | 'no-trips'
   | 'no-drivers'
-  | 'no-products';
+  | 'no-products'
+  | 'error';
 
 export type EmptyStateSize = 'mobile' | 'desktop';
 
@@ -46,8 +47,9 @@ interface Preset {
   description: string;
 }
 
-// Each scenario maps to one of the 13 LETA illustrations + its default copy.
-// `no-products` reuses the `no-items` illustration (as in Figma).
+// Each scenario maps to one of the 14 LETA illustrations + its default copy.
+// `no-products` reuses the `no-items` illustration (as in Figma). `error` is
+// desktop-only in Figma and ships with a "Reload Page" CTA (caller-provided via children).
 const PRESET: Record<EmptyStateType, Preset> = {
   'no-results':        { illustration: 'no-results',       heading: 'No Matching Results', description: 'Try adjusting your search.' },
   'no-reviews':        { illustration: 'no-reviews',       heading: 'No Reviews',          description: 'All reviews will be displayed here' },
@@ -63,6 +65,7 @@ const PRESET: Record<EmptyStateType, Preset> = {
   'no-trips':          { illustration: 'no-trips',         heading: 'No Trips Yet',        description: 'All trips will be displayed here' },
   'no-drivers':        { illustration: 'no-drivers',       heading: 'No Drivers',          description: 'All drivers will be displayed here' },
   'no-products':       { illustration: 'no-items',         heading: 'No Products',         description: 'No products have been added.' },
+  'error':             { illustration: 'error',            heading: 'Oops, something went wrong', description: "We couldn't load your content. Reload the page." },
 };
 
 // The illustration is a constant 150×150 across both sizes (Figma); only the

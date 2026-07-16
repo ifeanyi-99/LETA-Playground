@@ -175,6 +175,19 @@
       }
     },
     {
+      "nodeId": "10865:20871",
+      "name": "Illustrations/Error",
+      "pageName": "Atoms",
+      "type": "COMPONENT",
+      "key": "5fefcbc2fda130ce08ca5df23bdf6df3352ea1de",
+      "bbox": {
+        "x": 222,
+        "y": 986,
+        "width": 150,
+        "height": 150
+      }
+    },
+    {
       "nodeId": "9752:20357",
       "name": "Radio Button",
       "pageName": "Atoms",
@@ -45535,11 +45548,11 @@
           ]
         }
       },
-      "childCount": 19,
+      "childCount": 20,
       "bbox": {
         "x": 603,
         "y": 1923,
-        "width": 3199,
+        "width": 3525,
         "height": 1091
       },
       "variants": [
@@ -45836,6 +45849,22 @@
           "variantName": "Type=No Products, Size=Desktop",
           "width": 300,
           "height": 314,
+          "paddingLeft": 16,
+          "paddingRight": 16,
+          "paddingTop": 16,
+          "paddingBottom": 16,
+          "itemSpacing": 20,
+          "cornerRadius": 0,
+          "fills": {
+            "type": "SOLID",
+            "tokenId": "VariableID:5848:401166"
+          }
+        },
+        {
+          "nodeId": "10865:20872",
+          "variantName": "Type=Error, Size=Desktop",
+          "width": 300,
+          "height": 334,
           "paddingLeft": 16,
           "paddingRight": 16,
           "paddingTop": 16,

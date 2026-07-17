@@ -43352,7 +43352,7 @@
           "paddingTop": 16,
           "paddingBottom": 16,
           "itemSpacing": 16,
-          "cornerRadius": 12,
+          "cornerRadius": 8,
           "fills": {
             "type": "SOLID",
             "tokenId": "VariableID:5850:401190",
@@ -43410,7 +43410,7 @@
           "paddingTop": 16,
           "paddingBottom": 16,
           "itemSpacing": 16,
-          "cornerRadius": 12,
+          "cornerRadius": 8,
           "fills": {
             "type": "SOLID",
             "tokenId": "VariableID:5850:401184",
@@ -43468,7 +43468,7 @@
           "paddingTop": 16,
           "paddingBottom": 16,
           "itemSpacing": 16,
-          "cornerRadius": 12,
+          "cornerRadius": 8,
           "fills": {
             "type": "SOLID",
             "tokenId": "VariableID:6258:25275",
@@ -43706,7 +43706,7 @@
           "paddingTop": 16,
           "paddingBottom": 16,
           "itemSpacing": 16,
-          "cornerRadius": 12,
+          "cornerRadius": 8,
           "fills": {
             "type": "SOLID",
             "tokenId": "VariableID:6030:217340",
@@ -43764,7 +43764,7 @@
           "paddingTop": 16,
           "paddingBottom": 16,
           "itemSpacing": 16,
-          "cornerRadius": 12,
+          "cornerRadius": 8,
           "fills": {
             "type": "SOLID",
             "tokenId": "VariableID:5850:401191",

@@ -107,7 +107,7 @@ export const NotificationBanner = React.forwardRef<
     ...(isFilled
       ? {
           padding: 'var(--padding-16px)',
-          borderRadius: 'var(--rounding-xl)',
+          borderRadius: 'var(--rounding-lg)',
           backgroundColor: config.filledBg,
           boxShadow: `inset 0 0 0 1px ${config.filledBorder}`,
         }

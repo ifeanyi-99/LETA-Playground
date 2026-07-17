@@ -37,7 +37,12 @@ function ensureHoverTipStyles(): void {
 type Placement = 'above' | 'below';
 interface Pos { top: number; left: number; placement: Placement }
 
-const GAP = 4; // clearance between trigger and tooltip; the caret bridges it
+const GAP = 8; // clearance between the caret TIP and the trigger edge
+// The caret straddles the tooltip body's edge and its tip overhangs ~11px beyond
+// it (16px rotated square, half outside). The measured panel height is the body
+// only (the caret is absolutely-positioned overflow), so we add this so the
+// whole tooltip — caret included — clears the trigger instead of poking into it.
+const CARET_OVERHANG = 11;
 
 /**
  * HoverTip — wires the presentational `Tooltip` (Small variant, dark surface)
@@ -105,9 +110,10 @@ export function HoverTip({ label, children, delay = 120, style }: HoverTipProps)
     const margin = 8;
     const cx = t.left + t.width / 2;
     const left = Math.max(margin, Math.min(cx - p.width / 2, window.innerWidth - margin - p.width));
-    const fitsAbove = t.top - GAP - p.height >= margin;
+    const offset = GAP + CARET_OVERHANG; // clears the caret tip past the trigger
+    const fitsAbove = t.top - offset - p.height >= margin;
     const placement: Placement = fitsAbove ? 'above' : 'below';
-    const top = placement === 'above' ? t.top - GAP - p.height : t.bottom + GAP;
+    const top = placement === 'above' ? t.top - offset - p.height : t.bottom + offset;
     setPos({ top, left, placement });
   }, [open, label]);
 

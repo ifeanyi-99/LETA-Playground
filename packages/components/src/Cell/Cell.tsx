@@ -132,6 +132,10 @@ export interface CellProps
   onSwapDriver?: () => void;
   /** `driver-cell`: fired when the Call button is clicked. */
   onCallDriver?: () => void;
+  /** `driver-cell`: hover tooltip on the Swap (change-driver) button. Default "Change Driver". */
+  swapTooltip?: string;
+  /** `driver-cell`: hover tooltip on the Call button. Default "Call". */
+  callTooltip?: string;
   /** `user-cell`: the user's email, shown under the name in muted sub-body text. */
   email?: string;
   /** `api-cell`: the title (e.g. how the row was created). Default "Auto-created". */
@@ -288,6 +292,8 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
     showDriverActions = true,
     onSwapDriver,
     onCallDriver,
+    swapTooltip = 'Change Driver',
+    callTooltip = 'Call',
     email = 'davemungai@gmail.com',
     apiTitle = 'Auto-created',
     apiSubtext = 'From online store',
@@ -505,11 +511,16 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
           {showDriverActions ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
               <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
-              {/* Swap + Call are Secondary Extra-Small icon buttons — their hover
-                  state is the standard Button :hover (Secondary hover tokens). */}
+              {/* Swap + Call are Secondary Extra-Small icon buttons (their own
+                  :hover state) that also open a hover tooltip, like the other
+                  row icons — Change Driver / Call. */}
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
-                <Button variant="secondary" size="extra-small" iconOnly="Swap" aria-label="Swap driver" onClick={onSwapDriver} />
-                <Button variant="secondary" size="extra-small" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={onCallDriver} />
+                <HoverTip label={swapTooltip}>
+                  <Button variant="secondary" size="extra-small" iconOnly="Swap" aria-label="Change driver" onClick={onSwapDriver} />
+                </HoverTip>
+                <HoverTip label={callTooltip}>
+                  <Button variant="secondary" size="extra-small" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={onCallDriver} />
+                </HoverTip>
               </div>
             </div>
           ) : (

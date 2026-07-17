@@ -747,7 +747,7 @@ export function OrdersPage(): React.ReactElement {
             </Button>
           )}
           <Button
-            variant="ghost"
+            variant="secondary"
             size="small"
             iconOnly="More"
             aria-label="More actions"

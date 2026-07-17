@@ -95,12 +95,14 @@ export const NotificationBanner = React.forwardRef<
   const config = TYPE_CONFIG[type];
   const isFilled = variant === 'filled';
 
-  // Flattened structure (Figma `3811:65015`): the root IS the horizontal row —
-  // a `Leading element` (icon + content) and an optional `Dismiss`, top-aligned.
+  // Flattened structure (Figma set `1408:155816`): the root IS the horizontal row
+  // — a `Leading element` (icon + content) and an optional `Dismiss`. Filled
+  // variants centre their content vertically (`counterAxisAlignItems: CENTER`);
+  // subtle variants top-align.
   const rootStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: isFilled ? 'center' : 'flex-start',
     gap: 16,
     width: '100%',
     boxSizing: 'border-box',
@@ -115,22 +117,25 @@ export const NotificationBanner = React.forwardRef<
     ...style,
   };
 
-  // Leading element — icon + content. Icon is TOP-aligned with a 1px top pad
-  // (Figma `--padding-1px`) so it optically centres with the first text line
-  // (the title for `filled`, the body for `subtle`).
+  // Leading element — icon + content. Filled → centre the icon against the
+  // content block (Figma `Leading element` counterAlign CENTER); subtle →
+  // top-align with a 1px top pad so the icon optically centres with the first line.
   const leadingElementStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: isFilled ? 'center' : 'flex-start',
     gap: 8,
     flex: 1,
     minWidth: 0,
   };
 
+  // Content gap between the text block and the (optional) content-buttons slot —
+  // per Figma: Info/Neutral filled = 12, all other filled + subtle = 8.
+  const contentGap = isFilled && (type === 'info' || type === 'neutral') ? 12 : 8;
   const contentStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    gap: isFilled ? 12 : 8,
+    gap: contentGap,
     flex: 1,
     minWidth: 0,
   };
@@ -163,8 +168,9 @@ export const NotificationBanner = React.forwardRef<
   return (
     <div ref={ref} role="status" style={rootStyle} {...rest}>
       <div style={leadingElementStyle}>
-        {/* Leading Icon — 1px top padding (Figma `Leading Icon` pad 1/0/0/0). */}
-        <div style={{ flexShrink: 0, display: 'flex', paddingTop: 'var(--padding-1px)', color: config.iconColor }}>
+        {/* Leading Icon — filled centres against the content, so no top pad;
+            subtle top-aligns with a 1px top pad (Figma `Leading Icon` pad 1/0/0/0). */}
+        <div style={{ flexShrink: 0, display: 'flex', paddingTop: isFilled ? 0 : 'var(--padding-1px)', color: config.iconColor }}>
           <Icon name={icon ?? config.iconName} size={18} />
         </div>
 

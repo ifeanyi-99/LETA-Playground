@@ -19,7 +19,7 @@ import {
   LeadingInputFieldElement,
   AlertDialog,
 } from '@leta/components';
-import type { ClientConfig, DepotOption } from '../store/types.js';
+import type { ClientConfig, DepotOption, Order, OrderStatus } from '../store/types.js';
 import type { NewOrderInput } from '../store/useStore.js';
 import { Popover, MenuPanel } from './Popover.js';
 
@@ -55,6 +55,18 @@ interface AddOrderDrawerProps {
   onClose: () => void;
   /** Fired with the built order + whether it's scheduled (>1h out) vs immediate. */
   onSubmit: (order: NewOrderInput, scheduled: boolean) => void;
+  /**
+   * `create` (default) = Add Order. `edit` = Edit Order (OM §8, Figma
+   * `350:38360`): same form, prefilled from `editOrder`, retitled, footer
+   * "Save Changes"; Assigned/At Depot orders show the address-lock info banner.
+   */
+  mode?: 'create' | 'edit';
+  /** The order being edited (edit mode) — prefills the form. */
+  editOrder?: Order | null;
+  /** The edited order's current status — drives the banner + save behaviour. */
+  orderStatus?: OrderStatus;
+  /** Edit-mode save — fired with the rebuilt order fields. */
+  onSave?: (order: NewOrderInput) => void;
 }
 
 // Slide-in from the right edge (design-system overlay motion; honours reduced-motion).
@@ -212,10 +224,15 @@ function ComboSearchPanel({ width, query, onQuery, placeholder, children }: {
  *     (product = sum price*qty), plus Delivery fee, Payment type, and a Total (VAT Incl.) row.
  * Two columns when the right column has content, else single column.
  */
-export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDrawerProps): React.ReactElement | null {
+export function AddOrderDrawer({ open, config, onClose, onSubmit, mode = 'create', editOrder = null, orderStatus, onSave }: AddOrderDrawerProps): React.ReactElement | null {
   ensureDrawerStyles();
   ensureItemRowStyles();
 
+  const isEdit = mode === 'edit';
+  // Assigned/At Depot orders can still be edited (incl. address) but the driver
+  // is notified on save — the info banner warns that addresses lock once the
+  // order leaves the depot (OM §8, Figma 350:38398).
+  const showAddressLockBanner = isEdit && (orderStatus === 'assigned' || orderStatus === 'at-depot');
   const singleDepot = config.depots.length === 1;
   const hasRightColumn = config.items.enabled || config.payment.enabled;
 
@@ -322,17 +339,46 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
     return () => { if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current); };
   }, [address]);
 
-  // Reset whenever the drawer (re)opens or the client config changes.
+  // Reset whenever the drawer (re)opens or the client config changes. In edit
+  // mode, prefill from the order instead of starting blank (dirty stays false —
+  // prefill uses raw setState, not `touch()` — so an untouched edit exits cleanly).
   React.useEffect(() => {
     if (!open) return;
-    setDepotId(config.depots.length === 1 ? config.depots[0]!.id : '');
-    setDepotQuery(''); setDepotOpen(false);
-    setRecipient(''); setAddress(''); setPhone(''); setEmail('');
-    setDateLabel(''); setDeliveryAt(null); setOrderRef(''); setInstructions('');
-    setItems([]); setManualValue(''); setDeliveryFee(''); setPaymentType('');
+    if (isEdit && editOrder) {
+      const depot = config.depots.find((d) => d.name === editOrder.depot) ?? config.depots[0];
+      setDepotId(depot ? depot.id : '');
+      setDepotQuery(depot ? depot.name : '');
+      setRecipient(editOrder.customer);
+      setAddress(editOrder.dropoff.label);
+      setPhone(editOrder.phone.replace(/^\+254\s*/, ''));
+      setEmail('');
+      const base = new Date(editOrder.createdAt);
+      setDeliveryAt(isNaN(base.getTime()) ? new Date() : base);
+      setDateLabel('');
+      setOrderRef('');
+      setInstructions('');
+      // Rebuild a single item row from the order's package/count (the mock order
+      // has no structured item list). Product mode → match by name, else 1st product.
+      if (config.items.enabled) {
+        if (config.items.mode === 'product') {
+          const p = config.products.find((x) => x.name === editOrder.package) ?? config.products[0];
+          setItems(p ? [{ key: ++itemSeq.current, name: '', productId: p.id, qty: editOrder.items || 1 }] : []);
+        } else {
+          setItems([{ key: ++itemSeq.current, name: editOrder.package, productId: '', qty: editOrder.items || 1 }]);
+        }
+      } else setItems([]);
+      setManualValue(''); setDeliveryFee(''); setPaymentType('');
+    } else {
+      setDepotId(config.depots.length === 1 ? config.depots[0]!.id : '');
+      setDepotQuery('');
+      setRecipient(''); setAddress(''); setPhone(''); setEmail('');
+      setDateLabel(''); setDeliveryAt(null); setOrderRef(''); setInstructions('');
+      setItems([]); setManualValue(''); setDeliveryFee(''); setPaymentType('');
+    }
+    setDepotOpen(false);
     setSubmitted(false); setDirty(false); setConfirmExit(false); setClosing(false); setRecipientOpen(false);
     setAddressOpen(false); setAddressResults([]);
-  }, [open, config]);
+  }, [open, config, isEdit, editOrder]);
   React.useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     if (recipientBlurTimer.current) clearTimeout(recipientBlurTimer.current);
@@ -441,7 +487,8 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
       status: scheduled ? 'scheduled' : 'pending',
       createdAt: new Date().toISOString(),
     };
-    onSubmit(order, scheduled);
+    if (isEdit) { onSave?.(order); beginClose(); }
+    else onSubmit(order, scheduled);
   };
 
   const err = (v: string) => submitted && !v.trim();
@@ -810,14 +857,24 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
   ) : null;
 
   const body = (
-    <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--spacing-20px)', width: '100%', alignItems: 'stretch', paddingBottom: 40 }}>
-      {leftColumn}
-      {rightColumn && (
-        <>
-          <div style={{ width: 0, flexShrink: 0, borderLeft: 'var(--stroke-xs) solid var(--border-neutral-default)' }} />
-          {rightColumn}
-        </>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)', width: '100%', paddingBottom: 40 }}>
+      {/* Edit mode, Assigned/At Depot — address-lock heads-up (Figma 350:38398). */}
+      {showAddressLockBanner && (
+        <NotificationBanner
+          type="info"
+          variant="filled"
+          description="Pickup and delivery addresses can't be changed once an order has left the depot."
+        />
       )}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 'var(--spacing-20px)', width: '100%', alignItems: 'stretch' }}>
+        {leftColumn}
+        {rightColumn && (
+          <>
+            <div style={{ width: 0, flexShrink: 0, borderLeft: 'var(--stroke-xs) solid var(--border-neutral-default)' }} />
+            {rightColumn}
+          </>
+        )}
+      </div>
     </div>
   );
 
@@ -834,7 +891,7 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Add Order"
+        aria-label={isEdit ? 'Edit Order' : 'Add Order'}
         className={`leta-drawer-panel ${closing ? 'closing' : entered ? 'open' : ''}`}
         style={{ position: 'fixed', top: 0, right: 0, height: '100dvh', zIndex: 1501 }}
         onTransitionEnd={handlePanelTransitionEnd}
@@ -845,15 +902,17 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
           fillHeight
           onEscape={attemptClose}
           bodyStyle={{ padding: 'var(--padding-24px) var(--padding-16px) 0' }}
-          header={<ModalHeaders title="Add Order" showSecondaryContent={false} onClose={attemptClose} />}
+          header={<ModalHeaders title={isEdit ? 'Edit Order' : 'Add Order'} showSecondaryContent={false} onClose={attemptClose} />}
           footer={
             // Tertiary Action footer (Figma 483:48031): Cancel set apart on the left,
-            // the primary Add Order on the right.
+            // the primary action on the right.
             <FooterFrame
               variant="tertiary-action"
               leading={<Button variant="secondary" size="medium" onClick={attemptClose}>Cancel</Button>}
             >
-              <Button variant="primary" size="medium" iconLeft="Add" onClick={handleSubmit}>Add Order</Button>
+              <Button variant="primary" size="medium" iconLeft={isEdit ? 'Check' : 'Add'} onClick={handleSubmit}>
+                {isEdit ? 'Save Changes' : 'Add Order'}
+              </Button>
             </FooterFrame>
           }
         >
@@ -925,10 +984,12 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
           <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1601 }}>
             <AlertDialog
               variant="basic"
-              title="Discard Order?"
-              message="The order details you’ve entered won’t be saved. Are you sure you want to discard them?"
-              cancelLabel="Keep Editing Order"
-              confirmLabel="Discard Order"
+              title={isEdit ? 'Discard Changes?' : 'Discard Order?'}
+              message={isEdit
+                ? 'You have unsaved changes. Are you sure you want to discard them?'
+                : 'The order details you’ve entered won’t be saved. Are you sure you want to discard them?'}
+              cancelLabel={isEdit ? 'Keep Editing Order' : 'Keep Editing Order'}
+              confirmLabel={isEdit ? 'Discard Changes' : 'Discard Order'}
               onCancel={() => setConfirmExit(false)}
               onClose={() => setConfirmExit(false)}
               onConfirm={() => { setConfirmExit(false); beginClose(); }}

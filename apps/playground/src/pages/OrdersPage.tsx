@@ -35,6 +35,8 @@ import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
 import { SkeletonTableRows } from '../components/SkeletonTableRows.js';
 import { AddOrderDrawer } from '../components/AddOrderDrawer.js';
 import { CancelOrderModal } from '../components/CancelOrderModal.js';
+import { UpdateStatusModal, type UpdateStatusTarget } from '../components/UpdateStatusModal.js';
+import { RescheduleModal } from '../components/RescheduleModal.js';
 
 // ── Filter groups ───────────────────────────────────────────────────────────────
 type FilterTab = 'unassigned' | 'dispatched' | 'finished' | 'all';
@@ -153,13 +155,48 @@ function scheduledOriginFor(o: Order): boolean {
 function autoBroadcastFor(o: Order): boolean {
   return idHash(o.id) % 3 === 0;
 }
+/** The mock scheduled delivery slot for a scheduled-origin order — 2 days after
+ *  creation at 12:30 PM (the same value the Order-ID Calendar tooltip shows). */
+function scheduledDateFor(o: Order): Date {
+  const d = new Date(o.createdAt);
+  if (isNaN(d.getTime())) return nextHourToday();
+  d.setDate(d.getDate() + 2);
+  d.setHours(12, 30, 0, 0);
+  return d;
+}
 /** "Scheduled: 09 Jun 2027, 12:30 PM" — mock scheduled slot 2 days after creation. */
 function scheduledLabelFor(o: Order): string {
-  const d = new Date(o.createdAt);
-  if (isNaN(d.getTime())) return 'Scheduled delivery';
-  d.setDate(d.getDate() + 2);
+  const d = scheduledDateFor(o);
   const day = d.getDate().toString().padStart(2, '0');
   return `Scheduled: ${day} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, 12:30 PM`;
+}
+
+// ── Reschedule anchor (OM §11.2, per the user's rules) ────────────────────────────
+// Today at the next full hour (e.g. 9:xx → 10:00) — the manual-reschedule default
+// for an unscheduled single order or any multi-order reschedule.
+function nextHourToday(): Date {
+  const d = new Date();
+  d.setMinutes(0, 0, 0);
+  d.setHours(d.getHours() + 1);
+  return d;
+}
+// The Reschedule modal's opening state (OM §11.2 + 2026-07-17 changelog):
+//  - anchor    → manual-field default: a single scheduled order uses its own
+//    slot; unscheduled single / any bulk uses today's next full hour.
+//  - chipBase  → what the +1h/+4h/+8h/tomorrow chips compute from: a single
+//    order's own time; a bulk set computes from "now".
+//  - noOp      → the value that would be a no-op (single scheduled order's time),
+//    so the confirm starts disabled; null for unscheduled single / bulk.
+//  - hasDriverHeld → any selected order is Assigned/At Depot → show the
+//    "rescheduling will unassign orders from their current drivers" warning.
+interface RescheduleData { anchor: Date; chipBase: Date; noOp: Date | null; hasDriverHeld: boolean }
+function rescheduleData(selected: Order[]): RescheduleData {
+  const single = selected.length === 1 ? selected[0]! : null;
+  const scheduledSingle = single && single.status === 'scheduled' ? scheduledDateFor(single) : null;
+  const anchor = scheduledSingle ?? nextHourToday();
+  const chipBase = single ? anchor : new Date();
+  const hasDriverHeld = selected.some((o) => o.status === 'assigned' || o.status === 'at-depot');
+  return { anchor, chipBase, noOp: scheduledSingle, hasDriverHeld };
 }
 
 // ── Mock SLA state + duration (Table spec §2.3, Doc 4) ───────────────────────────
@@ -218,7 +255,7 @@ function sortValueFor(o: Order, field: SortField): number {
 }
 
 // ── Overlay model ────────────────────────────────────────────────────────────────
-type OverlayKind = 'created' | 'filter' | 'sort' | 'importExport' | 'subStatus' | 'rowActions' | 'selection' | 'columns' | 'rowsPerPage';
+type OverlayKind = 'created' | 'filter' | 'sort' | 'importExport' | 'subStatus' | 'rowActions' | 'selection' | 'columns' | 'rowsPerPage' | 'bulkOverflow';
 interface OverlayState {
   kind: OverlayKind;
   anchor: DOMRect | null;
@@ -265,6 +302,7 @@ export function OrdersPage(): React.ReactElement {
   const orders = useStore((s) => s.orders);
   const getDriver = useStore((s) => s.getDriver);
   const updateOrderStatus = useStore((s) => s.updateOrderStatus);
+  const updateOrder = useStore((s) => s.updateOrder);
   const cancelOrder = useStore((s) => s.cancelOrder);
   const pushToast = useStore((s) => s.pushToast);
   const addOrder = useStore((s) => s.addOrder);
@@ -611,6 +649,83 @@ export function OrdersPage(): React.ReactElement {
     if (n > 1) clearSelection();
   };
   const bulkCancel = () => requestCancel(selectedOrders().map((o) => o.id));
+
+  // Update Status (OM §12.6) + Reschedule (OM §11.2) — both reachable from the row
+  // ⋯ menu (1 order) and the bulk toolbar's ⋯ (N selected). Each holds the order
+  // id(s) awaiting the modal; the modals themselves are rendered once, below.
+  const [updateStatusFor, setUpdateStatusFor] = React.useState<string[] | null>(null);
+  const [rescheduleFor, setRescheduleFor] = React.useState<string[] | null>(null);
+  const requestUpdateStatus = (ids: string[]) => setUpdateStatusFor(ids);
+  const requestReschedule = (ids: string[]) => setRescheduleFor(ids);
+  // Frozen at open time (keyed on the selection) so the bulk "chips-from-now"
+  // base + the 1s duration tick don't shift the suggestions while the modal is open.
+  const rescheduleInfo = React.useMemo(
+    () => (rescheduleFor ? rescheduleData(orders.filter((o) => rescheduleFor.includes(o.id))) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- freeze on open; orders is current at that moment
+    [rescheduleFor],
+  );
+  const confirmUpdateStatus = (target: UpdateStatusTarget) => {
+    const ids = updateStatusFor ?? [];
+    ids.forEach((id) => updateOrderStatus(id, target));
+    setUpdateStatusFor(null);
+    const n = ids.length;
+    if (n === 0) return;
+    // Toast subtitle names the target status (wireframe 1408:237553 / 1239:108227).
+    pushToast({
+      type: 'success',
+      title: `${n} order${n === 1 ? '' : 's'} updated`,
+      subtitle: `Your order${n === 1 ? ' has' : 's have'} been marked as ${target}.`,
+    });
+    if (n > 1) clearSelection();
+  };
+  const confirmReschedule = () => {
+    // Reschedule → the order lands in Scheduled (OM §11.2). The picked date is
+    // captured by the modal; the mock store tracks status only, so we move each
+    // to 'scheduled' and report the outcome.
+    const ids = rescheduleFor ?? [];
+    ids.forEach((id) => updateOrderStatus(id, 'scheduled'));
+    setRescheduleFor(null);
+    const n = ids.length;
+    if (n === 0) return;
+    pushToast({ type: 'success', title: `${n} order${n === 1 ? '' : 's'} rescheduled`, subtitle: `Your order${n === 1 ? ' has' : 's have'} been rescheduled.` });
+    if (n > 1) clearSelection();
+  };
+
+  // Edit Order (OM §8, Figma 350:38360) — reuses the Add Order drawer in edit
+  // mode, prefilled. Editable only for Ready/at-depot statuses; In Transit and
+  // beyond are frozen (the recourse is a disruption action, not an edit).
+  const EDITABLE_STATUSES: OrderStatus[] = ['scheduled', 'pending', 'broadcasted', 'assigned', 'at-depot'];
+  const [editOrderId, setEditOrderId] = React.useState<string | null>(null);
+  const editingOrder = editOrderId ? orders.find((o) => o.id === editOrderId) ?? null : null;
+  const requestEdit = (orderId: string) => {
+    const o = orders.find((x) => x.id === orderId);
+    if (!o) return;
+    if (!EDITABLE_STATUSES.includes(o.status)) {
+      pushToast({ type: 'warning', title: 'Editing is blocked', subtitle: 'This order has left the depot — use Return instead.' });
+      return;
+    }
+    setEditOrderId(orderId);
+  };
+  const handleOrderEdited = (input: NewOrderInput) => {
+    if (!editingOrder) return;
+    const status = editingOrder.status;
+    updateOrder(editingOrder.id, {
+      customer: input.customer,
+      phone: input.phone,
+      depot: input.depot,
+      pickup: input.pickup,
+      dropoff: input.dropoff,
+      package: input.package,
+      items: input.items,
+    });
+    const notify = status === 'assigned' || status === 'at-depot';
+    setEditOrderId(null);
+    pushToast({
+      type: 'success',
+      title: 'Order updated',
+      subtitle: notify ? 'Your changes are saved and the driver has been notified.' : 'Your changes have been saved.',
+    });
+  };
 
   const noop = (title = 'Coming soon') =>
     pushToast({ type: 'success', title, subtitle: 'This feature is in progress.' });
@@ -1026,7 +1141,7 @@ export function OrdersPage(): React.ReactElement {
                   <Button variant="ghost-error" size="medium" iconLeft="Delete" iconOutlined onClick={bulkCancel}>Cancel Order</Button>
                 </>
               }
-              onOverflowClick={() => noop()}
+              onOverflowClick={() => openFromFocus('bulkOverflow')}
               onClose={clearSelection}
             />
           </div>
@@ -1066,6 +1181,9 @@ export function OrdersPage(): React.ReactElement {
           rowsPerPage={rowsPerPage}
           onRowsPerPage={(size) => { handleRowsPerPage(size); setOverlay(null); }}
           onSortChange={(sel) => { setSortFieldIndex(sel.index); setSortDir(sel.direction); flashTableLoading(); }}
+          onRequestUpdateStatus={requestUpdateStatus}
+          onRequestReschedule={requestReschedule}
+          onRequestEdit={requestEdit}
         />
       )}
 
@@ -1077,6 +1195,18 @@ export function OrdersPage(): React.ReactElement {
         onSubmit={handleOrderCreated}
       />
 
+      {/* Edit Order drawer — the same drawer in edit mode, prefilled (OM §8). */}
+      <AddOrderDrawer
+        mode="edit"
+        open={Boolean(editOrderId)}
+        config={clientConfig}
+        editOrder={editingOrder}
+        orderStatus={editingOrder?.status}
+        onClose={() => setEditOrderId(null)}
+        onSubmit={() => {}}
+        onSave={handleOrderEdited}
+      />
+
       {/* Cancel Order modal (Doc 3 §5 / OM §11.1, Figma 1382:104119) — reason
           capture gating every cancellation; reused for a single order and a
           bulk selection. */}
@@ -1085,6 +1215,29 @@ export function OrdersPage(): React.ReactElement {
           orderIds={cancelConfirm}
           onClose={() => setCancelConfirm(null)}
           onConfirm={confirmCancel}
+        />
+      )}
+
+      {/* Update Status modal (OM §12.6, Figma 1239:108227) — status-gated options. */}
+      {updateStatusFor && (
+        <UpdateStatusModal
+          orderIds={updateStatusFor}
+          statuses={orders.filter((o) => updateStatusFor.includes(o.id)).map((o) => o.status)}
+          onClose={() => setUpdateStatusFor(null)}
+          onConfirm={confirmUpdateStatus}
+        />
+      )}
+
+      {/* Reschedule modal (OM §11.2, Figma 1239:108226 bulk / 1408:237256 single). */}
+      {rescheduleFor && rescheduleInfo && (
+        <RescheduleModal
+          orderIds={rescheduleFor}
+          anchorDate={rescheduleInfo.anchor}
+          chipBase={rescheduleInfo.chipBase}
+          noOpDate={rescheduleInfo.noOp}
+          hasDriverHeld={rescheduleInfo.hasDriverHeld}
+          onClose={() => setRescheduleFor(null)}
+          onConfirm={confirmReschedule}
         />
       )}
     </div>
@@ -1123,9 +1276,15 @@ interface OverlayHostProps {
   rowsPerPage: number;
   /** A rows-per-page pick (10/25/50, Doc 3 §6) — close-on-select. */
   onRowsPerPage: (size: number) => void;
+  /** Open the Update Status modal for the given order id(s) (OM §12.6). */
+  onRequestUpdateStatus: (ids: string[]) => void;
+  /** Open the Reschedule modal for the given order id(s) (OM §11.2). */
+  onRequestReschedule: (ids: string[]) => void;
+  /** Open the Edit Order drawer for the given order (OM §8). */
+  onRequestEdit: (orderId: string) => void;
 }
 
-function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange, rowsPerPage, onRowsPerPage }: OverlayHostProps): React.ReactElement {
+function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange, rowsPerPage, onRowsPerPage, onRequestUpdateStatus, onRequestReschedule, onRequestEdit }: OverlayHostProps): React.ReactElement {
   const { kind, anchor, orderId, group } = overlay;
 
   if (kind === 'rowsPerPage') {
@@ -1306,7 +1465,13 @@ function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, 
                   showLeadingIcon
                   leadingIcon={a.icon}
                   showChevron={false}
-                  onSelect={() => { pushToast({ type: 'success', title: a.label, subtitle: 'This action is coming soon.' }); onClose(); }}
+                  onSelect={() => {
+                    onClose();
+                    if (a.label === 'Update Status') onRequestUpdateStatus([orderId]);
+                    else if (a.label === 'Reschedule Order') onRequestReschedule([orderId]);
+                    else if (a.label === 'Edit Order') onRequestEdit(orderId);
+                    else pushToast({ type: 'success', title: a.label, subtitle: 'This action is coming soon.' });
+                  }}
                 />
               ))}
             </React.Fragment>
@@ -1318,6 +1483,34 @@ function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, 
             showLeadingIcon
             leadingIcon="Delete"
             onSelect={() => { onClose(); onRequestCancel([orderId]); }}
+          />
+        </MenuPanel>
+      </Popover>
+    );
+  }
+
+  if (kind === 'bulkOverflow') {
+    // Bulk toolbar's ⋯ — the secondary bulk actions (Update Status, Reschedule)
+    // for every selected order. Opens above the bottom-fixed toolbar (top-end).
+    const ids = selectedOrderList.map((o) => o.id);
+    return (
+      <Popover anchorRect={anchor} onClose={onClose} placement="top-end">
+        <MenuPanel width={220}>
+          <DesktopMenuOptions
+            type="dropdown-basic"
+            label="Update Status"
+            showLeadingIcon
+            leadingIcon="Update"
+            showChevron={false}
+            onSelect={() => { onClose(); onRequestUpdateStatus(ids); }}
+          />
+          <DesktopMenuOptions
+            type="dropdown-basic"
+            label="Reschedule Order"
+            showLeadingIcon
+            leadingIcon="Calendar"
+            showChevron={false}
+            onSelect={() => { onClose(); onRequestReschedule(ids); }}
           />
         </MenuPanel>
       </Popover>

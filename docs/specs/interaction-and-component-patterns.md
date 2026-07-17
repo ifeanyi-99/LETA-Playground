@@ -9,7 +9,7 @@
 
 ## 1. Dropdown / Popover primitive
 
-All dropdowns share one primitive: a portal-based overlay. **Only one dropdown may be open at a time** — opening any dropdown closes the current one.
+All dropdowns share one primitive: a portal-based overlay. **Only one dropdown may be open at a time, platform-wide** — opening any dropdown closes any other, *including across components*: a top-bar menu (profile, client-switcher) and a table dropdown must never be open simultaneously. *(Ruled 2026-07-15: single-open state must be shared/global, not per-component — the audit found top-bar menus and the orders-table overlay holding independent state.)*
 
 ### 1.1 Anchoring & placement
 
@@ -68,25 +68,38 @@ Centered in the content region: illustration/icon → main copy (one line, plain
 
 ### 3.2 Variants
 
+**In-content variants** (render inside the table/content region, toolbars remain):
+
 | Variant | Main copy | Sub copy | Action | Reference |
 |---|---|---|---|---|
 | No matching results (search/filters too narrow) | No matching results | Try adjusting your filters and date | — | *(AGENT: prompt for wireframe link)* |
 | Empty table (no orders in this status) | *(per wireframe)* | *(per wireframe)* | — | *(AGENT: prompt for wireframe link)* |
-| Load error / failed fetch | Couldn't load orders | Check your connection and try again | **Retry** | *(no wireframe — textual spec, pattern-level)* |
 
 The no-matching-results variant applies equally when a persisted filter lands on a table whose data lacks that dimension (e.g. a Driver filter on an Unassigned table): filters always apply, the result is empty, the empty state guides recovery.
 
+**Page-level variant — load error** *(corrected 2026-07-15; previously mis-specified as an in-table variant):*
+
+A failed fetch is not an empty table — it's a broken page, and must not masquerade as "no results." The **error state component** (from the existing empty-state component directory) renders at **page level**: it covers the entire content area — everything except the **side tab and top bar** — on a **regular neutral background** (not a dimmed overlay). Toolbars, filters, and pagination are *not* shown, because none of them are actionable when the page has no data to act on.
+
+| Variant | Copy | Action |
+|---|---|---|
+| Load error / failed fetch | Per the existing error-state component | **Retry** |
+
 ## 4. Toast pattern
 
-- Placement: bottom-left of the viewport, above nothing interactive; stacks upward, newest at bottom.
-- Duration: **6s default** (field conditions: divided attention, older users — err longer), 8s for toasts carrying an action (e.g. Undo). Dismissible by ✕ always.
-- One line, consequence-first copy (name the affected customer/driver, not the order ID).
-- Toasts are for **outcomes** ("Order cancelled — Jerome Wambui will not be notified"), never for questions. Anything needing a decision is a confirmation dialog, not a toast.
+- Placement: **top-right** of the viewport; stacks **downward, newest at the top**. *(Ruled 2026-07-15 — supersedes both this spec's earlier bottom-left and the playground's bottom-right.)*
+- Duration: **6s default**, 8s for toasts carrying an action (e.g. Undo). Dismissible by ✕ always.
+- **Copy: the playground's current implementation is authoritative** — order-ID-led, stating the outcome (e.g. "ORD-… is now broadcasted"). *(Ruled 2026-07-15: this spec previously prescribed consequence-first copy naming the affected customer/driver. That was written without validation against the built product; the shipped copy wins. Do not "fix" toast copy toward customer-name phrasing.)*
+- Toasts are for **outcomes** only, never for questions. Anything needing a decision is a confirmation dialog (§5), not a toast.
 - `role="status"`; destructive-outcome toasts `role="alert"`.
+- Motion: symmetric enter/exit, matching §1.2's language (140ms in, 100ms out, ease-out, reduced-motion respected). Enter slides from the top edge, consistent with top-right placement.
 
 ## 5. Confirmation pattern
 
 For high-impact, low-frequency actions (cancel, reschedule with a driver attached, reassignment):
+
+> **Required, no exceptions (ruled 2026-07-15):** destructive order actions **must** confirm before firing — this includes **row-level Cancel Order** and **bulk Cancel**. Cancelling instantly on click, with only a toast afterward, is a defect, not a shortcut: cancellation is irreversible and a toast states an outcome that has already happened (§4). The confirmation is the only point at which the dispatcher can still change their mind.
+
 
 - Centered modal (small), never a toast, never inline.
 - Title states the action; body names the consequence and the affected party ("This order is currently assigned to **[Driver Name]**. Rescheduling will remove it from their trip and notify them.").
@@ -97,7 +110,7 @@ For high-impact, low-frequency actions (cancel, reschedule with a driver attache
 ## 6. Pagination component
 
 - Anatomy: "Showing X of Y" (left) · page controls ‹ 1 2 3 … N › (center-right) · rows-per-page select (right).
-- Default page size **10**; selector offers 10 / 25 / 50. Choice persists per user.
+- Default page size **10**; selector offers **10 / 25 / 50**. **The choice persists per user across sessions** (ruled 2026-07-15) — a dispatcher who picks 50 sees 50 next time they log in, not a reset to 10.
 - Changing filters, search, sort, or status pill **resets to page 1**.
 - Page size change re-paginates from page 1.
 - Keyboard: page controls are buttons, tabbable, `aria-current="page"` on the active page.
@@ -131,7 +144,7 @@ Two variants, chosen by the number of available filter dimensions (OM §12.1): *
 - Filtering is **AND across everything** and **explicit** — selections do not touch the table until **Show Results** is pressed (a heavy table should not reflow on every checkbox tick). **Reset** clears all selections.
 - **No-match state** (the in-filter search yields nothing): main "No matching results", sub "All {dimension}s will be displayed here." **Show Results is disabled** in this state.
 
-**Basic Filter Search** (1 dimension, usually Recipient): the shared anatomy over a single dimension.
+**Basic Filter Search** (1 dimension): the shared anatomy over a single dimension. **Note (2026-07-15):** this variant does **not** apply to order tables — Recipient and Created By are always available there, so order tables always resolve to Filter Group (OM §12.1). Basic exists for surfaces with a genuinely single filterable dimension.
 
 **Filter Group** (2+ dimensions):
 
@@ -143,7 +156,7 @@ Two variants, chosen by the number of available filter dimensions (OM §12.1): *
 
 ## 10. Keyboard &amp; focus baseline
 
-- `Escape` closes the topmost overlay only (dropdown → then drawer → then modal), one layer per press.
+- `Escape` closes the topmost overlay only (dropdown → then drawer → then modal), one layer per press. **This includes the Add Order drawer** (ruled 2026-07-15) — Escape triggers the same unsaved-changes confirmation as Cancel/✕ (§4.6, OM doc), so nothing is lost; it is never a silent discard.
 - Focus returns to the triggering element whenever an overlay closes.
 - Modals and drawers trap focus while open.
 - All interactive controls reachable by Tab in visual order; dropdown menus navigable by arrow keys, `Enter` selects.
@@ -159,4 +172,5 @@ Two variants, chosen by the number of available filter dimensions (OM §12.1): *
 
 | Version | Date | Changes |
 |---|---|---|
+| 1.1 | Jul 2026 | **Playground conformance audit reconciled.** Toast: placement ruled **top-right, stacking down, newest on top** (supersedes both this spec's bottom-left and the code's bottom-right); **copy authority handed to the shipped implementation** (order-ID-led) — the previous consequence-first prescription was written without validation and is withdrawn. Empty-state: load error corrected to a **page-level** state covering the content area (excl. side tab/top bar) on a neutral background, using the existing error-state component — not an in-table variant. Dropdown single-open ruled **platform-wide** (must be shared state, not per-component). Confirmation dialog ruled **required** for row and bulk Cancel. Rows-per-page **persists per user across sessions**. Escape ruled to close the Add Order drawer (via the unsaved-changes confirmation). Basic Filter Search noted as never applying to order tables |
 | 1.0 | Jul 2026 | Initial patterns 1–9, consolidated from playground behaviour audit + interaction questionnaire rounds 1–4 |

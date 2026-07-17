@@ -8,7 +8,7 @@
 > **Companion design spec:** Table Column Layout Specification (owns column widths, floors, truncation, responsive behaviour)
 > **Audience:** implementation agent + engineers
 > **Status:** Ready for build — domain logic (Parts 1–11) and orders-surface interaction (Part 12); generic component behaviour in Doc 3
-> **Version:** 1.0
+> **Version:** 2.7
 
 ---
 
@@ -416,20 +416,50 @@ These three actions form one state machine. The dividing line is **transit**: be
 
 - **Available while the order is in a Ready state** (up to and including At Depot). Hidden / disabled from In Transit onward.
 - The button label and confirmation copy **adapt to the lifecycle stage**.
-- **Reason-code capture** at terminal cancellation: a dropdown — **damaged goods, customer refund, perishable expiry, customer request, other** — plus an optional free-text note. `other` requires the note. Reason codes feed operations and finance reporting.
+- **Reason-code capture** at terminal cancellation: multi-select reasons — **Customer requested it, Payment Issue, Items unavailable, Customer unreachable, Other** — plus an optional free-text note. `Other` requires the note. Reason codes feed operations and finance reporting. *(Wireframe `1410:237723` copy supersedes the older damaged-goods/perishable list.)*
+- **Bulk + single are both in scope** (v2.7, DES-254). Bulk cancel applies **one reason code to the whole selected batch** (not captured per order); the modal states the count in its heading ("Tell us why you're cancelling {n} orders") and confirm button ("Cancel {n} Orders", singular "Cancel Order").
+- **Mandatory confirmation** for both single and bulk — the reason-capture modal must fire before anything is cancelled; firing instantly with only a toast after is a defect (Doc 3 §5).
 - Once the order leaves the depot, this action becomes **Return** (§11.3).
 
 ### 11.2 Reschedule (customer-initiated "later")
 
 - **Triggerable from:** Pending, Broadcasted, Assigned, At Depot, and Returned.
 - The order **lands in Scheduled** and re-enters the dispatch queue at the requested time. Date/time picker uses the 30-minute interval standard.
-- **Consequences confirmation** when rescheduling an order a driver already holds (Assigned or At Depot). The action is **not blocked**; the consequence is made visible:
+- **Bulk + single are both in scope** (v2.7, DES-254). Bulk reschedule follows the same rules as single-order; the modal always states the selection count in its heading and confirm button (§11.2.1).
+- **Consequences confirmation** when rescheduling a **driver-held** order (Assigned or At Depot). The action is **not blocked**; the consequence is surfaced as an inline warning banner at the top of the Reschedule modal:
 
-> This order is currently assigned to **[Driver Name]**. Rescheduling will remove this order from their trip and notify them. Proceed?
+> Please note that rescheduling will unassign orders from their current drivers.
 
+  - This one shared string covers **both single and bulk**, and fires only when **at least one** selected order is driver-held. A selection of purely unassigned orders (Pending/Broadcasted/Scheduled) shows **no** banner and reschedules directly.
+  - This copy is a **deliberate departure** from the platform's usual consequence-first, name-the-affected-party principle — do not "fix" it toward named-driver phrasing (same authority call as the toast-copy ruling: shipped code wins over prescribed spec copy). It **supersedes** the older "This order is currently assigned to [Driver Name]…" string.
 - **Reschedule semantics by origin:** from a **Scheduled** order, Reschedule edits its existing set time and the order stays Scheduled; from **Pending / Broadcasted / Assigned / At Depot / Returned**, it moves the order to Scheduled. (§10.1 corrected — Reschedule *is* available for Scheduled.)
 - **Manual revert to Pending is exposed via the Update Status modal** (§12.6), not as a standalone action. It is one of the manual status overrides, not a distinct control.
 - **Manual revert to Scheduled is intentionally not exposed** — Reschedule is the purpose-built path to Scheduled.
+
+### 11.2.1 Reschedule modal detail (Figma `1239:108226` bulk / `1408:237256` single)
+
+The modal offers a **manual date/time field** plus **four quick-pick suggestion chips** (+1 hour, +4 hours, +8 hours, tomorrow-same-time). Works identically for single and bulk; the heading reads "Manually reschedule {n} order(s)".
+
+**Manual field default**
+
+| Selection | Default value |
+|---|---|
+| Single order, already scheduled | That order's own scheduled date/time |
+| Single order, unscheduled | Today, current time **rounded up to the next full hour** (9:37 → 10:00; 9:00 stays 9:00) |
+| Multiple orders (any mix) | Today, next full hour — same rule (no single "original" time for a batch) |
+
+**Suggestion chip base time**
+
+| Selection | Chips calculated from |
+|---|---|
+| Single order | That order's own current scheduled time (unscheduled → the next-full-hour default) |
+| Multiple orders | **Right now** (system clock when the modal opens) |
+
+Both use the same four offsets; only the base differs.
+
+**Confirm button state (no-op rule, ruled 2026-07-17).** "Reschedule {n} Order(s)" is disabled **only when the on-screen value would be a no-op** — it equals every selected order's current scheduled time. A single scheduled order starts **disabled** (default = its own time); a single unscheduled order or any bulk selection starts **enabled** (no shared "already at this time" state to protect). This is a single comparison (screen value vs stored value), not an interaction-tracking flag.
+
+**Toast on submit:** bulk "{n} orders rescheduled" / "Your orders have been rescheduled."; single "1 order rescheduled" / "Your order has been rescheduled."
 
 ### 11.3 Return (post-transit) → Returned (Unassigned holding bay)
 
@@ -455,11 +485,12 @@ These three actions form one state machine. The dividing line is **transit**: be
 
 ### 11.5 Out of scope (V1)
 
-- Bulk cancellation or bulk reschedule (single-order only in V1).
 - Customer-facing self-serve reschedule via the tracking link.
-- Automatic reschedule suggestions from customer history.
+- Automatic reschedule suggestions **from customer history** (data-driven recommendations). Note: the Reschedule modal's four quick-pick suggestion chips (+1h/+4h/+8h/tomorrow) are **in scope** — they are simple relative-time math, not predictive; see §11.2.1.
 - In-motion rescue (§10.5).
 - Distance-based return compensation; photo proof of return.
+
+> **Corrected (v2.7, 2026-07-17, DES-254).** Bulk cancellation and bulk reschedule are **no longer out of scope** — both ship in V1 with the same rules as their single-order equivalents (§11.2, §11.2.1). The earlier "single-order only" line was stale scope; the wireframes were right.
 
 ---
 
@@ -478,9 +509,18 @@ Four always-present dimensions plus attribute filters, combined with **AND logic
 | Search | Search box | Matches **Order ID + Recipient** only; ~300ms debounce |
 | Attribute filters | Filter dropdown | See variant rule below |
 
-**Attribute-filter availability derives from data availability, not column visibility.** Hiding a column never removes its filter. Candidate dimensions: **Depot** (only when the user manages >1 depot), **Driver** (only on tables whose data has drivers), **Recipient** (always), **Created By** (when the data carries it — ruled in the Table spec: low-weight flexible Primary, optional on all Order-family instances).
+**Attribute-filter availability derives from data availability, not column visibility.** Hiding a column never removes its filter. Candidate dimensions:
 
-**Variant rule:** 2+ available dimensions → **Filter Group** variant (multi-dimension narrowing); exactly 1 → **Basic Filter Search** variant (single searchable list). Example: multi-depot user on a Dispatched table with Created By data → Filter Group over depot · driver · recipient · created-by. Single-depot user on an Unassigned table → Basic Filter Search over Recipient.
+| Dimension | Available when |
+|---|---|
+| **Recipient** | Always |
+| **Created By** | **Always** — every order has a creator (a dispatcher, Storefront, or API). The *column* is hidden by default via column control, but the data always exists, so the filter is always offered *(clarified 2026-07-15 — previously worded "when the data carries it," which wrongly implied it could be absent)* |
+| **Depot** | Only when the user manages >1 depot |
+| **Driver** | Only on tables whose data has drivers — i.e. never on Unassigned |
+
+**Variant rule:** 2+ available dimensions → **Filter Group** variant (multi-dimension narrowing); exactly 1 → **Basic Filter Search** variant (single searchable list).
+
+**Consequence — order tables always resolve to Filter Group** *(2026-07-15)*: Recipient and Created By are both always available, so the minimum on any order table is 2 dimensions. Unassigned resolves to Recipient + Created By (+ Depot for multi-depot users); Dispatched adds Driver. **Basic Filter Search therefore never applies to an order table** — it remains part of the system for surfaces that genuinely have a single filterable dimension (see Doc 3 §9), not for these.
 
 **Persistence:** filters, sort, and search persist across status-pill switches until manually cleared. A filter whose dimension is absent from the current table's data still applies and yields the empty state — it is never silently dropped. Row **selection** persists within a status pill and clears on pill switch.
 
@@ -578,7 +618,7 @@ Checking rows raises the bulk toolbar with the "N selected" combobox (stay-open 
 
 ## Appendix A — Referenced Configuration Flags
 
-Defined in the Configuration Reference (Doc 2). Named here for cross-reference only.
+Fully defined in **Configuration Reference (Doc 2)** — no longer TBD. Named here for cross-reference only; Doc 2 is authoritative on scope, defaults, and type.
 
 | Flag | Gates |
 |---|---|
@@ -586,14 +626,19 @@ Defined in the Configuration Reference (Doc 2). Named here for cross-reference o
 | `items.mode` | `manual` or `product` |
 | `items.valueRequired` | Whether an items value is mandatory |
 | `payment.enabled` | Whether the Payment section appears |
-| `dispatch.enRoutePickup.enabled` | En-route pickup extension of Add to Trip (company-level, off by default) |
-| `scheduling.autoBroadcast.enabled` | Whether Scheduled orders auto-transition to Broadcasted at T−1h (else → Pending). **Client-level** (scope tiers are Client → Depot only — no Company tier). **To be defined in Doc 2** |
+| `dispatch.enRoutePickup.enabled` | En-route pickup extension of Add to Trip (client-level, off by default) |
+| `dispatch.fleetType` | Marketplace vs. managed-fleet — client-level, fixed at onboarding |
+| `scheduling.autoBroadcast.enabled` | Whether Scheduled orders auto-transition to Broadcasted at T−1h (else → Pending). Client-level |
+| `pickup.confirmation.enabled` | Pickup PIN + Proof of Pickup requirement. Client-level only, no depot override |
+| `delivery.pod.signature.enabled` / `delivery.pod.photo.enabled` | Independent proof-of-delivery toggles |
 | `returns.driverInitiated.enabled` | Whether drivers can start a return from the Driver App |
 | `returns.compensation.model` | `none` / `fixed` / `percentage` |
 
+Broadcast/fleet mechanics (priority groups, acceptance windows, driver broadcast suspension) are in **Doc 5 — Broadcast & Fleet Configuration**, not restated here.
+
 ## Appendix B — Open Items
 
-- Manual-dispatch modal and the Configuration Reference (Doc 2) are tracked as separate specs.
+- Manual-dispatch modal is tracked as a separate spec.
 - **Jira sync pending:** DES-251 acceptance criteria still describe the old earliest/latest delivery window and must be updated to the single date + time picker (§4.3). DES-265 (Add to Trip) could not be read during this pass — fold in any additional detail once Jira access is granted.
 
 **Resolved this revision:** the Ready-states naming (§2.3, was "pre-transit"); Broadcasted edit behaviour confirmed identical to Pending (§8); the detail tab is named Dispatch Logs, not Broadcast (§7.5).
@@ -602,10 +647,13 @@ Defined in the Configuration Reference (Doc 2). Named here for cross-reference o
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.7 | Jul 2026 | **Bulk cancel & bulk reschedule brought into V1 scope** (DES-254), removing the stale §11.5 out-of-scope line. §11.1 — bulk cancel applies one reason code to the batch; mandatory confirmation for single + bulk; reason list updated to the wireframe copy (Customer requested it / Payment Issue / Items unavailable / Customer unreachable / Other). §11.2 — bulk in scope; the driver-held consequence is an inline warning banner ("Please note that rescheduling will unassign orders from their current drivers.", supersedes the named-driver string), shown only when ≥1 selected order is Assigned/At Depot. New **§11.2.1** — Reschedule modal detail: manual-field default + suggestion-chip base-time tables, the no-op confirm-button rule, count-led CTA + toast. CTA copy standard "Action {n} Orders" / singular "Action Order" applied to Cancel/Reschedule/Update; Update Status confirm relabelled "Update {n} Orders"/"Update Order" (was "Update Status") with the toast naming the target status. Source: Changelog_Bulk_Actions_and_Reschedule_Suggestions.md |
 | 1.0 | Jul 2026 | Initial specification — sections 1–11 consolidated from DES-248/252/256/280 and prior design decisions |
 | 1.1 | Jul 2026 | "Finished" group name (was Completed); "Ready" states (was pre-transit); single date + time delivery picker (was earliest/latest window); Batch ID column; column-count drawer rule; Dispatch Logs tab (was Broadcast) with conditional Overview logic; Add to Trip corrected to DES-265 with impact-preview and driver-consent detail |
 | 1.2 | Jul 2026 | Per-instance Actions width (64px overflow-only vs 154px Dispatch+overflow); new **All** search/triage instance (Order ID, Route, Recipient, Duration, Created, Status, +Last Updated; no Checkbox/Driver/Trip/Batch/Actions); unified horizontal-scroll rule keyed to minimum table width, pinning Order ID + Actions, superseding column-dropping |
 | 1.3 | Jul 2026 | New Part 12 — Table Interaction Layer: AND-only filter model (data-availability filters, Filter Group vs Basic Filter Search variants, persistence rules), Created: Last 7 Days default, Order ID + Recipient search scope, default sort Created-newest, pagination, column control, per-status overflow menus (for review), empty/loading/error states, bulk actions. Companion Doc 3 (Interaction & Component Patterns) created |
+| 2.5 | Jul 2026 | §12.1 corrected — **Created By is always an available filter dimension** (every order has a creator; only the column is hidden by default). Previous wording "when the data carries it" wrongly implied it could be absent. Consequence stated: order tables always resolve to **Filter Group**; Basic Filter Search never applies to them |
+| 2.4 | Jul 2026 | Doc 2 (Configuration Reference) and Doc 5 (Broadcast & Fleet Configuration) written — Appendix A updated from "TBD" placeholders to confirmed flags with cross-references |
 | 2.3 | Jul 2026 | SLA model corrected per design walkthrough: Doc 4 v1.1 — constant Expected OFT with paused clocks replaces chain-adjusted totals; §7.2 counter bullet updated (pauses during chain wait, counts stage time not wall clock) |
 | 2.2 | Jul 2026 | At Depot given its own summary-card copy ("Driver is at the depot") replacing the inherited Assigned line; Doc 4 promoted to v1.0 build-ready — chain-adjusted per-order totals with counter-denominator rule, At-Risk cadence engineering-owned, order-level badge granularity |
 | 2.1 | Jul 2026 | §7.2 renamed **summary card** and rebuilt: locked 12-row copy matrix (incl. dynamic pre-broadcast countdown ≤60 min, drawer-scoped timers), Elapsed-vs-Total headline rule, map-state "route biography" table (planned vs actual path on Delivered, trail-to-failure on Returned, heading on Returning, conditional route on Cancelled), expanded-map mode (depot/drop-off info cards + dispatch-nudge banner). **Doc 4 — SLA & Fulfilment-Time Specification** drafted (five-SLA two-phase model, chaining, badge precedence) closing the standing TBD; three open questions logged there |

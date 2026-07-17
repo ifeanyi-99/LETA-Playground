@@ -46,6 +46,8 @@ interface StoreState {
 
   // --- mutations ---
   addOrder: (input: NewOrderInput) => Order;
+  /** Patch an order's editable fields in place (Edit Order, OM §8) — status unchanged. */
+  updateOrder: (id: string, patch: Partial<Order>) => void;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
   assignOrder: (orderId: string, driverId: string) => void;
   /** Cancel an order, capturing the Cancel Order modal's reason codes + note (OM §11.1). */
@@ -93,6 +95,12 @@ export const useStore = create<StoreState>((set, get) => ({
     // If created already assigned, mark the driver busy.
     if (order.driverId) get().assignOrder(order.id, order.driverId);
     return order;
+  },
+
+  updateOrder: (id, patch) => {
+    set((s) => ({
+      orders: s.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)),
+    }));
   },
 
   updateOrderStatus: (id, status) => {

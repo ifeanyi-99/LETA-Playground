@@ -33,6 +33,9 @@ interface CancelOrderModalProps {
 export function CancelOrderModal({ orderIds, onClose, onConfirm }: CancelOrderModalProps): React.ReactElement {
   const [selected, setSelected] = React.useState<ReadonlySet<string>>(() => new Set());
   const [note, setNote] = React.useState('');
+  const n = orderIds.length;
+  // CTA copy standard "Action [Count] Orders" — singular drops the count (task 2).
+  const confirmLabel = n === 1 ? 'Cancel Order' : `Cancel ${n} Orders`;
 
   const toggle = (reason: string, next: boolean) =>
     setSelected((prev) => {
@@ -56,7 +59,7 @@ export function CancelOrderModal({ orderIds, onClose, onConfirm }: CancelOrderMo
           variant="multi-choice"
           title="Cancel Order"
           cancelLabel="Close"
-          confirmLabel="Cancel Order"
+          confirmLabel={confirmLabel}
           destructive
           confirmDisabled={!canConfirm}
           confirmIconLeft="Delete"
@@ -69,7 +72,7 @@ export function CancelOrderModal({ orderIds, onClose, onConfirm }: CancelOrderMo
               older OM §11.1 reason-code list). */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)', width: '100%' }}>
             <span className="text-label-m-medium" style={{ color: 'var(--text-default-heading)' }}>
-              Tell us why you are cancelling the order.
+              {n === 1 ? 'Tell us why you are cancelling this order' : <>Tell us why you're cancelling <strong style={{ fontWeight: 600 }}>{n}</strong> orders</>}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)' }}>
               {CANCEL_REASONS.map((reason) => (

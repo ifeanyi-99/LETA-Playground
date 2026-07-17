@@ -372,6 +372,10 @@ const BUTTON_STYLES = `
     cursor: pointer;
     user-select: none;
     border: 0;
+    /* Buttons are always single-line in the DS — without this, a hyphenated
+       label ("TRP-107") wraps at the hyphen in a tight cell and a hugging
+       Plain button doubles in height. */
+    white-space: nowrap;
     transition:
       background-color 150ms ease-out,
       color 150ms ease-out,

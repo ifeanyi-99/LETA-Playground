@@ -173,11 +173,15 @@ export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(function T
   let body: React.ReactNode;
 
   if (variant === 'small') {
+    // Text Area: pad [12,24] desktop / [10,18] mobile (Figma). The label hugs its
+    // content up to a 163px cap, then wraps — a short label ("Copy ID") stays one
+    // line (44px tall); a long one ("Scheduled: 09 Jun 2027, 12:30 PM") wraps to
+    // two centered lines (64px). Matches the Figma small-tooltip max text width.
     body = (
       <div style={{ padding: isMobile ? '10px 18px' : '12px 24px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
         <span
           className={isMobile ? 'text-label-s-regular' : 'text-label-m-regular'}
-          style={{ color: bodyColor, whiteSpace: 'nowrap' }}
+          style={{ color: bodyColor, display: 'inline-block', maxWidth: 163 }}
         >
           {text ?? 'View'}
         </span>

@@ -342,7 +342,7 @@ const RAW_ORDERS: Omit<Order, 'id'>[] = [
     priority: 'standard',
   },
 
-  // ── Finished (3) ──────────────────────────────────────────────────────────
+  // ── Finished (6) — 2 delivered + 4 cancelled (mixed driver/trip) ───────────
   {
     customer: 'Carrefour Two Rivers',
     phone: '+254 720 100 004',
@@ -369,6 +369,10 @@ const RAW_ORDERS: Omit<Order, 'id'>[] = [
     createdAt: '2026-06-29T05:00:00',
     priority: 'standard',
   },
+  // Cancelled orders vary by *when* they were cancelled (§ Cancelled table
+  // `1213:98975`): cancelled-before-assignment carries no driver/trip (both
+  // cells render "--"); cancelled-after-assignment keeps the driver it had and
+  // its trip. The mix below gives the Cancelled view both shapes out of the box.
   {
     customer: 'Chandarana Yaya',
     phone: '+254 720 100 008',
@@ -378,8 +382,47 @@ const RAW_ORDERS: Omit<Order, 'id'>[] = [
     package: 'Grocery delivery',
     items: 5,
     status: 'cancelled',
-    driverId: null,
+    driverId: null, // cancelled before assignment → Driver + Trip show "--"
     createdAt: '2026-06-29T07:10:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Naivas Kilimani',
+    phone: '+254 720 100 009',
+    depot: 'Kilimani Dispatch Hub',
+    pickup: { label: '5 Argwings Kodhek Rd, Kilimani', lat: -1.293, lng: 36.785 },
+    dropoff: { label: 'Adams Arcade, Ngong Rd', lat: -1.301, lng: 36.78 },
+    package: 'Household goods',
+    items: 3,
+    status: 'cancelled',
+    driverId: 'DRV-02', // cancelled after assignment → keeps driver + trip
+    createdAt: '2026-06-29T06:45:00',
+    priority: 'express',
+  },
+  {
+    customer: 'Quickmart Lavington',
+    phone: '+254 720 100 010',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2566, lng: 36.8033 },
+    dropoff: { label: 'Lavington Mall, Nairobi', lat: -1.279, lng: 36.767 },
+    package: 'Beverages',
+    items: 4,
+    status: 'cancelled',
+    driverId: null, // cancelled before assignment → "--"
+    createdAt: '2026-06-29T04:30:00',
+    priority: 'standard',
+  },
+  {
+    customer: 'Artcaffe Westgate',
+    phone: '+254 720 100 011',
+    depot: 'Westlands Fulfillment Hub',
+    pickup: { label: '23 Ring Rd, Westlands, Nairobi', lat: -1.2566, lng: 36.8033 },
+    dropoff: { label: 'Westgate Mall, Westlands', lat: -1.257, lng: 36.803 },
+    package: 'Catering order',
+    items: 8,
+    status: 'cancelled',
+    driverId: 'DRV-03', // cancelled after assignment → keeps driver + trip
+    createdAt: '2026-06-29T03:50:00',
     priority: 'standard',
   },
 
@@ -440,8 +483,19 @@ const RAW_ORDERS: Omit<Order, 'id'>[] = [
   },
 ];
 
-/** Orders with deterministic, varied-length LETA unique IDs (see {@link makeOrderId}). */
-export const MOCK_ORDERS: Order[] = RAW_ORDERS.map((o, i) => ({ id: makeOrderId(i), ...o }));
+/**
+ * Orders with deterministic, varied-length LETA unique IDs (see {@link makeOrderId}).
+ * A trip exists once a driver was assigned — so every seeded order WITH a driver
+ * gets a deterministic short trip ID (TRP-1xx). Orders that never reached
+ * assignment (unassigned statuses, and the cancelled-before-assignment case —
+ * `driverId: null`) carry no trip; their Trip cell renders "--" per the
+ * Cancelled-table wireframe (`1213:98975`).
+ */
+export const MOCK_ORDERS: Order[] = RAW_ORDERS.map((o, i) => ({
+  id: makeOrderId(i),
+  ...(o.driverId ? { tripId: `TRP-${101 + (i % 8)}` } : null),
+  ...o,
+}));
 
 /** Statuses where the assigned driver is actively fulfilling the order (→ busy). */
 const ACTIVE_DRIVER_STATUSES: Order['status'][] = ['assigned', 'at-depot', 'in-transit', 'arrived', 'returning'];

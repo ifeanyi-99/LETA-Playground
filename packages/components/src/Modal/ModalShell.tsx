@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useScrollShadow } from '../FooterFrame/useScrollShadow.js';
+import { useFocusTrap } from './useFocusTrap.js';
 
 export interface ModalShellProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Fixed modal width in px (e.g. 480 / 512 / 768 / 1024). */
@@ -25,6 +26,13 @@ export interface ModalShellProps extends React.HTMLAttributes<HTMLDivElement> {
    * Overrides `bodyHeight`.
    */
   fillHeight?: boolean;
+  /**
+   * Called when Escape is pressed while this modal is the topmost overlay
+   * (Doc 3 §10) — typically the same handler as the header's close button
+   * (`onClose ?? onCancel`). While mounted, this shell also traps Tab focus
+   * within itself and returns focus to the trigger on unmount.
+   */
+  onEscape?: () => void;
 }
 
 // Subtle scroll-affordance shadows (Figma `--shadow-neutral-1`, mirrored upward
@@ -51,10 +59,16 @@ const FOOTER_SHADOW = '0px -4px 10px -4px rgb(0 0 0 / 0.04), 1px 0px 8px -8px rg
  */
 export const ModalShell = React.forwardRef<HTMLDivElement, ModalShellProps>(
   function ModalShell(
-    { width, rounded = true, header, footer, children, bodyStyle, bodyHeight, fillHeight = false, style, ...rest },
+    { width, rounded = true, header, footer, children, bodyStyle, bodyHeight, fillHeight = false, onEscape, style, ...rest },
     ref,
   ) {
     const bodyRef = React.useRef<HTMLDivElement | null>(null);
+    const rootRef = React.useRef<HTMLDivElement | null>(null);
+    React.useImperativeHandle(ref, () => rootRef.current!);
+    // Mounting IS opening for every ModalShell consumer (each conditionally
+    // renders the template only while its modal is open) — the trap is
+    // active for the shell's whole lifetime.
+    useFocusTrap(rootRef, true, onEscape);
     const scrolls = fillHeight || bodyHeight != null;
 
     // Header shadow: show once the body has scrolled away from the top.
@@ -76,7 +90,8 @@ export const ModalShell = React.forwardRef<HTMLDivElement, ModalShellProps>(
 
     return (
       <div
-        ref={ref}
+        ref={rootRef}
+        tabIndex={-1}
         style={{
           boxSizing: 'border-box',
           display: 'flex',

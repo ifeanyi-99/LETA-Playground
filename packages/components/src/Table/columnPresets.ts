@@ -62,6 +62,15 @@ const DRIVER: TableColumn = { label: 'Driver', role: 'primary', flex: 1.22, minW
 const ROUTE: TableColumn = { label: 'Route', role: 'primary', flex: 1.48, minWidth: ROUTE_FLOOR };
 const RECIPIENT: TableColumn = { label: 'Recipient', role: 'primary', flex: 1.0, minWidth: RECIPIENT_FLOOR };
 const DURATION: TableColumn = { label: 'Duration', role: 'utility', width: 110 };
+/** Finished tables' Duration header carries an ⓘ ("Duration ⓘ", per the
+ *  Delivered/Cancelled wireframes) — the completed value is the total
+ *  fulfilment time (Doc 4), which the ⓘ's hover tooltip names. */
+const DURATION_FINISHED: TableColumn = {
+  ...DURATION,
+  showTrailingIcon: true,
+  trailingIcon: 'Info',
+  trailingIconTooltip: 'Total fulfilment time',
+};
 const CREATED: TableColumn = { label: 'Created', role: 'utility', width: 120 };
 const STATUS: TableColumn = { label: 'Status', role: 'utility', width: 140 };
 /** Order table: single overflow button — 64px (§ Instance A). */
@@ -90,7 +99,7 @@ export const ORDER_TABLE_COLUMNS: TableColumn[] = [
  *   checkbox column the finished shape must not have.
  */
 export const ORDER_TABLE_COLUMNS_FINISHED: TableColumn[] = [
-  ORDER_ID, TRIP, DRIVER, ROUTE, RECIPIENT, DURATION, CREATED, STATUS, ACTIONS_VIEW_LOGS,
+  ORDER_ID, TRIP, DRIVER, ROUTE, RECIPIENT, DURATION_FINISHED, CREATED, STATUS, ACTIONS_VIEW_LOGS,
 ];
 
 /**

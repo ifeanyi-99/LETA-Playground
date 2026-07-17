@@ -48,7 +48,8 @@ interface StoreState {
   addOrder: (input: NewOrderInput) => Order;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
   assignOrder: (orderId: string, driverId: string) => void;
-  cancelOrder: (id: string) => void;
+  /** Cancel an order, capturing the Cancel Order modal's reason codes + note (OM §11.1). */
+  cancelOrder: (id: string, reasons?: string[], note?: string) => void;
 
   // --- toasts ---
   pushToast: (toast: Omit<ToastItem, 'id'>) => void;
@@ -126,7 +127,18 @@ export const useStore = create<StoreState>((set, get) => ({
     }));
   },
 
-  cancelOrder: (id) => get().updateOrderStatus(id, 'cancelled'),
+  cancelOrder: (id, reasons, note) => {
+    // Attach the audit-trail fields first, then run the shared terminal
+    // transition (which also frees the assigned driver).
+    if (reasons?.length || note) {
+      set((s) => ({
+        orders: s.orders.map((o) =>
+          o.id === id ? { ...o, cancelReasons: reasons, cancelNote: note || undefined } : o,
+        ),
+      }));
+    }
+    get().updateOrderStatus(id, 'cancelled');
+  },
 
   pushToast: (toast) => {
     const seq = get()._toastSeq + 1;

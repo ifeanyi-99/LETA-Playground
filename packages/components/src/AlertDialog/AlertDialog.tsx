@@ -22,6 +22,12 @@ export interface AlertDialogProps
   cancelLabel?: string;
   /** Confirm action label. Default "Confirm". */
   confirmLabel?: string;
+  /**
+   * Style the confirm button as destructive (`Button variant="destructive"`,
+   * red) instead of the default primary. Doc 3 §5: "primary styled to the
+   * action's nature — destructive red for Cancel." Default false.
+   */
+  destructive?: boolean;
   /** Cancel button handler (also the default for the header close). */
   onCancel?: () => void;
   /** Confirm button handler. */
@@ -52,6 +58,7 @@ export const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
       banner,
       cancelLabel = 'Close',
       confirmLabel = 'Confirm',
+      destructive = false,
       onCancel,
       onConfirm,
       onClose,
@@ -66,6 +73,7 @@ export const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
         rounded
         role="alertdialog"
         aria-label={title}
+        onEscape={onClose ?? onCancel}
         header={
           <ModalHeaders
             variant="default"
@@ -82,7 +90,7 @@ export const AlertDialog = React.forwardRef<HTMLDivElement, AlertDialogProps>(
             <Button variant="secondary" size="medium" onClick={onCancel}>
               {cancelLabel}
             </Button>
-            <Button variant="primary" size="medium" onClick={onConfirm}>
+            <Button variant={destructive ? 'destructive' : 'primary'} size="medium" onClick={onConfirm}>
               {confirmLabel}
             </Button>
           </FooterFrame>

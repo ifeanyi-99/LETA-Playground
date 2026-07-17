@@ -169,6 +169,7 @@ export const LargeModal = React.forwardRef<HTMLDivElement, LargeModalProps>(
         rounded={!isDrawer}
         role="dialog"
         aria-label={title}
+        onEscape={onClose ?? onCancel}
         header={
           <ModalHeaders
             variant={isDrawer ? 'with-tabs' : 'default'}

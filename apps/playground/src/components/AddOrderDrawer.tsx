@@ -89,10 +89,10 @@ function ensureDrawerStyles(): void {
 // (small translateY, not the row's full height) per the enter/exit polish convention.
 const ITEM_ROW_STYLE_ID = 'leta-add-order-item-row-motion';
 const ITEM_ROW_CSS = `
-@keyframes leta-item-row-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes leta-item-row-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes leta-item-row-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-6px); } }
-.leta-item-row-enter { animation: leta-item-row-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
-.leta-item-row-exit { animation: leta-item-row-out 150ms cubic-bezier(0.4, 0, 1, 1) forwards; pointer-events: none; }
+.leta-item-row-enter { animation: leta-item-row-in 420ms cubic-bezier(0.22, 1, 0.36, 1); will-change: transform, opacity; }
+.leta-item-row-exit { animation: leta-item-row-out 260ms cubic-bezier(0.4, 0, 1, 1) forwards; pointer-events: none; will-change: transform, opacity; }
 @media (prefers-reduced-motion: reduce) { .leta-item-row-enter, .leta-item-row-exit { animation: none; } }
 `;
 function ensureItemRowStyles(): void {
@@ -404,7 +404,7 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
       removeTimersRef.current.delete(key);
       setItems((rows) => rows.filter((r) => r.key !== key));
       setRemovingKeys((prev) => { const next = new Set(prev); next.delete(key); return next; });
-    }, 150);
+    }, 260); // matches leta-item-row-out
     removeTimersRef.current.set(key, t);
   };
   const patchItem = (key: number, patch: Partial<ItemRow>) => { touch(); setItems((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r))); };
@@ -843,6 +843,7 @@ export function AddOrderDrawer({ open, config, onClose, onSubmit }: AddOrderDraw
           width={768}
           rounded={false}
           fillHeight
+          onEscape={attemptClose}
           bodyStyle={{ padding: 'var(--padding-24px) var(--padding-16px) 0' }}
           header={<ModalHeaders title="Add Order" showSecondaryContent={false} onClose={attemptClose} />}
           footer={

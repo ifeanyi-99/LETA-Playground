@@ -93,6 +93,8 @@ export interface TableColumn {
   showTrailingIcon?: boolean;
   /** The header trailing icon (outlined). Default `Info`. */
   trailingIcon?: IconName;
+  /** Hover tooltip on the trailing icon (e.g. the Duration header's ⓘ). */
+  trailingIconTooltip?: string;
 }
 
 /** A body row — its cells line up with `columns` by index (excluding the checkbox column). */
@@ -602,6 +604,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
             leadingIcon={c.leadingIcon}
             showTrailingIcon={c.showTrailingIcon}
             trailingIcon={c.trailingIcon}
+            trailingIconTooltip={c.trailingIconTooltip}
             style={{ height: '100%' }}
           />
         </Col>

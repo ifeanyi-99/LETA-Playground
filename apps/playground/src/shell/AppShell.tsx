@@ -26,7 +26,7 @@ import { ClientSwitcherDropdown } from '../components/ClientSwitcherDropdown.js'
  *
  * The `TopBar` uses a **global-admin** breadcrumb whose root chip is the active
  * client (Acme Corp) — the future client-instance switcher. The avatar opens the
- * `UserMenuDropdown`. A global toast region sits bottom-right.
+ * `UserMenuDropdown`. A global toast region sits top-right (Doc 3 §4).
  */
 
 interface NavEntry {
@@ -78,20 +78,23 @@ function useBreadcrumbTrail(): { items: BreadcrumbCrumb[]; current: string } {
   return { items: [], current: sectionLabel };
 }
 
+// Doc 3 §4: top-right placement. Toasts slide IN from the right edge (they arrive
+// from off-screen right, not down from the top) on a gentle ease-out, and slide
+// back out to the right on a softer, quicker ease-in (exits stay subtle per the
+// interface-polish convention).
 const TOAST_MOTION_ID = 'leta-toast-motion';
 const TOAST_CSS = `
 @keyframes leta-toast-in {
-  from { opacity: 0; transform: translateX(24px); }
+  from { opacity: 0; transform: translateX(calc(100% + 24px)); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes leta-toast-out {
   from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 0; transform: translateX(calc(100% + 24px)); }
 }
-.leta-toast-enter { animation: leta-toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1); }
-/* Exit is softer + quicker than the enter (small slide back toward the edge);
-   'forwards' holds opacity 0 until the deferred store removal lands. */
-.leta-toast-exit { animation: leta-toast-out 160ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+.leta-toast-enter { animation: leta-toast-in 320ms cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity; }
+/* 'forwards' holds the off-screen end frame until the deferred store removal lands. */
+.leta-toast-exit { animation: leta-toast-out 240ms cubic-bezier(0.4, 0, 1, 1) forwards; will-change: transform, opacity; }
 @media (prefers-reduced-motion: reduce) { .leta-toast-enter, .leta-toast-exit { animation: none; } }
 `;
 function ensureToastStyles(): void {
@@ -102,7 +105,11 @@ function ensureToastStyles(): void {
   document.head.appendChild(el);
 }
 
-/** Bottom-right transient toast stack, driven by the store. */
+/**
+ * Top-right transient toast stack, driven by the store (Doc 3 §4). Toasts
+ * append to the end of `s.toasts` (oldest-first) — rendered in REVERSE so the
+ * newest lands nearest the top-right corner and the stack grows downward.
+ */
 function ToastRegion(): React.ReactElement {
   const toasts = useStore((s) => s.toasts);
   const dismissToast = useStore((s) => s.dismissToast);
@@ -126,7 +133,7 @@ function ToastRegion(): React.ReactElement {
           return next;
         });
         dismissToast(id);
-      }, 170),
+      }, 240), // matches the leta-toast-out slide-out duration
     );
   };
   React.useEffect(() => {
@@ -138,7 +145,7 @@ function ToastRegion(): React.ReactElement {
     <div
       style={{
         position: 'fixed',
-        bottom: 24,
+        top: 24,
         right: 24,
         zIndex: 1000,
         display: 'flex',
@@ -147,7 +154,7 @@ function ToastRegion(): React.ReactElement {
         pointerEvents: 'none',
       }}
     >
-      {toasts.map((t) => (
+      {[...toasts].reverse().map((t) => (
         <div
           key={t.id}
           className={exiting.has(t.id) ? 'leta-toast-exit' : 'leta-toast-enter'}
@@ -159,7 +166,8 @@ function ToastRegion(): React.ReactElement {
             subtitle={t.subtitle}
             showSubtitle={Boolean(t.subtitle)}
             showCTA={Boolean(t.cta)}
-            duration={7000}
+            // Doc 3 §4: 6s default, 8s when the toast carries an action.
+            duration={t.cta ? 8000 : 6000}
             onDismiss={() => beginExit(t.id)}
           >
             {t.cta ? (

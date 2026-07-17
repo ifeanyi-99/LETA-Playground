@@ -14,6 +14,7 @@ import {
   type DurationLabelVariant,
   type DurationLabelStatus,
 } from '../DurationLabel/DurationLabel.js';
+import { HoverTip } from '../Tooltip/HoverTip.js';
 
 /**
  * The kind of content a Cell renders. Header types are 40px tall and label the
@@ -107,6 +108,9 @@ export interface CellProps
   durationStatus?: DurationLabelStatus;
   /** `duration`: the duration text. Default "0h 0m 0s". */
   durationTime?: string;
+  /** `duration`: hover tooltip on the finished Duration Label's status icon
+   *  ("Delivery on time" / "Delivery delayed"). No tooltip when omitted. */
+  durationIconTooltip?: string;
   /** `select-field`: fired when the inline select is clicked. */
   onSelectClick?: () => void;
   /** `item-stepper`: the stepper value. */
@@ -117,6 +121,17 @@ export interface CellProps
   name?: string;
   /** `driver-cell` / `user-cell`: the avatar photo URL (falls back to empty-teal initials). */
   avatarSrc?: string;
+  /**
+   * `driver-cell`: show the trailing Swap + Call action buttons under the name.
+   * Default true. Set false for **finished** orders (delivered/cancelled) — a
+   * terminal order's driver can't be swapped or called, so the cell shows just
+   * the name, vertically centered against the avatar.
+   */
+  showDriverActions?: boolean;
+  /** `driver-cell`: fired when the Swap (change-driver) button is clicked. */
+  onSwapDriver?: () => void;
+  /** `driver-cell`: fired when the Call button is clicked. */
+  onCallDriver?: () => void;
   /** `user-cell`: the user's email, shown under the name in muted sub-body text. */
   email?: string;
   /** `api-cell`: the title (e.g. how the row was created). Default "Auto-created". */
@@ -129,6 +144,10 @@ export interface CellProps
   /** `status`: SLA-state trailing icon (§2.3) — orange warning icon when the order
    *  is At Risk, red error icon when Delayed, no icon when On-Time. Default undefined (no icon). */
   statusIcon?: 'warning' | 'error';
+  /** `status`: hover tooltip on the SLA icon ("At Risk" / "Delayed"). No tooltip when omitted. */
+  statusIconTooltip?: string;
+  /** `header`: hover tooltip on the trailing icon (e.g. the Duration header's ⓘ). */
+  trailingIconTooltip?: string;
 
   // SLOTs (caller-injected; defaults mirror the visible Figma instance)
   /** `status` SLOT — the status/delivery badge(s). Default a Scheduled badge. */
@@ -143,6 +162,23 @@ export interface CellProps
   automaticOrderContent?: React.ReactNode;
   /** `manual-order` / `automatic-order`: fired when the Copy icon button is clicked. */
   onCopyOrderId?: () => void;
+  /** `manual-order` / `automatic-order`: hover tooltip on the Copy button. Default "Copy ID". */
+  copyTooltip?: string;
+  /** `manual-order` / `automatic-order`: hover tooltip on the provenance icon
+   *  (Manual-Touch / Integration). Defaults "Created manually" / "Created via integration". */
+  sourceTooltip?: string;
+  /** `manual-order` / `automatic-order`: show the Calendar scheduled-origin icon.
+   *  Default true (the Figma default renders it). */
+  showScheduledIcon?: boolean;
+  /** `manual-order` / `automatic-order`: hover tooltip on the Calendar icon —
+   *  the order's scheduled delivery date/time (e.g. "Scheduled: 09 Jun 2027, 12:30 PM").
+   *  No tooltip when omitted. */
+  scheduledTooltip?: string;
+  /** `manual-order` / `automatic-order`: show the Broadcast auto-broadcast icon.
+   *  Default false (data-driven — only auto-broadcasted orders carry it). */
+  showBroadcastIcon?: boolean;
+  /** `manual-order` / `automatic-order`: hover tooltip on the Broadcast icon. Default "Auto-broadcast". */
+  broadcastTooltip?: string;
 }
 
 type Eff = 'idle' | 'hover' | 'pressed';
@@ -243,22 +279,34 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
     durationVariant = 'finished',
     durationStatus = 'on-target',
     durationTime = '0h 0m 0s',
+    durationIconTooltip,
     onSelectClick,
     stepperValue,
     onStepperChange,
     name = 'Michael Kariuki',
     avatarSrc,
+    showDriverActions = true,
+    onSwapDriver,
+    onCallDriver,
     email = 'davemungai@gmail.com',
     apiTitle = 'Auto-created',
     apiSubtext = 'From online store',
     apiIcon = 'Integration',
     statusContent,
     statusIcon,
+    statusIconTooltip,
+    trailingIconTooltip,
     actions,
     timeStepperContent,
     manualOrderContent,
     automaticOrderContent,
     onCopyOrderId,
+    copyTooltip = 'Copy ID',
+    sourceTooltip,
+    showScheduledIcon = true,
+    scheduledTooltip,
+    showBroadcastIcon = false,
+    broadcastTooltip = 'Auto-broadcast',
     className,
     style,
     ...rest
@@ -290,9 +338,15 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
           )}
           <span className="text-label-s-semibold" style={{ color: 'var(--text-default-sub-heading)' }}>{columnName}</span>
           {showTrailingIcon && (
-            <span style={{ flexShrink: 0, display: 'flex', color: 'var(--icons-neutral-idle)' }}>
-              <Icon name={trailingIcon} outlined size={16} />
-            </span>
+            trailingIconTooltip ? (
+              <HoverTip label={trailingIconTooltip} style={{ flexShrink: 0, color: 'var(--icons-neutral-idle)' }}>
+                <Icon name={trailingIcon} outlined size={16} />
+              </HoverTip>
+            ) : (
+              <span style={{ flexShrink: 0, display: 'flex', color: 'var(--icons-neutral-idle)' }}>
+                <Icon name={trailingIcon} outlined size={16} />
+              </span>
+            )
           )}
         </>
       );
@@ -338,20 +392,22 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
         <Button variant="plain" size="medium" onClick={onLinkClick}>{link}</Button>
       );
       break;
-    case 'status':
+    case 'status': {
+      const slaIcon = statusIcon && (
+        <Icon
+          name={statusIcon === 'warning' ? 'Warning' : 'Error'}
+          size={16}
+          color={statusIcon === 'warning' ? 'var(--icons-warning-default)' : 'var(--icons-error-default)'}
+        />
+      );
       inner = (
         <>
           {statusContent ?? <Badge color="primary" label="Scheduled" />}
-          {statusIcon && (
-            <Icon
-              name={statusIcon === 'warning' ? 'Warning' : 'Error'}
-              size={16}
-              color={statusIcon === 'warning' ? 'var(--icons-warning-default)' : 'var(--icons-error-default)'}
-            />
-          )}
+          {slaIcon && (statusIconTooltip ? <HoverTip label={statusIconTooltip}>{slaIcon}</HoverTip> : slaIcon)}
         </>
       );
       break;
+    }
     case 'actions':
       inner = actions ?? <Button variant="ghost" size="small" iconOnly="More" aria-label="More actions" />;
       break;
@@ -359,7 +415,7 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
       inner = chips.map((c, i) => <Chip key={i} label={c} />);
       break;
     case 'duration':
-      inner = <DurationLabel variant={durationVariant} status={durationStatus} time={durationTime} />;
+      inner = <DurationLabel variant={durationVariant} status={durationStatus} time={durationTime} iconTooltip={durationIconTooltip} />;
       break;
     case 'select-field':
       inner = (
@@ -413,40 +469,53 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
       );
       break;
     case 'manual-order':
-      inner = manualOrderContent ?? (
+    case 'automatic-order': {
+      const slotContent = type === 'manual-order' ? manualOrderContent : automaticOrderContent;
+      const manual = type === 'manual-order';
+      // Interactive Elements row — copy + provenance icons, each with the
+      // wireframes' hover tooltips (`1334:178838`): Copy ID · Created
+      // manually / Created via integration · Scheduled: {date} · Auto-broadcast.
+      const sourceIcon = manual
+        ? <span style={{ display: 'flex', color: 'var(--icons-caution-badge)' }}><Icon name="Manual-Touch" outlined size={16} /></span>
+        : <span style={{ display: 'flex', color: 'var(--icons-notice-badge)' }}><Icon name="Integration" size={16} /></span>;
+      const calendarIcon = <span style={{ display: 'flex', color: 'var(--icons-information-badge)' }}><Icon name="Calendar" size={16} /></span>;
+      const broadcastIcon = <span style={{ display: 'flex', color: 'var(--icons-highlight-default)' }}><Icon name="Broadcast" size={16} /></span>;
+      inner = slotContent ?? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0, width: '100%' }}>
           <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{orderId}</Truncate>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
-            <Button variant="secondary" size="extra-small" iconOnly="Copy" iconOutlined copyIcon="Check-Circle" aria-label="Copy order ID" onClick={onCopyOrderId} />
-            <span style={{ display: 'flex', color: 'var(--icons-caution-badge)' }}><Icon name="Manual-Touch" outlined size={16} /></span>
-            <span style={{ display: 'flex', color: 'var(--icons-information-badge)' }}><Icon name="Calendar" size={16} /></span>
+            <HoverTip label={copyTooltip}>
+              <Button variant="secondary" size="extra-small" iconOnly="Copy" iconOutlined copyIcon="Check-Circle" aria-label="Copy order ID" onClick={onCopyOrderId} />
+            </HoverTip>
+            <HoverTip label={sourceTooltip ?? (manual ? 'Created manually' : 'Created via integration')}>
+              {sourceIcon}
+            </HoverTip>
+            {showScheduledIcon &&
+              (scheduledTooltip ? <HoverTip label={scheduledTooltip}>{calendarIcon}</HoverTip> : calendarIcon)}
+            {showBroadcastIcon && <HoverTip label={broadcastTooltip}>{broadcastIcon}</HoverTip>}
           </div>
         </div>
       );
       break;
-    case 'automatic-order':
-      inner = automaticOrderContent ?? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0, width: '100%' }}>
-          <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{orderId}</Truncate>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
-            <Button variant="secondary" size="extra-small" iconOnly="Copy" iconOutlined copyIcon="Check-Circle" aria-label="Copy order ID" onClick={onCopyOrderId} />
-            <span style={{ display: 'flex', color: 'var(--icons-notice-badge)' }}><Icon name="Integration" size={16} /></span>
-            <span style={{ display: 'flex', color: 'var(--icons-information-badge)' }}><Icon name="Calendar" size={16} /></span>
-          </div>
-        </div>
-      );
-      break;
+    }
     case 'driver-cell':
       inner = (
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-12px)', minWidth: 0 }}>
           <Avatar name={name} size="small" src={avatarSrc} decorative />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
-            <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
-              <Button variant="secondary" size="extra-small" iconOnly="Swap" aria-label="Swap driver" />
-              <Button variant="secondary" size="extra-small" iconOnly="Phone" iconOutlined aria-label="Call driver" />
+          {showDriverActions ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)', minWidth: 0 }}>
+              <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
+              {/* Swap + Call are Secondary Extra-Small icon buttons — their hover
+                  state is the standard Button :hover (Secondary hover tokens). */}
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
+                <Button variant="secondary" size="extra-small" iconOnly="Swap" aria-label="Swap driver" onClick={onSwapDriver} />
+                <Button variant="secondary" size="extra-small" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={onCallDriver} />
+              </div>
             </div>
-          </div>
+          ) : (
+            // Finished orders — name only, centered against the avatar (no actions).
+            <Truncate className="text-label-m-medium" color="var(--text-default-heading)">{name}</Truncate>
+          )}
         </div>
       );
       break;

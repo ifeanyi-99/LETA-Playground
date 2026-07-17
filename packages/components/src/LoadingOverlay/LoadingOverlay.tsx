@@ -46,9 +46,9 @@ export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement
    * reloads. The parent region must be `position: relative`.
    */
   contained?: boolean;
-  /** First text line (Heading/S/SemiBold, `--text-default-heading`). Default "Loading...". */
+  /** First text line (Heading/S/SemiBold, `--text-default-heading`). Default "Loading" (Doc 3 §2.1). */
   title?: string;
-  /** Second text line (Body/M/Regular, `--text-default-sub-body`). Default "Wait a few seconds.". */
+  /** Second text line (Body/M/Regular, `--text-default-sub-body`). Default "This will only take a moment" (Doc 3 §2.1). */
   subtitle?: string;
   /**
    * Override the animation source URL (a Lottie JSON). Defaults to the LETA
@@ -60,7 +60,7 @@ export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement
 /**
  * Loading Overlay — a blocking loader: a translucent white scrim over the
  * region it covers, with the LETA loader animation centered at 80×80 and two
- * stacked text lines 20px below it ("Loading..." + "Wait a few seconds.", 8px
+ * stacked text lines 20px below it ("Loading" + "This will only take a moment", 8px
  * apart). Shown while a view reloads — e.g. the Table Data Control's Refresh
  * button re-fetching a table.
  *
@@ -80,7 +80,7 @@ export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement
  */
 export const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayProps>(
   function LoadingOverlay(
-    { open, contained = false, title = 'Loading...', subtitle = 'Wait a few seconds.', animationUrl = LOADER_URL, style, ...rest },
+    { open, contained = false, title = 'Loading', subtitle = 'This will only take a moment', animationUrl = LOADER_URL, style, ...rest },
     ref,
   ) {
     const boxRef = React.useRef<HTMLDivElement | null>(null);

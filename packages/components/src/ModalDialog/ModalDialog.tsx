@@ -1,4 +1,5 @@
 import * as React from 'react';
+import type { IconName } from '@leta/icons';
 import { ModalShell } from '../Modal/ModalShell.js';
 import { ModalHeaders } from '../ModalHeaders/ModalHeaders.js';
 import { FooterFrame } from '../FooterFrame/FooterFrame.js';
@@ -32,10 +33,26 @@ export interface ModalDialogProps
   cancelLabel?: string;
   /** Confirm label. Default "Confirm". */
   confirmLabel?: string;
+  /**
+   * Style the confirm button as destructive red (`Button variant="destructive"`)
+   * instead of primary — Doc 3 §5: "primary styled to the action's nature".
+   * Default false.
+   */
+  destructive?: boolean;
+  /** Disable the confirm button (e.g. until a required selection is made). Default false. */
+  confirmDisabled?: boolean;
+  /** Optional leading icon on the confirm button (outlined), e.g. the Cancel Order trash. */
+  confirmIconLeft?: IconName;
   onCancel?: () => void;
   onConfirm?: () => void;
   /** Header close handler. Falls back to `onCancel`. */
   onClose?: () => void;
+  /**
+   * Fixed body height override (px) — replaces the variant's default so a
+   * children-composed body can match its wireframe exactly (e.g. the Cancel
+   * Order modal's 454px multi-choice body).
+   */
+  bodyHeight?: number;
 }
 
 /** Per-variant body height (px). undefined ⇒ shell hugs content. */
@@ -150,9 +167,13 @@ export const ModalDialog = React.forwardRef<HTMLDivElement, ModalDialogProps>(
       signatureSrc,
       cancelLabel = 'Close',
       confirmLabel = 'Confirm',
+      destructive = false,
+      confirmDisabled = false,
+      confirmIconLeft,
       onCancel,
       onConfirm,
       onClose,
+      bodyHeight,
       ...rest
     },
     ref,
@@ -164,6 +185,7 @@ export const ModalDialog = React.forwardRef<HTMLDivElement, ModalDialogProps>(
         rounded
         role="dialog"
         aria-label={title}
+        onEscape={onClose ?? onCancel}
         header={
           <ModalHeaders variant="default" title={title} onClose={onClose ?? onCancel} showSecondaryContent={false} />
         }
@@ -172,12 +194,19 @@ export const ModalDialog = React.forwardRef<HTMLDivElement, ModalDialogProps>(
             <Button variant="secondary" size="medium" onClick={onCancel}>
               {cancelLabel}
             </Button>
-            <Button variant="primary" size="medium" onClick={onConfirm}>
+            <Button
+              variant={destructive ? 'destructive' : 'primary'}
+              size="medium"
+              disabled={confirmDisabled}
+              iconLeft={confirmIconLeft}
+              iconOutlined={confirmIconLeft != null}
+              onClick={onConfirm}
+            >
               {confirmLabel}
             </Button>
           </FooterFrame>
         }
-        bodyHeight={BODY_HEIGHT[variant]}
+        bodyHeight={bodyHeight ?? BODY_HEIGHT[variant]}
         bodyStyle={bodyStyleFor(variant)}
         {...rest}
       >

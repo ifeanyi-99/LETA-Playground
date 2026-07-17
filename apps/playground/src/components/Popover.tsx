@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
+import { useEscapeLayer } from '@leta/components';
 
 export type PopoverPlacement = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
 
@@ -42,6 +43,16 @@ interface PopoverProps {
   children: React.ReactNode;
 }
 
+// Doc 3 §1: "Only one dropdown may be open at a time, platform-wide" — a new
+// Popover force-closes whichever OTHER Popover was previously open, however
+// far apart in the component tree the two triggers are (a table dropdown vs.
+// the Top Bar's user-menu/client-switcher, which each keep their own React
+// state). This is a single shared owner across every Popover instance in the
+// app — deliberately module-level, not context-based, since a React context
+// would still require every trigger to share a common provider.
+let currentOwner: symbol | null = null;
+let currentForceClose: (() => void) | null = null;
+
 /**
  * Popover — a portal-based overlay positioned from a trigger's bounding rect.
  *
@@ -54,6 +65,14 @@ interface PopoverProps {
  * (`DesktopDropdowns` / `DateTimePicker` render their own chrome; composed
  * `DesktopMenuOptions` menus use {@link MenuPanel}). The panel is clamped to the
  * viewport and flips above the trigger when it would overflow the bottom edge.
+ *
+ * **Single-open (Doc 3 §1):** opening a Popover force-closes any other open
+ * Popover, platform-wide. **Escape (Doc 3 §10):** registered on the shared
+ * `@leta/components` overlay stack, so Escape closes only the topmost overlay
+ * even when a Popover is nested inside a modal/drawer. **Focus-return (Doc 3
+ * §1.3/§10):** the element focused at the moment this Popover opened (almost
+ * always its trigger — clicking a button focuses it) regains focus once the
+ * Popover closes, however it closed.
  */
 export function Popover({
   anchorRect,
@@ -72,6 +91,9 @@ export function Popover({
 
   ensurePopoverStyles();
 
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
+
   // Intercept user-initiated closes to play the exit animation first.
   const handleClose = React.useCallback(() => {
     if (exiting) return;
@@ -81,12 +103,27 @@ export function Popover({
 
   React.useEffect(() => () => { if (exitTimerRef.current) clearTimeout(exitTimerRef.current); }, []);
 
-  // Close on Escape.
+  // Escape closes only the topmost overlay — shared with modals/drawers via
+  // `@leta/components`' overlay stack (Doc 3 §10).
+  useEscapeLayer(true, handleClose);
+
+  // Single-open (Doc 3 §1) + focus-return (§1.3/§10): every call site mounts
+  // a Popover only while open and unmounts it on close (never toggles
+  // `anchorRect` on an already-mounted instance from non-null to null), so
+  // mount/unmount IS open/close here — claim ownership (force-closing
+  // whichever other Popover held it) on mount, release + refocus the trigger
+  // on unmount.
   React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [handleClose]);
+    const id = Symbol('popover');
+    const triggerEl = document.activeElement as HTMLElement | null;
+    if (currentOwner !== null && currentForceClose) currentForceClose();
+    currentOwner = id;
+    currentForceClose = () => onCloseRef.current();
+    return () => {
+      if (currentOwner === id) { currentOwner = null; currentForceClose = null; }
+      triggerEl?.focus?.();
+    };
+  }, []);
 
   // Position after layout (needs the panel's measured size to clamp/flip).
   const reposition = React.useCallback(() => {

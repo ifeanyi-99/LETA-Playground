@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Icon } from '@leta/icons';
+import { HoverTip } from '../Tooltip/HoverTip.js';
 
 export type DurationLabelVariant = 'finished' | 'active';
 export type DurationLabelStatus = 'on-target' | 'delayed' | 'at-risk';
@@ -23,6 +24,12 @@ export interface DurationLabelProps
   status?: DurationLabelStatus;
   /** The duration text. Caller-supplied (e.g. "1h 24m 12s"). Default "0h 0m 0s". */
   time?: string;
+  /**
+   * Hover tooltip on the Finished status icon (e.g. "Delivery on time" /
+   * "Delivery delayed"), per the order-table wireframes. No tooltip when
+   * omitted; ignored by the Active variant (which renders no icon).
+   */
+  iconTooltip?: string;
 }
 
 /** Active-variant time colour by status. */
@@ -47,7 +54,7 @@ const ACTIVE_TEXT: Record<DurationLabelStatus, string> = {
  */
 export const DurationLabel = React.forwardRef<HTMLSpanElement, DurationLabelProps>(
   function DurationLabel(
-    { variant = 'finished', status = 'on-target', time = '0h 0m 0s', className, style, ...rest },
+    { variant = 'finished', status = 'on-target', time = '0h 0m 0s', iconTooltip, className, style, ...rest },
     ref,
   ) {
     const finished = variant === 'finished';
@@ -80,9 +87,15 @@ export const DurationLabel = React.forwardRef<HTMLSpanElement, DurationLabelProp
         {...rest}
       >
         {icon && (
-          <span aria-hidden style={{ flexShrink: 0, display: 'flex' }}>
-            {icon}
-          </span>
+          iconTooltip ? (
+            <HoverTip label={iconTooltip} style={{ flexShrink: 0 }}>
+              {icon}
+            </HoverTip>
+          ) : (
+            <span aria-hidden style={{ flexShrink: 0, display: 'flex' }}>
+              {icon}
+            </span>
+          )
         )}
         <span className="text-label-m-medium" style={{ color: timeColor, fontVariantNumeric: 'tabular-nums' }}>
           {time}

@@ -26,8 +26,8 @@ export interface TableContainerProps
   empty?: React.ReactNode;
   /**
    * The no-results region (`no-results` variant). Default the No Matching
-   * Results Empty State ("Try adjusting your filters & date.", per Figma
-   * `1524:40283` Property 1=No Results).
+   * Results Empty State ("Try adjusting your filters and date.", per Doc 3
+   * §3/§9's copy standard; Figma `1524:40283` Property 1=No Results).
    */
   noResults?: React.ReactNode;
   /** Fired by the default Empty State's Add Order CTA. */
@@ -88,7 +88,7 @@ export const TableContainer = React.forwardRef<HTMLDivElement, TableContainerPro
     ) : isNoResults ? (
       noResults ?? (
         <div style={{ minHeight: 560, ...(fillHeight ? { flex: 1 } : null), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <EmptyState type="no-results" size="desktop" description="Try adjusting your filters & date." />
+          <EmptyState type="no-results" size="desktop" description="Try adjusting your filters and date." />
         </div>
       )
     ) : (

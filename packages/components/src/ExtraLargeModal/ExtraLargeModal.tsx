@@ -89,6 +89,7 @@ export const ExtraLargeModal = React.forwardRef<HTMLDivElement, ExtraLargeModalP
         rounded
         role="dialog"
         aria-label={title}
+        onEscape={onClose ?? onCancel}
         header={
           <ModalHeaders variant="default" title={title} onClose={onClose ?? onCancel} showSecondaryContent={false} />
         }

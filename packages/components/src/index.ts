@@ -117,6 +117,7 @@ export { ModalHeaders } from './ModalHeaders/index.js';
 export type { ModalHeadersProps, ModalHeadersVariant } from './ModalHeaders/index.js';
 export { ModalShell } from './Modal/ModalShell.js';
 export type { ModalShellProps } from './Modal/ModalShell.js';
+export { useEscapeLayer } from './Modal/useEscapeLayer.js';
 export { ContentPrimitives } from './ContentPrimitives/index.js';
 export type { ContentPrimitivesProps, ContentPrimitivesType } from './ContentPrimitives/index.js';
 export { NotificationBanner } from './NotificationBanner/index.js';
@@ -144,13 +145,14 @@ export { InputSection, InputGroup, FormDemarcator } from './InputSection/index.j
 export type { InputSectionProps, InputGroupProps } from './InputSection/index.js';
 export { Toast } from './Toast/index.js';
 export type { ToastProps, ToastType } from './Toast/index.js';
-export { Tooltip } from './Tooltip/index.js';
+export { Tooltip, HoverTip } from './Tooltip/index.js';
 export type {
   TooltipProps,
   TooltipVariant,
   TooltipPlatform,
   CaretSide,
   CaretAlign,
+  HoverTipProps,
 } from './Tooltip/index.js';
 export { EmptyState } from './EmptyState/index.js';
 export type { EmptyStateProps, EmptyStateType, EmptyStateSize } from './EmptyState/index.js';

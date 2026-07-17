@@ -6,7 +6,7 @@ import { Button } from '../Button/Button.js';
 /**
  * Loading Overlay — a blocking loader: a translucent white scrim over the
  * region it covers (`contained`) or the whole viewport, the LETA loader Lottie
- * centered at 80×80, and "Loading..." / "Wait a few seconds." stacked 20px
+ * centered at 80×80, and "Loading" / "This will only take a moment" stacked 20px
  * below (8px apart). The engine + animation preload at mount so the animation
  * starts with the text, and dismissal is cycle-aligned — the overlay holds
  * until the animation finishes its full ~3.7s cycle even if `open` flips false

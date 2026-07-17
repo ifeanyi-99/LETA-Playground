@@ -34,6 +34,7 @@ import { ORDER_STATUS_BADGE, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../st
 import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
 import { SkeletonTableRows } from '../components/SkeletonTableRows.js';
 import { AddOrderDrawer } from '../components/AddOrderDrawer.js';
+import { CancelOrderModal } from '../components/CancelOrderModal.js';
 
 // ── Filter groups ───────────────────────────────────────────────────────────────
 type FilterTab = 'unassigned' | 'dispatched' | 'finished' | 'all';
@@ -49,7 +50,16 @@ const GROUP_STATUSES: Record<Exclude<FilterTab, 'all'>, OrderStatus[]> = {
   finished: ['delivered', 'cancelled'],
 };
 
-const ROWS_PER_PAGE = 10;
+// Rows-per-page (Doc 3 §6): default 10, selector offers 10/25/50, and the
+// choice persists per user across sessions (localStorage) — a dispatcher who
+// picks 50 sees 50 next time they log in.
+const PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
+const PAGE_SIZE_STORAGE_KEY = 'leta.playground.rowsPerPage';
+function loadRowsPerPage(): number {
+  if (typeof window === 'undefined') return 10;
+  const stored = Number(window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY));
+  return (PAGE_SIZE_OPTIONS as readonly number[]).includes(stored) ? stored : 10;
+}
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 // ── Optional columns (Columns control) ───────────────────────────────────────────
@@ -122,9 +132,34 @@ function depotForOrder(order: Order, depots: DepotOption[]): DepotOption | undef
 // ── Created By label (Table spec §2.2 — also the Created By filter dimension) ────
 // Deterministic per order (same hash the Created By column already used inline);
 // factored out so the filter dimension and the column cell can't drift apart.
+function creatorFor(order: Order): Creator {
+  return CREATORS[order.id.charCodeAt(0) % CREATORS.length]!;
+}
 function creatorLabelFor(order: Order): string {
-  const c = CREATORS[order.id.charCodeAt(0) % CREATORS.length]!;
+  const c = creatorFor(order);
   return c.source === 'human' ? c.name : c.source === 'storefront' ? 'Storefront' : 'API';
+}
+
+// ── Order provenance (the Order ID cell's Interactive Elements + tooltips) ──────
+// Wireframe `1334:178838`: a manually-created order renders the Manual-Touch
+// icon ("Created manually"), an integration-created one the Integration icon
+// ("Created via integration"); scheduled-origin orders add the Calendar icon
+// ("Scheduled: {date, time}") and auto-broadcast orders the Broadcast icon
+// ("Auto-broadcast"). Origin flags are deterministic mock values until the
+// order model carries real provenance fields.
+function scheduledOriginFor(o: Order): boolean {
+  return o.status === 'scheduled' || idHash(o.id) % 2 === 0;
+}
+function autoBroadcastFor(o: Order): boolean {
+  return idHash(o.id) % 3 === 0;
+}
+/** "Scheduled: 09 Jun 2027, 12:30 PM" — mock scheduled slot 2 days after creation. */
+function scheduledLabelFor(o: Order): string {
+  const d = new Date(o.createdAt);
+  if (isNaN(d.getTime())) return 'Scheduled delivery';
+  d.setDate(d.getDate() + 2);
+  const day = d.getDate().toString().padStart(2, '0');
+  return `Scheduled: ${day} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, 12:30 PM`;
 }
 
 // ── Mock SLA state + duration (Table spec §2.3, Doc 4) ───────────────────────────
@@ -183,7 +218,7 @@ function sortValueFor(o: Order, field: SortField): number {
 }
 
 // ── Overlay model ────────────────────────────────────────────────────────────────
-type OverlayKind = 'created' | 'filter' | 'sort' | 'importExport' | 'subStatus' | 'rowActions' | 'selection' | 'columns';
+type OverlayKind = 'created' | 'filter' | 'sort' | 'importExport' | 'subStatus' | 'rowActions' | 'selection' | 'columns' | 'rowsPerPage';
 interface OverlayState {
   kind: OverlayKind;
   anchor: DOMRect | null;
@@ -272,6 +307,14 @@ export function OrdersPage(): React.ReactElement {
   // opening it doesn't silently reorder the table the user hasn't touched yet.
   const [sortFieldIndex, setSortFieldIndex] = React.useState<number | null>(null);
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('desc');
+  // Rows-per-page (Doc 3 §6) — seeded from the persisted per-user choice;
+  // changing it re-paginates from page 1 and persists for future sessions.
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(loadRowsPerPage);
+  const handleRowsPerPage = (size: number) => {
+    setRowsPerPage(size);
+    setPage(1);
+    try { window.localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(size)); } catch { /* private mode */ }
+  };
   // The Orders view boots into the Empty State (wireframe 1176:171818); the
   // populated table appears only after a load is triggered (Import).
   const [loaded, setLoaded] = React.useState(false);
@@ -457,9 +500,9 @@ export function OrdersPage(): React.ReactElement {
     return [...filtered].sort((a, b) => (sortValueFor(a, field) - sortValueFor(b, field)) * dir);
   }, [filtered, sortFieldIndex, sortDir]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const clampedPage = Math.min(page, pageCount);
-  const pageOrders = sortedFiltered.slice((clampedPage - 1) * ROWS_PER_PAGE, clampedPage * ROWS_PER_PAGE);
+  const pageOrders = sortedFiltered.slice((clampedPage - 1) * rowsPerPage, clampedPage * rowsPerPage);
 
   // Status/sub-status switch (Doc 3 §9's "tab switch") — reset page + clear
   // selection immediately, but the Skeleton flash owns the actual table
@@ -545,12 +588,29 @@ export function OrdersPage(): React.ReactElement {
     clearSelection();
   };
 
-  const bulkCancel = () => {
-    const ids = selectedOrders().map((o) => o.id);
-    ids.forEach((id) => cancelOrder(id));
-    pushToast({ type: 'error', title: `${ids.length} order(s) cancelled` });
-    clearSelection();
+  // Cancel Order (row + bulk) is destructive and irreversible — Doc 3 §5
+  // rules this "required, no exceptions". Both entry points open the Cancel
+  // Order modal (Figma `1382:104119`): reason checkboxes + optional note,
+  // destructive confirm disabled until ≥1 reason ("Other" additionally
+  // requires the note, OM §11.1). On confirm, a SUCCESS toast reports the
+  // outcome count-led ("1 order cancelled" / "10 orders cancelled") — no CTA,
+  // per the wireframe (ruled 2026-07-16).
+  const [cancelConfirm, setCancelConfirm] = React.useState<string[] | null>(null);
+  const requestCancel = (ids: string[]) => setCancelConfirm(ids);
+  const confirmCancel = (reasons: string[], note: string) => {
+    const ids = cancelConfirm ?? [];
+    ids.forEach((id) => cancelOrder(id, reasons, note));
+    setCancelConfirm(null);
+    const n = ids.length;
+    if (n === 0) return;
+    pushToast({
+      type: 'success',
+      title: `${n} order${n === 1 ? '' : 's'} cancelled`,
+      subtitle: `Your order${n === 1 ? ' has' : 's have'} been cancelled.`,
+    });
+    if (n > 1) clearSelection();
   };
+  const bulkCancel = () => requestCancel(selectedOrders().map((o) => o.id));
 
   const noop = (title = 'Coming soon') =>
     pushToast({ type: 'success', title, subtitle: 'This feature is in progress.' });
@@ -665,6 +725,8 @@ export function OrdersPage(): React.ReactElement {
         <Button
           variant="secondary"
           size="small"
+          iconLeft="Document"
+          iconOutlined
           onClick={(e) => {
             e.stopPropagation();
             pushToast({ type: 'success', title: 'View Logs — coming soon', subtitle: 'This feature is in progress.' });
@@ -702,11 +764,52 @@ export function OrdersPage(): React.ReactElement {
     // aligns with whichever preset (`columns`) is active — added/removed columns
     // (Driver, Trip, Duration) just drop out. `''` is the no-label Actions column.
     // Duration falls back to '—' for scheduled orders that surface in a mixed view.
+    const creator = creatorFor(o);
+    const scheduledOrigin = scheduledOriginFor(o);
     const cellByLabel: Record<string, TableRow['cells'][number]> = {
-      'Order ID': { type: 'manual-order', orderId: o.id, onCopyOrderId: () => navigator.clipboard.writeText(o.id) },
+      // Order ID cell — manual vs automatic per the order's creation source
+      // (§2.2), with the wireframes' provenance icons + hover tooltips
+      // (`1334:178838`): Copy ID · Created manually / Created via integration ·
+      // Scheduled: {slot} (scheduled-origin only) · Auto-broadcast.
+      'Order ID': {
+        type: creator.source === 'human' ? 'manual-order' : 'automatic-order',
+        orderId: o.id,
+        onCopyOrderId: () => navigator.clipboard.writeText(o.id),
+        showScheduledIcon: scheduledOrigin,
+        scheduledTooltip: scheduledOrigin ? scheduledLabelFor(o) : undefined,
+        showBroadcastIcon: autoBroadcastFor(o),
+      },
       'Batch ID': { type: 'sample', text: o.batchId ?? '—' }, // Broadcasted view only
-      'Trip': { type: 'sample', text: '—' }, // no trip data in mock yet
-      'Driver': { type: 'driver-cell', name: driver?.name ?? '—' },
+      // Trip cell — a Plain button ("TRP-103 ↗", trailing Open icon, no
+      // underline) once a trip exists; "--" for orders cancelled before
+      // assignment (wireframes `852:166434` / `1213:98975`). The trip surface
+      // itself is a future build, so the button stubs with a toast.
+      'Trip': o.tripId
+        ? {
+            type: 'actions',
+            actions: (
+              <Button
+                variant="plain"
+                size="medium"
+                iconRight="Open"
+                showUnderline={false}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  pushToast({ type: 'success', title: `${o.tripId} — coming soon`, subtitle: 'Trip details are in progress.' });
+                }}
+              >
+                {o.tripId}
+              </Button>
+            ),
+          }
+        : { type: 'sample', text: '--' },
+      // Driver cell: a real driver renders the driver-cell (Swap/Call buttons on
+      // active orders; name-only, centered, for finished ones — a terminal
+      // order's driver can't be swapped/called). No driver (cancelled before
+      // assignment) → "--", matching the empty Trip cell.
+      'Driver': driver
+        ? { type: 'driver-cell', name: driver.name, showDriverActions: !isFinished }
+        : { type: 'sample', text: '--' },
       'Route': { type: 'address-cell', pickup: depotForOrder(o, clientConfig.depots)?.name ?? o.pickup.label, dropoff: o.dropoff.label },
       'Recipient': { type: 'list-item', title: o.customer, subtext: o.phone },
       // Mock times until the Configuration spec lands (real stage-clock logic then).
@@ -719,6 +822,10 @@ export function OrdersPage(): React.ReactElement {
             durationVariant: isFinished ? 'finished' : 'active',
             durationStatus: sla,
             durationTime: mockDurationFor(o, sla, isFinished),
+            // Finished rows: hover tooltip on the leading Within/Beyond-OFT icon.
+            durationIconTooltip: isFinished
+              ? sla === 'delayed' ? 'Delivery delayed' : 'Delivery on time'
+              : undefined,
           },
       'Created': { type: 'date', date: formatCreated(o.createdAt) },
       'Last Updated': { type: 'date', date: formatCreated(o.createdAt) }, // toggle column
@@ -736,6 +843,9 @@ export function OrdersPage(): React.ReactElement {
         statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} />,
         // §2.3: SLA icon trails the badge only while the SLA is actively counting.
         statusIcon: slaCounting && sla === 'at-risk' ? 'warning' : slaCounting && sla === 'delayed' ? 'error' : undefined,
+        // Spec pairing (warning → At Risk, error → Delayed) — the wireframe's
+        // crossed prototype connections were ruled a mistake (2026-07-16).
+        statusIconTooltip: sla === 'at-risk' ? 'At Risk' : sla === 'delayed' ? 'Delayed' : undefined,
       },
       '': actionsCell,
     };
@@ -843,7 +953,7 @@ export function OrdersPage(): React.ReactElement {
                 <SkeletonTableRows
                   columns={columns}
                   selectable={filterTab !== 'all' && filterTab !== 'finished'}
-                  rows={Math.min(ROWS_PER_PAGE, pageOrders.length || ROWS_PER_PAGE)}
+                  rows={Math.min(rowsPerPage, pageOrders.length || rowsPerPage)}
                 />
               ) : (
                 // Keyed wrapper: remounts (and replays the enter animation on) the
@@ -871,8 +981,8 @@ export function OrdersPage(): React.ReactElement {
                   pageCount={pageCount}
                   onPageChange={setPage}
                   countLabel={`Showing ${pageOrders.length} of ${filtered.length}`}
-                  rowsPerPage={ROWS_PER_PAGE}
-                  onRowsPerPageClick={() => noop('Rows per page')}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageClick={() => openFromFocus('rowsPerPage')}
                   fillHeight
                 />
                 </div>
@@ -929,7 +1039,7 @@ export function OrdersPage(): React.ReactElement {
           overlay={overlay}
           onClose={() => setOverlay(null)}
           pushToast={pushToast}
-          cancelOrder={cancelOrder}
+          onRequestCancel={requestCancel}
           subStatus={subStatus}
           onPickStatus={handlePickStatus}
           countByStatus={countByStatus}
@@ -953,6 +1063,8 @@ export function OrdersPage(): React.ReactElement {
             setFilterPreviewCount(ordersInView.length);
           }}
           onImport={runFirstLoad}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPage={(size) => { handleRowsPerPage(size); setOverlay(null); }}
           onSortChange={(sel) => { setSortFieldIndex(sel.index); setSortDir(sel.direction); flashTableLoading(); }}
         />
       )}
@@ -964,6 +1076,17 @@ export function OrdersPage(): React.ReactElement {
         onClose={() => setAddOrderOpen(false)}
         onSubmit={handleOrderCreated}
       />
+
+      {/* Cancel Order modal (Doc 3 §5 / OM §11.1, Figma 1382:104119) — reason
+          capture gating every cancellation; reused for a single order and a
+          bulk selection. */}
+      {cancelConfirm && (
+        <CancelOrderModal
+          orderIds={cancelConfirm}
+          onClose={() => setCancelConfirm(null)}
+          onConfirm={confirmCancel}
+        />
+      )}
     </div>
   );
 }
@@ -974,7 +1097,7 @@ interface OverlayHostProps {
   overlay: OverlayState;
   onClose: () => void;
   pushToast: (t: { type: 'success' | 'warning' | 'error'; title: string; subtitle?: string }) => void;
-  cancelOrder: (id: string) => void;
+  onRequestCancel: (ids: string[]) => void;
   subStatus: OrderStatus | null;
   onPickStatus: (group: Exclude<FilterTab, 'all'>, status: OrderStatus) => void;
   countByStatus: Record<OrderStatus, number>;
@@ -996,10 +1119,35 @@ interface OverlayHostProps {
   /** A Sort field/direction pick — DesktopDropdowns fires this on every pick (field
    * and direction are independently selectable, panel stays open, per its own design). */
   onSortChange: (sel: { index: number; label: string; direction: 'asc' | 'desc' }) => void;
+  /** The current rows-per-page (marks the active option in the selector). */
+  rowsPerPage: number;
+  /** A rows-per-page pick (10/25/50, Doc 3 §6) — close-on-select. */
+  onRowsPerPage: (size: number) => void;
 }
 
-function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange }: OverlayHostProps): React.ReactElement {
+function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange, rowsPerPage, onRowsPerPage }: OverlayHostProps): React.ReactElement {
   const { kind, anchor, orderId, group } = overlay;
+
+  if (kind === 'rowsPerPage') {
+    // Rows-per-page selector (Doc 3 §6) — a small close-on-select combobox of
+    // the three page sizes, opened from the Pagination's "N rows per page"
+    // trigger; the picked size persists per user across sessions.
+    return (
+      <Popover anchorRect={anchor} onClose={onClose} placement="bottom-start">
+        <MenuPanel width={120}>
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <DesktopMenuOptions
+              key={size}
+              type="combobox"
+              label={String(size)}
+              active={size === rowsPerPage}
+              onSelect={() => onRowsPerPage(size)}
+            />
+          ))}
+        </MenuPanel>
+      </Popover>
+    );
+  }
 
   if (kind === 'selection') {
     // The bulk toolbar's "N selected ⌄" overlay (Figma `945:221486`): a 250px combobox
@@ -1169,7 +1317,7 @@ function OverlayHost({ overlay, onClose, pushToast, cancelOrder, subStatus, onPi
             label="Cancel Order"
             showLeadingIcon
             leadingIcon="Delete"
-            onSelect={() => { cancelOrder(orderId); pushToast({ type: 'error', title: 'Order cancelled', subtitle: `${orderId} has been cancelled.` }); onClose(); }}
+            onSelect={() => { onClose(); onRequestCancel([orderId]); }}
           />
         </MenuPanel>
       </Popover>

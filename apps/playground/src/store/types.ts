@@ -51,9 +51,19 @@ export interface Order {
   driverId: string | null;
   /** Broadcast batch identifier — present only on broadcasted orders (surfaced in the Broadcasted view's Batch ID column). */
   batchId?: string;
+  /**
+   * Trip identifier (short, e.g. "TRP-103") — present once the order has been
+   * assigned to a trip. Absent on unassigned orders and on orders cancelled
+   * before assignment (their Trip cell renders "--").
+   */
+  tripId?: string;
   /** ISO datetime string (e.g. "2026-06-29T07:30:00") — used for the live duration timer. */
   createdAt: string;
   priority: OrderPriority;
+  /** Cancellation reason codes captured by the Cancel Order modal (OM §11.1). */
+  cancelReasons?: string[];
+  /** Optional free-text cancellation note (required when "Other" is a reason). */
+  cancelNote?: string;
 }
 
 export interface Driver {

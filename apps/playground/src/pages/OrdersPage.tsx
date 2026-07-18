@@ -260,24 +260,46 @@ interface OverlayState {
   kind: OverlayKind;
   anchor: DOMRect | null;
   orderId?: string;
+  /** The row's status — drives the per-status overflow menu (OM §12.5). */
+  orderStatus?: OrderStatus;
   group?: Exclude<FilterTab, 'all'>;
 }
 
-// Row overflow menu (Figma `202:90314`) — three divider-separated groups: the main
-// actions, the "Special Options Group", then the destructive action. DesktopMenuOptions
-// renders leading icons outlined automatically, so these are the base names.
-const ROW_ACTION_GROUPS: { label: string; icon: IconName }[][] = [
-  [
-    { label: 'View Logs', icon: 'Document' },
-    { label: 'Edit Order', icon: 'Edit' },
-    { label: 'Add To Trip', icon: 'Add' },
-    { label: 'Update Status', icon: 'Update' },
-  ],
-  [
-    { label: 'Reschedule Order', icon: 'Calendar' },
-    { label: 'Add Comment', icon: 'Comment' },
-  ],
-];
+// ── Per-status row overflow (⋯) menu (OM §12.5) ──────────────────────────────────
+// The menu contents vary by lifecycle stage — divider-separated groups top→bottom,
+// with a trailing destructive action (Cancel Order for Ready/Returned, Return Order
+// once in transit). DesktopMenuOptions renders leading icons outlined automatically.
+type RowMenuAction = { label: string; icon: IconName };
+interface RowMenu { groups: RowMenuAction[][]; destructive?: RowMenuAction }
+
+const VIEW_LOGS: RowMenuAction = { label: 'View Logs', icon: 'Document' };
+const EDIT_ORDER: RowMenuAction = { label: 'Edit Order', icon: 'Edit' };
+const ADD_TO_TRIP: RowMenuAction = { label: 'Add To Trip', icon: 'Add' };
+const CHANGE_DRIVER: RowMenuAction = { label: 'Change Driver', icon: 'Swap' };
+const UPDATE_STATUS_ACTION: RowMenuAction = { label: 'Update Status', icon: 'Update' };
+const RESCHEDULE_ACTION: RowMenuAction = { label: 'Reschedule Order', icon: 'Calendar' };
+const ADD_COMMENT: RowMenuAction = { label: 'Add Comment', icon: 'Comment' };
+const CANCEL_ORDER_ACTION: RowMenuAction = { label: 'Cancel Order', icon: 'Delete' };
+const RETURN_ORDER_ACTION: RowMenuAction = { label: 'Return Order', icon: 'Return' };
+
+function rowMenuFor(status: OrderStatus): RowMenu {
+  switch (status) {
+    case 'in-transit':
+    case 'arrived':
+      // Moving — no edit/reschedule/cancel; the recourse is Return.
+      return { groups: [[VIEW_LOGS, UPDATE_STATUS_ACTION], [ADD_COMMENT]], destructive: RETURN_ORDER_ACTION };
+    case 'returning':
+      // Coming back — read-only apart from a comment; no destructive action.
+      return { groups: [[VIEW_LOGS], [ADD_COMMENT]] };
+    case 'assigned':
+    case 'at-depot':
+      // A driver holds it at the depot — adds Change Driver; still fully editable.
+      return { groups: [[VIEW_LOGS, EDIT_ORDER, ADD_TO_TRIP, CHANGE_DRIVER, UPDATE_STATUS_ACTION], [RESCHEDULE_ACTION, ADD_COMMENT]], destructive: CANCEL_ORDER_ACTION };
+    default:
+      // Ready (Scheduled/Pending/Broadcasted) + Returned share the 7-item menu.
+      return { groups: [[VIEW_LOGS, EDIT_ORDER, ADD_TO_TRIP, UPDATE_STATUS_ACTION], [RESCHEDULE_ACTION, ADD_COMMENT]], destructive: CANCEL_ORDER_ACTION };
+  }
+}
 
 // Enter/exit motion for the floating Bulk Actions toolbar (slides up in / down out).
 const BULKBAR_STYLE_ID = 'leta-bulkbar-motion';
@@ -868,7 +890,7 @@ export function OrdersPage(): React.ReactElement {
             aria-label="More actions"
             onClick={(e) => {
               e.stopPropagation();
-              setOverlay({ kind: 'rowActions', anchor: e.currentTarget.getBoundingClientRect(), orderId: o.id });
+              setOverlay({ kind: 'rowActions', anchor: e.currentTarget.getBoundingClientRect(), orderId: o.id, orderStatus: o.status });
             }}
           />
         </div>
@@ -1285,7 +1307,7 @@ interface OverlayHostProps {
 }
 
 function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, onPickStatus, countByStatus, selectedOrderList, deselect, onCreatedLabel, extraCols, onToggleColumn, filterGroups, appliedFilters, filterPreviewCount, onFilterSelectionChange, onFilterApply, onFilterReset, onImport, onSortChange, rowsPerPage, onRowsPerPage, onRequestUpdateStatus, onRequestReschedule, onRequestEdit }: OverlayHostProps): React.ReactElement {
-  const { kind, anchor, orderId, group } = overlay;
+  const { kind, anchor, orderId, orderStatus, group } = overlay;
 
   if (kind === 'rowsPerPage') {
     // Rows-per-page selector (Doc 3 §6) — a small close-on-select combobox of
@@ -1451,10 +1473,12 @@ function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, 
   }
 
   if (kind === 'rowActions' && orderId) {
+    // Per-status menu (OM §12.5) — contents vary by lifecycle stage.
+    const menu = rowMenuFor(orderStatus ?? 'pending');
     return (
       <Popover anchorRect={anchor} onClose={onClose} placement="bottom-end">
         <MenuPanel width={220}>
-          {ROW_ACTION_GROUPS.map((groupRows, gi) => (
+          {menu.groups.map((groupRows, gi) => (
             <React.Fragment key={gi}>
               {gi > 0 && <MenuDivider />}
               {groupRows.map((a) => (
@@ -1476,14 +1500,24 @@ function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, 
               ))}
             </React.Fragment>
           ))}
-          <MenuDivider />
-          <DesktopMenuOptions
-            type="dropdown-destructive"
-            label="Cancel Order"
-            showLeadingIcon
-            leadingIcon="Delete"
-            onSelect={() => { onClose(); onRequestCancel([orderId]); }}
-          />
+          {menu.destructive && (
+            <>
+              <MenuDivider />
+              <DesktopMenuOptions
+                type="dropdown-destructive"
+                label={menu.destructive.label}
+                showLeadingIcon
+                leadingIcon={menu.destructive.icon}
+                onSelect={() => {
+                  onClose();
+                  // Cancel opens the reason-capture modal; Return (§11.3, not yet
+                  // built) stubs a toast for now.
+                  if (menu.destructive!.label === 'Cancel Order') onRequestCancel([orderId]);
+                  else pushToast({ type: 'success', title: menu.destructive!.label, subtitle: 'This action is coming soon.' });
+                }}
+              />
+            </>
+          )}
         </MenuPanel>
       </Popover>
     );

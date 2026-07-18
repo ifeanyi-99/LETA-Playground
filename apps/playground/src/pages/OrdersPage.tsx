@@ -237,13 +237,13 @@ function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m ${total % 60}s`;
 }
 
-// ── Sort (Table spec's Sort dropdown — Created / Duration / Last modified) ───
-// "Last modified" has no distinct field in this mock data (the Last Updated
+// ── Sort (Table spec's Sort dropdown — Created / Duration / Last Updated) ───
+// "Last Updated" has no distinct field in this mock data (the Last Updated
 // *column* already just aliases createdAt too — see the cellByLabel map
 // below), so it orders by the same value as Created; that's consistent with
 // what's actually displayed, not a stand-in for a missing feature.
-type SortField = 'created' | 'duration' | 'lastModified';
-const SORT_FIELDS: SortField[] = ['created', 'duration', 'lastModified'];
+type SortField = 'created' | 'duration' | 'lastUpdated';
+const SORT_FIELDS: SortField[] = ['created', 'duration', 'lastUpdated'];
 function sortValueFor(o: Order, field: SortField): number {
   if (field === 'duration') {
     const isFinished = o.status === 'delivered' || o.status === 'cancelled';

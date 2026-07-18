@@ -71,8 +71,8 @@ export function CancelOrderModal({ orderIds, onClose, onConfirm }: CancelOrderMo
           {/* Reasons — multi-select checkboxes (wireframe copy supersedes the
               older OM §11.1 reason-code list). */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)', width: '100%' }}>
-            <span className="text-label-m-medium" style={{ color: 'var(--text-default-heading)' }}>
-              {n === 1 ? 'Tell us why you are cancelling this order' : <>Tell us why you're cancelling <strong style={{ fontWeight: 600 }}>{n}</strong> orders</>}
+            <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)' }}>
+              {n === 1 ? 'Tell us why you are cancelling this order' : <>Tell us why you’re cancelling <strong style={{ fontWeight: 600 }}>{n}</strong> orders</>}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)' }}>
               {CANCEL_REASONS.map((reason) => (
@@ -89,7 +89,7 @@ export function CancelOrderModal({ orderIds, onClose, onConfirm }: CancelOrderMo
 
           {/* Free-text note — required only while "Other" is checked (OM §11.1). */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)', width: '100%' }}>
-            <span className="text-label-m-medium" style={{ color: 'var(--text-default-heading)' }}>
+            <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)' }}>
               Anything else you want to add? (Optional)
             </span>
             <TextArea

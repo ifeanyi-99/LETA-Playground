@@ -118,8 +118,8 @@ export function RescheduleModal({ orderIds, anchorDate, chipBase, noOpDate = nul
 
             {/* Manual entry — a Select field that opens the date/time picker. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)' }}>
-              <span className="text-label-m-regular" style={{ color: 'var(--text-default-label)' }}>
-                Manually reschedule <strong style={{ fontWeight: 600 }}>{n}</strong> order{n === 1 ? '' : 's'}
+              <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)' }}>
+                {n === 1 ? 'Manually reschedule this order' : <>Manually reschedule <strong style={{ fontWeight: 600 }}>{n}</strong> orders</>}
               </span>
               <div onClick={openPicker}>
                 <Select
@@ -134,7 +134,7 @@ export function RescheduleModal({ orderIds, anchorDate, chipBase, noOpDate = nul
 
             {/* Suggested times — 2x2 grid of single-select cards. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)' }}>
-              <span className="text-label-m-regular" style={{ color: 'var(--text-default-label)' }}>
+              <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)' }}>
                 Or choose a suggested date &amp; time
               </span>
               <div
@@ -149,8 +149,15 @@ export function RescheduleModal({ orderIds, anchorDate, chipBase, noOpDate = nul
                       title={fmtDateTime(s.date)}
                       description={s.label}
                       selected={active}
-                      showTrailing={active}
-                      trailing={<Icon name="Check-Circle" size={20} color="var(--icons-neutral-default)" />}
+                      showTrailing
+                      trailing={
+                        <Icon
+                          name="Check-Circle"
+                          size={20}
+                          color="var(--icons-neutral-default)"
+                          style={{ visibility: active ? 'visible' : 'hidden' }}
+                        />
+                      }
                       onClick={() => setSelectedIdx(i)}
                     />
                   );

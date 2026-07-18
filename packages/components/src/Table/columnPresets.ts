@@ -61,16 +61,19 @@ const BATCH_ID: TableColumn = { label: 'Batch ID', role: 'identifier', width: 90
 const DRIVER: TableColumn = { label: 'Driver', role: 'primary', flex: 1.22, minWidth: DRIVER_FLOOR };
 const ROUTE: TableColumn = { label: 'Route', role: 'primary', flex: 1.48, minWidth: ROUTE_FLOOR };
 const RECIPIENT: TableColumn = { label: 'Recipient', role: 'primary', flex: 1.0, minWidth: RECIPIENT_FLOOR };
-const DURATION: TableColumn = { label: 'Duration', role: 'utility', width: 110 };
-/** Finished tables' Duration header carries an ⓘ ("Duration ⓘ", per the
- *  Delivered/Cancelled wireframes) — the completed value is the total
- *  fulfilment time (Doc 4), which the ⓘ's hover tooltip names. */
-const DURATION_FINISHED: TableColumn = {
-  ...DURATION,
+/** The Duration header carries an ⓘ across every order table (per the wireframes'
+ *  `Duration ⓘ` header) — the column shows the order's fulfilment time (Doc 4);
+ *  the ⓘ's hover tooltip names it. */
+const DURATION: TableColumn = {
+  label: 'Duration',
+  role: 'utility',
+  width: 110,
   showTrailingIcon: true,
   trailingIcon: 'Info',
   trailingIconTooltip: 'Total fulfilment time',
 };
+/** Alias kept for the finished presets (same header + tooltip as base Duration). */
+const DURATION_FINISHED: TableColumn = DURATION;
 const CREATED: TableColumn = { label: 'Created', role: 'utility', width: 120 };
 const STATUS: TableColumn = { label: 'Status', role: 'utility', width: 140 };
 /** Order table: single overflow button — 64px (§ Instance A). */

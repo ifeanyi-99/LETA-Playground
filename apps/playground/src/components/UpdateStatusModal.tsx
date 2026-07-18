@@ -71,8 +71,8 @@ export function UpdateStatusModal({ orderIds, statuses, onClose, onConfirm }: Up
           onConfirm={() => selected && onConfirm(selected)}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24px)', width: '100%' }}>
-            <span className="text-label-m-regular" style={{ color: 'var(--text-default-label)' }}>
-              Choose an option for <strong style={{ fontWeight: 600 }}>{n}</strong> order{n === 1 ? '' : 's'}
+            <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)' }}>
+              {n === 1 ? 'Choose an option for this order' : <>Choose an option for <strong style={{ fontWeight: 600 }}>{n}</strong> orders</>}
             </span>
             <div role="radiogroup" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)' }}>
               {options.map((target) => {
@@ -83,8 +83,15 @@ export function UpdateStatusModal({ orderIds, statuses, onClose, onConfirm }: Up
                     title={optionMeta(target, n !== 1).title}
                     description={optionMeta(target, n !== 1).description}
                     selected={active}
-                    showTrailing={active}
-                    trailing={<Icon name="Check-Circle" size={20} color="var(--icons-neutral-default)" />}
+                    showTrailing
+                    trailing={
+                      <Icon
+                        name="Check-Circle"
+                        size={20}
+                        color="var(--icons-neutral-default)"
+                        style={{ visibility: active ? 'visible' : 'hidden' }}
+                      />
+                    }
                     onClick={() => setSelected(target)}
                   />
                 );

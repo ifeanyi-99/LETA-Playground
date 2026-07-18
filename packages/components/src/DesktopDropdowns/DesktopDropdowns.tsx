@@ -116,7 +116,7 @@ export interface DesktopDropdownsProps
    * Sort fields + per-field direction labels (Figma `1050:209224`). The selected
    * field's `ascLabel`/`descLabel` drive the two direction rows — e.g. a date field
    * reads "Oldest to Newest / Newest to Oldest" while a numeric field reads
-   * "Low to High / High to Low". Defaults to Created / Duration / Last modified.
+   * "Low to High / High to Low". Defaults to Created / Duration / Last Updated.
    */
   sortOptions?: Array<{ label: string; ascLabel?: string; descLabel?: string }>;
   /** Fired when the sort field or direction changes (`sort` variant). */
@@ -173,7 +173,7 @@ const TIMES = [
 const DEFAULT_SORT_OPTIONS = [
   { label: 'Created', ascLabel: 'Oldest to Newest', descLabel: 'Newest to Oldest' },
   { label: 'Duration', ascLabel: 'Low to High', descLabel: 'High to Low' },
-  { label: 'Last modified', ascLabel: 'Oldest to Newest', descLabel: 'Newest to Oldest' },
+  { label: 'Last Updated', ascLabel: 'Oldest to Newest', descLabel: 'Newest to Oldest' },
 ];
 
 const USER_MENU_GROUPS: { label: string; icon: IconName; chevron?: boolean }[][] = [

@@ -280,7 +280,7 @@ const UPDATE_STATUS_ACTION: RowMenuAction = { label: 'Update Status', icon: 'Upd
 const RESCHEDULE_ACTION: RowMenuAction = { label: 'Reschedule Order', icon: 'Calendar' };
 const ADD_COMMENT: RowMenuAction = { label: 'Add Comment', icon: 'Comment' };
 const CANCEL_ORDER_ACTION: RowMenuAction = { label: 'Cancel Order', icon: 'Delete' };
-const RETURN_ORDER_ACTION: RowMenuAction = { label: 'Return Order', icon: 'Return' };
+const RETURN_ORDER_ACTION: RowMenuAction = { label: 'Return Order', icon: 'Undo' };
 
 function rowMenuFor(status: OrderStatus): RowMenu {
   switch (status) {
@@ -295,10 +295,70 @@ function rowMenuFor(status: OrderStatus): RowMenu {
     case 'at-depot':
       // A driver holds it at the depot — adds Change Driver; still fully editable.
       return { groups: [[VIEW_LOGS, EDIT_ORDER, ADD_TO_TRIP, CHANGE_DRIVER, UPDATE_STATUS_ACTION], [RESCHEDULE_ACTION, ADD_COMMENT]], destructive: CANCEL_ORDER_ACTION };
+    case 'returned':
+      // Holding bay — the Ready menu MINUS Update Status: Mark as Delivered/Pending
+      // are both invalid on a returned order (OM §10.1 / §12.6, Ruled 2026-07-20;
+      // verified against Figma `1213:97251`).
+      return { groups: [[VIEW_LOGS, EDIT_ORDER, ADD_TO_TRIP], [RESCHEDULE_ACTION, ADD_COMMENT]], destructive: CANCEL_ORDER_ACTION };
     default:
-      // Ready (Scheduled/Pending/Broadcasted) + Returned share the 7-item menu.
+      // Ready (Scheduled/Pending/Broadcasted) share the 7-item menu.
       return { groups: [[VIEW_LOGS, EDIT_ORDER, ADD_TO_TRIP, UPDATE_STATUS_ACTION], [RESCHEDULE_ACTION, ADD_COMMENT]], destructive: CANCEL_ORDER_ACTION };
   }
+}
+
+// ── Bulk Actions toolbar — per-status action gating ─────────────────────────
+// Doc 1 §12.9: bulk operations are "limited to actions valid for every selected
+// row's status" — so (unlike the row ⋯ menu, which is per-row) the toolbar's
+// fixed buttons + overflow are the INTERSECTION of what each selected order's
+// status allows, not a fixed static set. Mirrors the drawer-footer action sets
+// (§12.7) minus Edit Order (not bulk-friendly — one order at a time).
+type BulkAction = 'cancel' | 'return' | 'addToTrip' | 'changeDriver' | 'dispatch' | 'updateStatus' | 'reschedule';
+// Left-to-right render order in the bulk toolbar, matching the Figma per-status
+// Multi-Select wireframes: the forward/progress actions come first (Dispatch ·
+// Add To Trip · Change Driver · Update Status), then the destructive ones on the
+// right (Cancel Order · Return Order) — the opposite of the drawer footer, which
+// puts destructive far-left. Update Status precedes Return so In Transit / Arrived
+// read "Update Status · Return Order". `reschedule` is overflow-only (never a fixed
+// toolbar button) but MUST appear here so the `intersect` below preserves it — it
+// sits after `updateStatus` so the ⋯ menu reads "Update Status · Reschedule Order".
+const BULK_ACTION_ORDER: BulkAction[] = ['dispatch', 'addToTrip', 'changeDriver', 'updateStatus', 'reschedule', 'cancel', 'return'];
+
+function bulkActionsForStatus(status: OrderStatus): { fixed: BulkAction[]; overflow: BulkAction[] } {
+  switch (status) {
+    case 'in-transit':
+    case 'arrived':
+      // Moving — the only recourse is Update Status or Return; no overflow menu
+      // (Figma: toolbar = Update Status · Return Order, no ⋯).
+      return { fixed: ['updateStatus', 'return'], overflow: [] };
+    case 'returning':
+    case 'delivered':
+    case 'cancelled':
+      // Coming back / terminal — no bulk actions apply.
+      return { fixed: [], overflow: [] };
+    case 'assigned':
+    case 'at-depot':
+      // A driver already holds it — Change Driver replaces Dispatch (Figma:
+      // toolbar = Add To Trip · Change Driver · Cancel Order; ⋯ = Update Status ·
+      // Reschedule Order).
+      return { fixed: ['cancel', 'addToTrip', 'changeDriver'], overflow: ['updateStatus', 'reschedule'] };
+    case 'returned':
+      // Holding bay — like Ready (Dispatch · Add To Trip · Cancel Order) but its ⋯
+      // overflow is Reschedule Order ONLY: Update Status is excluded on Returned
+      // (OM §10.1 / §12.6; verified against Figma `1433:102001`).
+      return { fixed: ['cancel', 'addToTrip', 'dispatch'], overflow: ['reschedule'] };
+    default:
+      // Ready (Scheduled/Pending/Broadcasted) — Figma: toolbar = Dispatch · Add To
+      // Trip · Cancel Order; ⋯ = Update Status · Reschedule Order.
+      return { fixed: ['cancel', 'addToTrip', 'dispatch'], overflow: ['updateStatus', 'reschedule'] };
+  }
+}
+
+function bulkActionsForSelection(selected: Order[]): { fixed: BulkAction[]; overflow: BulkAction[] } {
+  if (selected.length === 0) return { fixed: [], overflow: [] };
+  const perOrder = selected.map((o) => bulkActionsForStatus(o.status));
+  const intersect = (key: 'fixed' | 'overflow'): BulkAction[] =>
+    BULK_ACTION_ORDER.filter((a) => perOrder.every((p) => p[key].includes(a)));
+  return { fixed: intersect('fixed'), overflow: intersect('overflow') };
 }
 
 // Enter/exit motion for the floating Bulk Actions toolbar (slides up in / down out).
@@ -417,7 +477,13 @@ export function OrdersPage(): React.ReactElement {
   };
   // A manual Refresh is a more deliberate action than an automatic re-filter —
   // slightly longer so it reads as "did something", not just a flicker.
-  const handleRefresh = () => flashTableLoading(1200);
+  // A refresh re-pulls the table's data — anything selected may no longer be in
+  // view (or may have changed status), so the selection + its floating toolbar
+  // clear along with it, same as a fresh load.
+  const handleRefresh = () => {
+    clearSelection();
+    flashTableLoading(1200);
+  };
   // Add Order — opens the config-aware side drawer (empty-state CTA + toolbar both
   // route here). Submitting creates the order, reveals the table, and toasts.
   const [addOrderOpen, setAddOrderOpen] = React.useState(false);
@@ -596,7 +662,6 @@ export function OrdersPage(): React.ReactElement {
 
   const clearSelection = () => {
     setSelectedIds(new Set());
-    setTableKey((k) => k + 1);
   };
 
   // Merge the current page's index-based selection (from the Table) into the
@@ -614,15 +679,14 @@ export function OrdersPage(): React.ReactElement {
     });
   };
 
-  // Remove one order from the selection (the overlay's uncheck action). Re-seed the
-  // Table so the row also unchecks if it's on the current page.
+  // Remove one order from the selection (the overlay's uncheck action). The
+  // Table re-syncs its own checkboxes from `selectedIds` — no remount needed.
   const deselect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
       return next;
     });
-    setTableKey((k) => k + 1);
   };
 
   // ── Per-status counts (for the sub-status dropdown) ─────────────────────────
@@ -671,6 +735,9 @@ export function OrdersPage(): React.ReactElement {
     if (n > 1) clearSelection();
   };
   const bulkCancel = () => requestCancel(selectedOrders().map((o) => o.id));
+  // Return Order (§11.3) isn't built yet — stubs a toast, mirroring the row-level
+  // ⋯ menu's Return Order action (also unwired).
+  const bulkReturn = () => pushToast({ type: 'success', title: 'Return Order', subtitle: 'This action is coming soon.' });
 
   // Update Status (OM §12.6) + Reschedule (OM §11.2) — both reachable from the row
   // ⋯ menu (1 order) and the bulk toolbar's ⋯ (N selected). Each holds the order
@@ -1005,6 +1072,17 @@ export function OrdersPage(): React.ReactElement {
     openFromFocus('filter');
   };
 
+  // The bulk toolbar's action set — the intersection of what every selected
+  // order's status allows (OM §12.9); recomputed each render off `selectedIds`.
+  const bulkActions = bulkActionsForSelection(selectedOrders());
+
+  // No Checkbox on All (mixed statuses), Finished (terminal — no bulk actions),
+  // or the Returning sub-status (zero bulk actions apply — matches the Figma
+  // "Returning (Dispatched)" wireframe, which carries no checkbox column; the
+  // freed 52px redistributes across the flexible columns automatically via the
+  // Table's own flex computation, no separate column preset needed).
+  const tableSelectable = filterTab !== 'all' && filterTab !== 'finished' && subStatus !== 'returning';
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div
@@ -1089,7 +1167,7 @@ export function OrdersPage(): React.ReactElement {
                 // toolbars above stay mounted and interactive throughout.
                 <SkeletonTableRows
                   columns={columns}
-                  selectable={filterTab !== 'all' && filterTab !== 'finished'}
+                  selectable={tableSelectable}
                   rows={Math.min(rowsPerPage, pageOrders.length || rowsPerPage)}
                 />
               ) : (
@@ -1102,10 +1180,13 @@ export function OrdersPage(): React.ReactElement {
                 >
                 <Table
                   rowVariant="complex"
-                  // No Checkbox on All (mixed statuses, no bulk actions) or Finished
-                  // (Delivered/Cancelled are terminal — nothing to bulk-action; matches
-                  // the Figma finished tables, which carry no checkbox column).
-                  selectable={filterTab !== 'all' && filterTab !== 'finished'}
+                  // No Checkbox on All (mixed statuses, no bulk actions), Finished
+                  // (Delivered/Cancelled are terminal — nothing to bulk-action), or
+                  // Returning (in transit back — zero bulk actions apply, §12.9;
+                  // matches the Figma "Returning (Dispatched)" wireframe, which
+                  // carries no checkbox column and redistributes its 52px across the
+                  // flexible columns instead of leaving a dead gap).
+                  selectable={tableSelectable}
                   // §4.3 measured scroll: the table flips to h-scroll (pinned Order
                   // ID/Actions) ONLY while its column minimums exceed the container —
                   // e.g. optional columns on a dense view, or a narrowed window. On a
@@ -1157,13 +1238,32 @@ export function OrdersPage(): React.ReactElement {
               selectionLabel={`${selectedIds.size} selected`}
               onSelectionClick={() => openFromFocus('selection')}
               actions={
+                // Rendered in BULK_ACTION_ORDER (bulkActions.fixed is already sorted
+                // that way by the intersect), so left→right matches the Figma
+                // Multi-Select wireframes: forward actions first, destructive right.
                 <>
-                  <Button variant="ghost" size="medium" iconLeft="Proceed" onClick={bulkDispatch}>Dispatch</Button>
-                  <Button variant="ghost" size="medium" iconLeft="Add" iconOutlined onClick={() => noop('Add To Trip')}>Add To Trip</Button>
-                  <Button variant="ghost-error" size="medium" iconLeft="Delete" iconOutlined onClick={bulkCancel}>Cancel Order</Button>
+                  {bulkActions.fixed.map((a) => {
+                    switch (a) {
+                      case 'dispatch':
+                        return <Button key={a} variant="ghost" size="medium" iconLeft="Proceed" onClick={bulkDispatch}>Dispatch</Button>;
+                      case 'addToTrip':
+                        return <Button key={a} variant="ghost" size="medium" iconLeft="Add" iconOutlined onClick={() => noop('Add To Trip')}>Add To Trip</Button>;
+                      case 'changeDriver':
+                        return <Button key={a} variant="ghost" size="medium" iconLeft="Swap" iconOutlined onClick={() => noop('Change Driver')}>Change Driver</Button>;
+                      case 'updateStatus':
+                        return <Button key={a} variant="ghost" size="medium" iconLeft="Update" iconOutlined onClick={() => requestUpdateStatus(selectedOrders().map((o) => o.id))}>Update Status</Button>;
+                      case 'cancel':
+                        return <Button key={a} variant="ghost-error" size="medium" iconLeft="Delete" iconOutlined onClick={bulkCancel}>Cancel Order</Button>;
+                      case 'return':
+                        return <Button key={a} variant="ghost-error" size="medium" iconLeft="Undo" iconOutlined onClick={bulkReturn}>Return Order</Button>;
+                      default:
+                        return null;
+                    }
+                  })}
                 </>
               }
-              onOverflowClick={() => openFromFocus('bulkOverflow')}
+              showOverflow={bulkActions.overflow.length > 0}
+              onOverflowClick={bulkActions.overflow.length > 0 ? () => openFromFocus('bulkOverflow') : undefined}
               onClose={clearSelection}
             />
           </div>
@@ -1524,28 +1624,31 @@ function OverlayHost({ overlay, onClose, pushToast, onRequestCancel, subStatus, 
   }
 
   if (kind === 'bulkOverflow') {
-    // Bulk toolbar's ⋯ — the secondary bulk actions (Update Status, Reschedule)
-    // for every selected order. Opens above the bottom-fixed toolbar (top-end).
+    // Bulk toolbar's ⋯ — the secondary bulk actions for every selected order.
+    // Data-driven from the selection's computed overflow (the intersection of what
+    // each status allows), so e.g. a Returned selection shows Reschedule Order
+    // only (no Update Status — OM §10.1 / §12.6). Opens above the toolbar (top-end).
     const ids = selectedOrderList.map((o) => o.id);
+    const overflow = bulkActionsForSelection(selectedOrderList).overflow;
+    const RENDER: Record<'updateStatus' | 'reschedule', { label: string; icon: IconName; onSelect: () => void }> = {
+      updateStatus: { label: 'Update Status', icon: 'Update', onSelect: () => { onClose(); onRequestUpdateStatus(ids); } },
+      reschedule: { label: 'Reschedule Order', icon: 'Calendar', onSelect: () => { onClose(); onRequestReschedule(ids); } },
+    };
+    const items = overflow.filter((a): a is 'updateStatus' | 'reschedule' => a === 'updateStatus' || a === 'reschedule');
     return (
       <Popover anchorRect={anchor} onClose={onClose} placement="top-end">
         <MenuPanel width={220}>
-          <DesktopMenuOptions
-            type="dropdown-basic"
-            label="Update Status"
-            showLeadingIcon
-            leadingIcon="Update"
-            showChevron={false}
-            onSelect={() => { onClose(); onRequestUpdateStatus(ids); }}
-          />
-          <DesktopMenuOptions
-            type="dropdown-basic"
-            label="Reschedule Order"
-            showLeadingIcon
-            leadingIcon="Calendar"
-            showChevron={false}
-            onSelect={() => { onClose(); onRequestReschedule(ids); }}
-          />
+          {items.map((a) => (
+            <DesktopMenuOptions
+              key={a}
+              type="dropdown-basic"
+              label={RENDER[a].label}
+              showLeadingIcon
+              leadingIcon={RENDER[a].icon}
+              showChevron={false}
+              onSelect={RENDER[a].onSelect}
+            />
+          ))}
         </MenuPanel>
       </Popover>
     );

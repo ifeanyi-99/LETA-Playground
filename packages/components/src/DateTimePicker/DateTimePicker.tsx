@@ -50,6 +50,23 @@ function parseDMY(s: string): Date | null {
   return date.getFullYear() === y && date.getMonth() === mo && date.getDate() === d ? date : null;
 }
 
+// The Time of Day scroll list shows no scrollbar chrome — same convention as the
+// Table body / popover lists (the scroll affordance is the clipped last row, not a
+// bar). `scrollbar-width: none` covers Firefox, `::-webkit-scrollbar { display:
+// none }` covers WebKit/Blink (incl. macOS "always show scroll bars").
+const DTP_STYLE_ID = 'leta-datetimepicker-scroll';
+const DTP_CSS = `
+.leta-dtp-noscrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.leta-dtp-noscrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+`;
+function ensureDateTimePickerStyles(): void {
+  if (typeof document === 'undefined' || document.getElementById(DTP_STYLE_ID)) return;
+  const el = document.createElement('style');
+  el.id = DTP_STYLE_ID;
+  el.textContent = DTP_CSS;
+  document.head.appendChild(el);
+}
+
 const Demarcator = ({ vertical }: { vertical?: boolean }) =>
   vertical
     ? <div style={{ width: 'var(--stroke-xs)', alignSelf: 'stretch', backgroundColor: 'var(--border-neutral-default)', flexShrink: 0 }} />
@@ -107,6 +124,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
   { type = 'simple', platform = 'desktop', defaultMonth, title = 'Select Date', subtitle = 'Pick a date', onApply, onCancel, style, ...rest },
   ref,
 ) {
+  ensureDateTimePickerStyles();
   const isMobile = platform === 'mobile';
   const init = defaultMonth ?? { year: new Date().getFullYear(), month: new Date().getMonth() };
   const [view, setView] = React.useState(init);
@@ -213,7 +231,7 @@ export const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerPro
             `scroll-padding-block` keeps a keyboard-focused row 4px off the bottom edge so
             its ring still fits. Padding offsets the bleed → rows keep their full Figma
             column width + position. */}
-        <div style={{ position: 'absolute', inset: 0, margin: '-4px -4px 0', boxSizing: 'border-box', padding: '4px 4px 0', scrollPaddingBlock: 4, display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)', overflowY: 'auto', overscrollBehavior: 'contain' }}>
+        <div className="leta-dtp-noscrollbar" style={{ position: 'absolute', inset: 0, margin: '-4px -4px 0', boxSizing: 'border-box', padding: '4px 4px 0', scrollPaddingBlock: 4, display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8px)', overflowY: 'auto', overscrollBehavior: 'contain' }}>
           {timeOptions(30).map((t) => (
             <DesktopMenuOptions key={t} type="time-picker" label={t} active={time === t} onSelect={() => setTime(t)} style={{ width: '100%' }} />
           ))}

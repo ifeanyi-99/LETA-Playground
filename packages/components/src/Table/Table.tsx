@@ -435,6 +435,22 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
   const [selected, setSelected] = React.useState<Set<number>>(
     () => new Set(rows.flatMap((r, i) => (r.selected ? [i] : []))),
   );
+  // Re-sync when the caller drives `rows[].selected` externally (e.g. "clear
+  // selection" or deselecting one row from a bulk-actions overlay) — without
+  // this, only the initial mount seed ever applied, so callers had to force a
+  // full remount (via `key`) to reset checkboxes, which visibly flashed the
+  // whole table. A toggle-driven change round-trips through `onSelectionChange`
+  // and comes back as an identical seed, so this is a no-op in that path.
+  const selectionSeed = React.useMemo(
+    () => rows.flatMap((r, i) => (r.selected ? [i] : [])).join(','),
+    [rows],
+  );
+  const lastSeedRef = React.useRef(selectionSeed);
+  React.useEffect(() => {
+    if (lastSeedRef.current === selectionSeed) return;
+    lastSeedRef.current = selectionSeed;
+    setSelected(new Set(selectionSeed ? selectionSeed.split(',').map(Number) : []));
+  }, [selectionSeed]);
   const allSelected = selectable && rows.length > 0 && selected.size === rows.length;
   const someSelected = selectable && selected.size > 0 && selected.size < rows.length;
 

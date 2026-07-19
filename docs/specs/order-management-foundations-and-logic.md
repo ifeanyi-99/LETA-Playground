@@ -8,7 +8,7 @@
 > **Companion design spec:** Table Column Layout Specification (owns column widths, floors, truncation, responsive behaviour)
 > **Audience:** implementation agent + engineers
 > **Status:** Ready for build — domain logic (Parts 1–11) and orders-surface interaction (Part 12); generic component behaviour in Doc 3
-> **Version:** 2.7
+> **Version:** 2.8
 
 ---
 
@@ -368,6 +368,10 @@ Reassignment moves an order or trip to a different driver. Availability is gover
 `✓ ³` = Returned has no Change Driver (there is no current driver to change) — the equivalent action is **Dispatch**, assigning a driver fresh, or **Add to Trip** onto an existing trip. Cancel here is a normal terminal transition, not a special case (§11.4).
 `→ Return` = the Cancel action transforms into Return once the order has left the depot (§11.3).
 
+> **Update Status availability — Returned and Returning excluded (Ruled 2026-07-20).** The manual **Update Status** override (§12.6) is **not** a column in the matrix above because it is a status-forcing escape hatch, not a custody action — but its availability is scoped by the same lifecycle logic and is recorded here so the two surfaces stay in step. **Update Status is not available on Returned or Returning — neither per-order (row ⋯ menu, drawer footer) nor bulk (selection toolbar).** Reasoning: (a) both of its options are invalid for these states — **Mark as Delivered** contradicts what the system already knows (the order returned, or is mid-return, i.e. explicitly *not* delivered), and **Mark as Pending** would erase the failed-attempt history that Returned deliberately preserves, when Returned already exposes the correct forward paths (Reschedule, Dispatch, Add to Trip, Cancel) without it; (b) it remains valid elsewhere — do **not** remove Update Status globally: **In Transit / Arrived** keep it for **Mark as Delivered** (offline reconciliation when a driver completes a drop without connectivity, §12.6), and a failed **pickup** keeps it for **Mark as Pending**. See §12.6 for the per-status option gating.
+>
+> **AGENT:** flag any future design that places **Mark as Delivered** or **Mark as Pending** on a **Returned** or **Returning** order — it contradicts this ruling and should be raised before it is built.
+
 ### 10.2 Change Driver
 
 - **Available for:** Assigned, At Depot only. Hidden for every other status.
@@ -466,7 +470,7 @@ Both use the same four offsets; only the base differs.
 - **Triggering a return:** available for In Transit and Arrived. Triggerable from the **dispatch platform (always)** and the **Driver App (where `returns.driverInitiated.enabled`)**.
 - **Returning** status: the In Transit badge with a reverse-icon overlay, distinguishable at a glance.
 - **Returned is classified Unassigned** (§2.3) — not a true terminal. A returned order is functionally a fresh order awaiting redispatch, carrying the history of its failed attempt. Its detail view and table row use the Unassigned shape (§3.2, §3.4): no Driver, Trip, Duration, or Batch ID columns; SLA and driver/trip fields reset.
-- **Returned order detail view — full action set** (§10.1, §12.5): **Dispatch** (assign a fresh driver) · **Add to Trip** (§10.3) · **Edit Order** · **Reschedule** (→ Scheduled, for a later re-attempt) · **Cancel** (terminal, with reason-code capture) · overflow (Update Status, Add Comment). Editing before redispatch is deliberate and load-bearing: most redelivery failures are bad-data failures (wrong address, unreachable recipient), and fixing the cause before retrying is the entire point of the holding bay.
+- **Returned order detail view — full action set** (§10.1, §12.5): **Dispatch** (assign a fresh driver) · **Add to Trip** (§10.3) · **Edit Order** · **Reschedule** (→ Scheduled, for a later re-attempt) · **Cancel** (terminal, with reason-code capture) · overflow (Add Comment). **Update Status is excluded** on Returned (Ruled 2026-07-20, §10.1 / §12.6): Mark as Delivered/Pending are both invalid for a returned order. Editing before redispatch is deliberate and load-bearing: most redelivery failures are bad-data failures (wrong address, unreachable recipient), and fixing the cause before retrying is the entire point of the holding bay.
 - **SLA card on return:** the fulfilment-time counter resets to **0s**, with the prior attempt shown alongside as **"Prev: {duration}"** rather than silently discarded. Scope: **the card shows the immediately-previous attempt only** — if an order returns more than once, earlier attempts are not chained on the card. The full attempt history lives in the Activity tab, surfaced via an inline banner ("Check the Activity tab for more information on the last delivery attempt").
 - **More Information section on return:** Dispatched/Dispatched By/Delivered/Delivered By reset to reflect the fresh, undispatched reality; Created/Created By persist (the order's origin doesn't change).
 - **Return compensation** is set by a rate-card configuration: **No Compensation**, **Fixed Amount**, or **Percentage of Initial Payout** (`returns.compensation.model`). Compensation is reflected in the driver's earnings without requiring a re-drop record.
@@ -552,11 +556,13 @@ Transcribed from the uploaded per-status wireframes. Groups are divider-separate
 | Assigned / At Depot | View Logs · Edit Order · Add To Trip · Change Driver · Update Status `|` Reschedule Order · Add Comment `|` **Cancel Order** |
 | In Transit / Arrived | View Logs · Update Status `|` Add Comment `|` **Return Order** |
 | Returning | View Logs `|` Add Comment |
-| Returned | *(same as Scheduled)* View Logs · Edit Order · Add To Trip · Update Status `|` Reschedule Order · Add Comment `|` **Cancel Order** |
+| Returned | View Logs · Edit Order · Add To Trip `|` Reschedule Order · Add Comment `|` **Cancel Order** |
 | Delivered | *no ⋯ menu — single **View Logs** button (126px)* |
 | Cancelled | *no ⋯ menu — single **View Logs** button (126px)* |
 
-**Resolved (2026-07-07):** Scheduled, Pending, and Broadcasted share one 7-item table overflow menu (verified). Returned uses the same menu. **Update Status carries no chevron** — it opens a modal (§12.6), not a flyout submenu.
+**Resolved (2026-07-07):** Scheduled, Pending, and Broadcasted share one 7-item table overflow menu (verified). **Update Status carries no chevron** — it opens a modal (§12.6), not a flyout submenu.
+
+**Updated (2026-07-20):** **Returned drops Update Status** (per the §10.1 / §12.6 ruling — Mark as Delivered/Pending are both invalid for a returned order); its menu is otherwise the Scheduled set. **Returning** already carries only View Logs · Add Comment — no Update Status — which is correct and unchanged.
 
 Inline row buttons per the Table spec: Unassigned rows carry **Dispatch** beside ⋯ (154px); dispatched rows carry ⋯ only (64px); Delivered and Cancelled rows carry the single **View Logs** button (126px).
 
@@ -569,8 +575,10 @@ Options are gated by current status. **Mark as Cancelled has been removed** — 
 | Current status | Offered options |
 |---|---|
 | Pending | Mark as Delivered |
-| Scheduled, Broadcasted, Returned, Assigned, At Depot, In Transit, Arrived | Mark as Pending · Mark as Delivered |
-| Delivered, Cancelled, Returning | *(no Update Status)* |
+| Scheduled, Broadcasted, Assigned, At Depot, In Transit, Arrived | Mark as Pending · Mark as Delivered |
+| Delivered, Cancelled, Returning, Returned | *(no Update Status)* |
+
+> **Returned and Returning have no Update Status (Ruled 2026-07-20).** Update Status is withheld from both — not per-order (row ⋯ menu, drawer footer) and not bulk (selection toolbar). Neither option is valid for these states: **Mark as Delivered** contradicts what the system already knows — a Returned order came back and a Returning order is mid-return, both explicitly *not* delivered — and **Mark as Pending** would erase the failed-attempt history the next dispatcher relies on, when a Returned order already exposes the correct forward paths (Reschedule, Dispatch, Add to Trip, Cancel) directly. This does **not** remove Update Status globally: In Transit / Arrived keep **Mark as Delivered** (the offline-reconciliation case below), and a failed pickup keeps **Mark as Pending**. Returned was previously listed in the Mark-as-Pending / Mark-as-Delivered row (a §1.9 carry-over); that was the wrong scope and is corrected here. **AGENT:** flag any future design that surfaces Mark as Delivered or Mark as Pending on a Returned or Returning order.
 
 **Why Mark as Delivered deliberately bypasses proof of delivery — do not "fix" this.** In the operating context, drivers frequently reach the recipient's doorstep without enough mobile data to complete the in-app delivery confirmation. They call the dispatcher over the cellular network to confirm the drop, and the dispatcher marks it delivered on their behalf. This connectivity workaround is a core client requirement, not an oversight. **No reason capture in V1.** Accountability is preserved without added friction by the Activity log's existing provenance markers (§7.4): a manual status change records automatically as a **Dispatcher** event, so a forced Delivered is always distinguishable from a driver-completed one in the log.
 
@@ -593,11 +601,13 @@ Verified from the uploaded drawer set (2026-07-06). Primary buttons read left→
 | Assigned / At Depot | **Cancel Order** · Add To Trip · Change Driver · Edit Order · ⋯ | Update Status · Reschedule Order · Add Comment |
 | In Transit / Arrived | **Return Order** · Update Status · ⋯ | Add Comment *(single item)* |
 | Returning | Add Comment *(single button, no ⋯)* | — |
-| Returned | *(same footer as Scheduled)* **Cancel Order** · Add To Trip · Edit Order · Dispatch · ⋯ | *(same as Scheduled)* Update Status · Reschedule Order · Add Comment |
+| Returned | **Cancel Order** · Add To Trip · Edit Order · Dispatch · ⋯ | Reschedule Order · Add Comment |
 | Delivered | *no footer* | — |
 | Cancelled | *no footer* | — |
 
 **Resolved (2026-07-07):** **Delivered and Cancelled have no footer** — the drawer ends without an action bar; the table Actions cell is a single View Logs button. **Returned is classified in the Unassigned group** — a decision/holding state, not a true terminal (§2.3, §11.3). It keeps its full action footer by design: Dispatch · Add To Trip · Edit Order · Cancel, plus overflow — letting the dispatcher fix and retry, or cancel outright.
+
+**Updated (2026-07-20):** **Returned's footer overflow drops Update Status** (per the §10.1 / §12.6 ruling), leaving Reschedule Order · Add Comment. The primary footer buttons are unchanged. Returning's footer is already Add Comment only, with no Update Status — unchanged.
 
 > **AGENT:** the drawer footer's overflow (⋯) and the *table* row overflow (12.5) are different menus for the same status and their contents differ — build each from its own source, do not assume parity.
 
@@ -613,6 +623,8 @@ Patterns per Doc 3 §§2–3. Orders-surface copy:
 ### 12.9 Bulk actions
 
 Checking rows raises the bulk toolbar with the "N selected" combobox (stay-open list of selected Order IDs; unchecking removes; ~4.5 rows visible with the 5th cut as the scroll affordance). Bulk operations follow §10.2's multi-select rule — all selected orders route to a single destination — and are limited to actions valid for **every** selected row's status. Selection scope per 12.1.
+
+> **No bulk Update Status on Returned or Returning (Ruled 2026-07-20).** The floating selection toolbar **must not** offer **Update Status** when the selection is Returned or Returning — the same exclusion as the per-order surfaces (§10.1, §12.6). Because bulk actions are the intersection of what every selected row allows, a selection containing any Returned or Returning order also drops it. **Bulk Reschedule** lives in the toolbar's **"more" (⋯) overflow**, not the primary button row.
 
 ---
 
@@ -647,6 +659,7 @@ Broadcast/fleet mechanics (priority groups, acceptance windows, driver broadcast
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.8 | Jul 2026 | **Update Status scoped out of Returned and Returning** (Ruled 2026-07-20) — per-order and bulk. §10.1 gains an explicit Update-Status availability ruling + AGENT flag (both options invalid for these states: Mark as Delivered contradicts a not-delivered order; Mark as Pending would erase failed-attempt history Returned preserves); it stays valid elsewhere (In Transit/Arrived → Mark as Delivered for offline reconciliation; failed pickup → Mark as Pending). §12.6 modal table moves **Returned** into the no-Update-Status row (a §1.9 carry-over corrected) alongside Returning + adds the reasoning/AGENT flag. §12.5 table overflow and §12.7 drawer-footer overflow drop Update Status from the **Returned** menus (Returning already had none). §12.9 — the selection toolbar must not offer Update Status when the selection is Returned/Returning; Bulk Reschedule lives in the "more" (⋯) overflow. |
 | 2.7 | Jul 2026 | **Bulk cancel & bulk reschedule brought into V1 scope** (DES-254), removing the stale §11.5 out-of-scope line. §11.1 — bulk cancel applies one reason code to the batch; mandatory confirmation for single + bulk; reason list updated to the wireframe copy (Customer requested it / Payment Issue / Items unavailable / Customer unreachable / Other). §11.2 — bulk in scope; the driver-held consequence is an inline warning banner ("Please note that rescheduling will unassign orders from their current drivers.", supersedes the named-driver string), shown only when ≥1 selected order is Assigned/At Depot. New **§11.2.1** — Reschedule modal detail: manual-field default + suggestion-chip base-time tables, the no-op confirm-button rule, count-led CTA + toast. CTA copy standard "Action {n} Orders" / singular "Action Order" applied to Cancel/Reschedule/Update; Update Status confirm relabelled "Update {n} Orders"/"Update Order" (was "Update Status") with the toast naming the target status. Source: Changelog_Bulk_Actions_and_Reschedule_Suggestions.md |
 | 1.0 | Jul 2026 | Initial specification — sections 1–11 consolidated from DES-248/252/256/280 and prior design decisions |
 | 1.1 | Jul 2026 | "Finished" group name (was Completed); "Ready" states (was pre-transit); single date + time delivery picker (was earliest/latest window); Batch ID column; column-count drawer rule; Dispatch Logs tab (was Broadcast) with conditional Overview logic; Add to Trip corrected to DES-265 with impact-preview and driver-consent detail |

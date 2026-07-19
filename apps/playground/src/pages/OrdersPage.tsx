@@ -1076,7 +1076,7 @@ export function OrdersPage(): React.ReactElement {
                 />
                 <TableDataControl
                   variant="filters-column"
-                  dataCount={`${filtered.length} Orders`}
+                  dataCount={`${filtered.length} Order${filtered.length === 1 ? '' : 's'}`}
                   onColumnsClick={() => openFromFocus('columns')}
                   onRefreshClick={handleRefresh}
                   filters={<TopFilterSection filters={TABS} onFilterClick={handleFilterClick} animatedSelection />}

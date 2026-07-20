@@ -110,6 +110,21 @@ export interface ClientConfig {
   products: ProductOption[];
   /** Payment module — the Add Order "Payment Info" section. */
   payment: { enabled: boolean };
+  /**
+   * Auto-broadcast (`scheduling.autoBroadcast.enabled`, OM §2.3): Scheduled
+   * orders transition straight to Broadcasted at T−1h; non-scheduled orders sit
+   * in Pending for {@link orderWaitMinutes} before auto-broadcasting (§7.2 row 2b).
+   */
+  autoBroadcast: boolean;
+  /** Order wait time (`dispatch.orderWaitTime`, minutes) — how long a
+   *  non-scheduled order stays Pending before auto-broadcast. */
+  orderWaitMinutes: number;
+  /** Pickup confirmation (`pickup.confirmation.enabled`): the Pickup Code card +
+   *  Proof of Pickup elements in the Order Detail view (OM §7.3). */
+  pickupConfirmation: boolean;
+  /** Proof of delivery (`delivery.pod.*`): recipient signature / POD photo in the
+   *  Delivered detail view (OM §7.3). */
+  proofOfDelivery: boolean;
 }
 
 /**

@@ -230,7 +230,7 @@ export type { TableSectionProps } from './TableSection/index.js';
 // Templates — modal shells
 export { AlertDialog } from './AlertDialog/index.js';
 export type { AlertDialogProps, AlertDialogVariant } from './AlertDialog/index.js';
-export { ModalDialog } from './ModalDialog/index.js';
+export { ModalDialog, DOORSTEP_DELIVERY_IMAGE, SIGNATURE_IMAGE } from './ModalDialog/index.js';
 export type { ModalDialogProps, ModalDialogVariant } from './ModalDialog/index.js';
 export { LargeModal } from './LargeModal/index.js';
 export type { LargeModalProps, LargeModalVariant } from './LargeModal/index.js';

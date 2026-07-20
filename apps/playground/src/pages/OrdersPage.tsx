@@ -33,10 +33,28 @@ import type { DepotOption, Order, OrderStatus } from '../store/types.js';
 import { ORDER_STATUS_BADGE, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../store/types.js';
 import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
 import { SkeletonTableRows } from '../components/SkeletonTableRows.js';
+import {
+  CREATORS,
+  creatorFor,
+  creatorLabelFor,
+  depotForOrder,
+  durationSecondsFor,
+  formatCreated,
+  idHash,
+  mockDurationFor,
+  nextHourToday,
+  scheduledDateFor,
+  scheduledLabelFor,
+  scheduledOriginFor,
+  autoBroadcastFor,
+  slaStateFor,
+  type SlaState,
+} from '../lib/orderMeta.js';
 import { AddOrderDrawer } from '../components/AddOrderDrawer.js';
 import { CancelOrderModal } from '../components/CancelOrderModal.js';
 import { UpdateStatusModal, type UpdateStatusTarget } from '../components/UpdateStatusModal.js';
 import { RescheduleModal } from '../components/RescheduleModal.js';
+import { OrderDetailDrawer } from '../components/orderDetail/OrderDetailDrawer.js';
 
 // ── Filter groups ───────────────────────────────────────────────────────────────
 type FilterTab = 'unassigned' | 'dispatched' | 'finished' | 'all';
@@ -62,124 +80,24 @@ function loadRowsPerPage(): number {
   const stored = Number(window.localStorage.getItem(PAGE_SIZE_STORAGE_KEY));
   return (PAGE_SIZE_OPTIONS as readonly number[]).includes(stored) ? stored : 10;
 }
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 // ── Optional columns (Columns control) ───────────────────────────────────────────
 // Hidden by default — the Figma status tables don't render them. Toggled on from the
 // Columns dropdown; any active extra splices in before Status and switches the table
 // into horizontal-scroll mode (spec §4.3: pinned Order ID/Actions, middle scrolls).
 // Both LAST_UPDATED_COLUMN and CREATED_BY_COLUMN are canonical presets from
 // @leta/components — Created By renders the `user-cell` (avatar + name + email);
-// the playground only supplies the per-row name/email/avatarSrc data below.
-// Clustered/randomized creators — some carry a photo (the exact Figma Avatar
-// Photo 1/2/3 images, shipped as @leta/components assets), the rest render the
-// empty-teal avatar with their initials. Assigned deterministically per order.
-// Two automated sources are mixed in (spec §2.2): "Storefront" orders (renders
-// the `api-cell` default — Auto-created / From online store / Integration icon)
-// and "API" orders (Auto-created / From connected app / Code icon — distinct
-// from Integration, which stays reserved for Storefront/automatic-order use).
-type Creator =
-  | { source: 'human'; name: string; email: string; avatarSrc?: string }
-  | { source: 'storefront' }
-  | { source: 'api' };
-
-const CREATORS: Creator[] = [
-  { source: 'human', name: 'Aisha Mohamed', email: 'aisha.mohamed@leta.ai', avatarSrc: AVATAR_PHOTOS[0] },
-  { source: 'human', name: 'Grace Wanjiru', email: 'grace.wanjiru@leta.ai' },
-  { source: 'human', name: 'Samuel Mwangi', email: 'samuel.mwangi@leta.ai', avatarSrc: AVATAR_PHOTOS[1] },
-  { source: 'human', name: 'Fatuma Hassan', email: 'fatuma.hassan@leta.ai' },
-  { source: 'human', name: 'Peter Kamau', email: 'peter.kamau@leta.ai', avatarSrc: AVATAR_PHOTOS[2] },
-  { source: 'storefront' },
-  { source: 'api' },
-];
+// the playground only supplies the per-row name/email/avatarSrc data (from the
+// shared CREATORS mock in lib/orderMeta.ts — also used by the Order Detail drawer).
 type ExtraColumnKey = 'lastUpdated' | 'createdBy';
 const EXTRA_COLUMN_OPTIONS: { key: ExtraColumnKey; label: string }[] = [
   { key: 'lastUpdated', label: 'Last Updated' },
   { key: 'createdBy', label: 'Created By' },
 ];
 
-function formatCreated(iso: string): string {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—\n';
-  const date = `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-  let h = d.getHours();
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${date}\n${h}:${m} ${ampm}`;
-}
-
 function canDispatch(o: Order): boolean {
   return GROUP_STATUSES.unassigned.includes(o.status);
 }
 
-// ── Client-scoped pickup depot (Route cell) ──────────────────────────────────────
-// MOCK_ORDERS is a single shared pool (switching clients doesn't swap the order
-// list — only the account config), and its seed `depot` field is drawn from a
-// large client-agnostic pool for mock variety, unrelated to any client's actual
-// depot access. That's wrong: the Route cell's pickup must only ever be a depot
-// the ACTIVE client's dispatcher can actually access — a single-depot client
-// (Naivas, Java House) should show that ONE depot for every order. An order the
-// dispatcher created themselves (via Add Order) already stores a real depot from
-// their own client's list — that's kept as-is; only a seed order whose depot
-// name isn't one of the active client's own is remapped, deterministically (by
-// order id, so it's stable) onto one of the client's depots.
-function depotForOrder(order: Order, depots: DepotOption[]): DepotOption | undefined {
-  if (depots.length === 0) return undefined;
-  const owned = depots.find((d) => d.name === order.depot);
-  if (owned) return owned;
-  return depots.length === 1 ? depots[0] : depots[idHash(order.id) % depots.length];
-}
-
-// ── Created By label (Table spec §2.2 — also the Created By filter dimension) ────
-// Deterministic per order (same hash the Created By column already used inline);
-// factored out so the filter dimension and the column cell can't drift apart.
-function creatorFor(order: Order): Creator {
-  return CREATORS[order.id.charCodeAt(0) % CREATORS.length]!;
-}
-function creatorLabelFor(order: Order): string {
-  const c = creatorFor(order);
-  return c.source === 'human' ? c.name : c.source === 'storefront' ? 'Storefront' : 'API';
-}
-
-// ── Order provenance (the Order ID cell's Interactive Elements + tooltips) ──────
-// Wireframe `1334:178838`: a manually-created order renders the Manual-Touch
-// icon ("Created manually"), an integration-created one the Integration icon
-// ("Created via integration"); scheduled-origin orders add the Calendar icon
-// ("Scheduled: {date, time}") and auto-broadcast orders the Broadcast icon
-// ("Auto-broadcast"). Origin flags are deterministic mock values until the
-// order model carries real provenance fields.
-function scheduledOriginFor(o: Order): boolean {
-  return o.status === 'scheduled' || idHash(o.id) % 2 === 0;
-}
-function autoBroadcastFor(o: Order): boolean {
-  return idHash(o.id) % 3 === 0;
-}
-/** The mock scheduled delivery slot for a scheduled-origin order — 2 days after
- *  creation at 12:30 PM (the same value the Order-ID Calendar tooltip shows). */
-function scheduledDateFor(o: Order): Date {
-  const d = new Date(o.createdAt);
-  if (isNaN(d.getTime())) return nextHourToday();
-  d.setDate(d.getDate() + 2);
-  d.setHours(12, 30, 0, 0);
-  return d;
-}
-/** "Scheduled: 09 Jun 2027, 12:30 PM" — mock scheduled slot 2 days after creation. */
-function scheduledLabelFor(o: Order): string {
-  const d = scheduledDateFor(o);
-  const day = d.getDate().toString().padStart(2, '0');
-  return `Scheduled: ${day} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, 12:30 PM`;
-}
-
-// ── Reschedule anchor (OM §11.2, per the user's rules) ────────────────────────────
-// Today at the next full hour (e.g. 9:xx → 10:00) — the manual-reschedule default
-// for an unscheduled single order or any multi-order reschedule.
-function nextHourToday(): Date {
-  const d = new Date();
-  d.setMinutes(0, 0, 0);
-  d.setHours(d.getHours() + 1);
-  return d;
-}
 // The Reschedule modal's opening state (OM §11.2 + 2026-07-17 changelog):
 //  - anchor    → manual-field default: a single scheduled order uses its own
 //    slot; unscheduled single / any bulk uses today's next full hour.
@@ -199,43 +117,8 @@ function rescheduleData(selected: Order[]): RescheduleData {
   return { anchor, chipBase, noOp: scheduledSingle, hasDriverHeld };
 }
 
-// ── Mock SLA state + duration (Table spec §2.3, Doc 4) ───────────────────────────
-// Deterministic per order until the Configuration spec (Doc 2) defines real SLA
-// values — then slaStateFor/mockDurationFor are replaced by stage-clock logic.
-// §2.3.1 in-progress: Status and Duration double the SAME three-state signal —
-// At Risk → warning icon on the badge + warning-colored duration; Delayed →
-// error icon + error-colored duration. §2.3.2 completed (Delivered/Cancelled):
-// binary Within/Beyond OFT — no Status icon, finished DurationLabel only.
-// Scheduled/Returned carry neither (no running SLA; counter reset on return).
-type SlaState = 'on-target' | 'at-risk' | 'delayed';
-function idHash(id: string): number {
-  let s = 0;
-  for (let i = 0; i < 5; i++) s += id.charCodeAt(i);
-  return s;
-}
-function slaStateFor(o: Order): SlaState {
-  const h = idHash(o.id) % 5;
-  return h === 3 ? 'at-risk' : h === 4 ? 'delayed' : 'on-target';
-}
-// Plausible per-state mock times (echoing the wireframe samples): on-target
-// short, at-risk near the SLA boundary, delayed/beyond past it. Exposed as a
-// raw second count (`durationSecondsFor`) too, so the Sort dropdown's
-// "Duration" field can order by the exact same value the column displays.
-function durationSecondsFor(o: Order, sla: SlaState, finished: boolean): number {
-  const h = idHash(o.id);
-  const seconds = (h * 7) % 60;
-  let minutes: number;
-  if (finished) minutes = sla === 'delayed' ? 30 + (h % 31) : 8 + (h % 25);
-  else if (sla === 'delayed') minutes = 13 + (h % 22);
-  else if (sla === 'at-risk') minutes = 9 + (h % 5);
-  else minutes = 2 + (h % 10);
-  return minutes * 60 + seconds;
-}
-function mockDurationFor(o: Order, sla: SlaState, finished: boolean): string {
-  const total = durationSecondsFor(o, sla, finished);
-  const minutes = Math.floor(total / 60);
-  return `${Math.floor(minutes / 60)}h ${minutes % 60}m ${total % 60}s`;
-}
+// Mock SLA state + duration (Table spec §2.3, Doc 4) now live in lib/orderMeta.ts —
+// shared with the Order Detail drawer so the table and drawer show identical values.
 
 // ── Sort (Table spec's Sort dropdown — Created / Duration / Last Updated) ───
 // "Last Updated" has no distinct field in this mock data (the Last Updated
@@ -503,10 +386,13 @@ export function OrdersPage(): React.ReactElement {
       subtitle: scheduled ? 'Your order is scheduled for delivery.' : 'Your order is ready for dispatch.',
       cta: {
         label: 'View Order',
-        onClick: () => pushToast({ type: 'success', title: created.id, subtitle: 'Order detail view is coming soon.' }),
+        onClick: () => setViewOrderId(created.id),
       },
     });
   };
+  // Order Detail drawer (OM §7 / wireframes 320:99590) — opened by clicking a
+  // table row (§3.1) or the "Order created" toast's View Order CTA.
+  const [viewOrderId, setViewOrderId] = React.useState<string | null>(null);
   React.useEffect(() => () => {
     if (firstLoadTimer.current) clearTimeout(firstLoadTimer.current);
     if (tableRefreshTimer.current) clearTimeout(tableRefreshTimer.current);
@@ -1195,6 +1081,9 @@ export function OrdersPage(): React.ReactElement {
                   columns={columns}
                   rows={rows}
                   onSelectionChange={handleSelectionChange}
+                  // §3.1 — clicking a dynamic row opens the Order Detail View;
+                  // the checkbox + inline cell buttons act independently.
+                  onRowClick={(i) => { const o = pageOrders[i]; if (o) setViewOrderId(o.id); }}
                   page={clampedPage}
                   pageCount={pageCount}
                   onPageChange={setPage}
@@ -1308,6 +1197,22 @@ export function OrdersPage(): React.ReactElement {
           onRequestEdit={requestEdit}
         />
       )}
+
+      {/* Order Detail drawer (View Order, OM §7 / wireframes 320:99590) —
+          opened by row click or the toast's View Order CTA; footer actions
+          route to the same modal handlers as the table's row ⋯ menu. */}
+      <OrderDetailDrawer
+        orderId={viewOrderId}
+        onClose={() => setViewOrderId(null)}
+        actions={{
+          dispatch: dispatchOrder,
+          requestCancel,
+          requestUpdateStatus,
+          requestReschedule,
+          requestEdit,
+          stub: (title) => noop(title),
+        }}
+      />
 
       {/* Add Order side drawer — config-aware order creation. */}
       <AddOrderDrawer

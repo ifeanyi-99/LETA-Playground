@@ -122,6 +122,15 @@ export interface TableProps extends Omit<React.HTMLAttributes<HTMLDivElement>, '
    * selected row indices.
    */
   onSelectionChange?: (selectedIndices: number[]) => void;
+  /**
+   * Fired when a body row is clicked (OM §3.1 — a dynamic table's row is a
+   * target, typically opening the record's detail view). Clicks that originate
+   * from interactive elements inside the row — the selection checkbox, inline
+   * cell buttons/links/inputs — are ignored so they keep acting independently
+   * (§3.1: "the checkbox column is the only selection target"; inline buttons
+   * stop propagation). Rows get `cursor: pointer` while this is set.
+   */
+  onRowClick?: (rowIndex: number) => void;
 
   /** Render the Pagination footer. Default true. */
   showPagination?: boolean;
@@ -409,6 +418,7 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
     rowVariant = 'basic',
     selectable = true,
     onSelectionChange,
+    onRowClick,
     showPagination = true,
     showPages = true,
     scrollX = false,
@@ -663,7 +673,22 @@ export const Table = React.forwardRef<HTMLDivElement, TableProps>(function Table
       // fixed even when the body scrolls).
       const isLast = i === rows.length - 1;
       return (
-        <div key={i} style={{ borderBottom: isLast ? undefined : DIVIDER }}>
+        <div
+          key={i}
+          style={{ borderBottom: isLast ? undefined : DIVIDER, cursor: onRowClick ? 'pointer' : undefined }}
+          onClick={
+            onRowClick
+              ? (e) => {
+                  // §3.1 — the checkbox + inline cell controls act independently
+                  // of the row target: a click that originates inside any
+                  // interactive element never opens the row.
+                  const el = e.target as HTMLElement;
+                  if (el.closest('button, a, input, label, [role="button"]')) return;
+                  onRowClick(i);
+                }
+              : undefined
+          }
+        >
           <DataRows variant={rowVariant} selected={isSelected} cells={cells} />
         </div>
       );

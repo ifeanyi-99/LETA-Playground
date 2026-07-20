@@ -1,0 +1,36 @@
+{
+  "components": [
+    {
+      "name": "SLA Visibility",
+      "sourceFiles": ["LETA Playground — View Order Drawer/Overview (320:99590)"],
+      "nodeId": "364:49284",
+      "description": "Summary-card SLA block: eyebrow label + ⓘ tooltip, elapsed counter (bold dark) + ' / 30m SLA' (grey), optional trailing SLA badge (On-Time/At Risk/Delayed/Prev: duration).",
+      "firstSeen": "2026-07-20",
+      "occurrences": 12
+    },
+    {
+      "name": "Pickup Code digits",
+      "sourceFiles": ["LETA Playground — View Order Drawer/Overview (320:99590)"],
+      "nodeId": "271:36357",
+      "description": "Stacked-card row: Lock icon + title/subtext + four 32×32 grey digit boxes + copy button.",
+      "firstSeen": "2026-07-20",
+      "occurrences": 6
+    },
+    {
+      "name": "Proof image row (Base Card)",
+      "sourceFiles": ["LETA Playground — View Order Drawer/Overview (320:99590)"],
+      "nodeId": "1418:458603",
+      "description": "Image-thumb + filename ('Image.png') + Secondary View button; used for Proof of Pickup / Proof of Delivery / Recipient Signature rows.",
+      "firstSeen": "2026-07-20",
+      "occurrences": 8
+    },
+    {
+      "name": "Expanded-map info card",
+      "sourceFiles": ["LETA Playground — View Order Drawer/Overview (320:99590)"],
+      "nodeId": "1419:462091",
+      "description": "White floating card affixed to a map pin: leading icon tile + name + truncated address.",
+      "firstSeen": "2026-07-20",
+      "occurrences": 4
+    }
+  ]
+}

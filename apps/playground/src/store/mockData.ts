@@ -59,6 +59,12 @@ export const MOCK_CLIENTS: Client[] = [
         { id: 'p-sugar', name: 'Sugar 1kg', price: 180 },
       ],
       payment: { enabled: true },
+      // Auto-broadcast ON (order wait time 2 min) + full proof requirements —
+      // exercises the §7.2 row-2b Pending countdown, Pickup Code + POP + POD.
+      autoBroadcast: true,
+      orderWaitMinutes: 2,
+      pickupConfirmation: true,
+      proofOfDelivery: true,
     },
   },
   {
@@ -71,6 +77,12 @@ export const MOCK_CLIENTS: Client[] = [
       items: { enabled: true, mode: 'manual', valueRequired: true },
       products: [],
       payment: { enabled: true },
+      // Manual dispatch (no auto-broadcast) — Pending shows "Dispatch Now"
+      // (§7.2 row 3); no pickup confirmation → no Pickup Code / POP.
+      autoBroadcast: false,
+      orderWaitMinutes: 0,
+      pickupConfirmation: false,
+      proofOfDelivery: true,
     },
   },
   {
@@ -83,6 +95,10 @@ export const MOCK_CLIENTS: Client[] = [
       items: { enabled: false, mode: 'manual', valueRequired: false },
       products: [],
       payment: { enabled: false },
+      autoBroadcast: false,
+      orderWaitMinutes: 0,
+      pickupConfirmation: true,
+      proofOfDelivery: false,
     },
   },
 ];

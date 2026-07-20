@@ -20,8 +20,9 @@ export interface ContentPrimitivesProps
   type?: ContentPrimitivesType;
 
   // Text
-  text?: string;
-  subtext?: string;
+  /** Title content. Accepts a node for mixed inline styling (e.g. a grey count: "Items (15)"). */
+  text?: React.ReactNode;
+  subtext?: React.ReactNode;
   /** Show the subtitle/description line under the title. Default true. */
   showSubtext?: boolean;
   titleName?: string;
@@ -232,8 +233,8 @@ function TitleAndSubtext({
   showSubtext = true,
 }: {
   type: string;
-  text?: string;
-  subtext?: string;
+  text?: React.ReactNode;
+  subtext?: React.ReactNode;
   showSubtext?: boolean;
 }) {
   const config = TITLE_CONFIG[type];
@@ -454,7 +455,10 @@ function ListRowLayout(props: ContentPrimitivesProps) {
               <Icon name={descriptionLeadingIcon} outlined size={16} />
             </div>
           )}
-          <span className="text-body-m-medium" style={{ color: 'var(--text-default-body)', whiteSpace: 'nowrap' }}>
+          <span
+            className="text-body-m-medium"
+            style={{ color: 'var(--text-default-body)', whiteSpace: isHorizontal ? 'nowrap' : 'normal', minWidth: 0 }}
+          >
             {listRowText}
           </span>
           {showInteractiveElements && (

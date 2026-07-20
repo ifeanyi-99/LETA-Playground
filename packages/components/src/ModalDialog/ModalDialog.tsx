@@ -31,6 +31,12 @@ export interface ModalDialogProps
   signatureSrc?: string;
   /** Cancel/dismiss label. Default "Close". */
   cancelLabel?: string;
+  /**
+   * Render the confirm button. Default true; read-only viewers (the `image` /
+   * `signature` proof dialogs, whose Figma variants carry a single Close
+   * action) pass false for a Close-only footer.
+   */
+  showConfirm?: boolean;
   /** Confirm label. Default "Confirm". */
   confirmLabel?: string;
   /**
@@ -172,6 +178,7 @@ export const ModalDialog = React.forwardRef<HTMLDivElement, ModalDialogProps>(
       confirmIconLeft,
       onCancel,
       onConfirm,
+      showConfirm = true,
       onClose,
       bodyHeight,
       ...rest
@@ -194,16 +201,18 @@ export const ModalDialog = React.forwardRef<HTMLDivElement, ModalDialogProps>(
             <Button variant="secondary" size="medium" onClick={onCancel}>
               {cancelLabel}
             </Button>
-            <Button
-              variant={destructive ? 'destructive' : 'primary'}
-              size="medium"
-              disabled={confirmDisabled}
-              iconLeft={confirmIconLeft}
-              iconOutlined={confirmIconLeft != null}
-              onClick={onConfirm}
-            >
-              {confirmLabel}
-            </Button>
+            {showConfirm && (
+              <Button
+                variant={destructive ? 'destructive' : 'primary'}
+                size="medium"
+                disabled={confirmDisabled}
+                iconLeft={confirmIconLeft}
+                iconOutlined={confirmIconLeft != null}
+                onClick={onConfirm}
+              >
+                {confirmLabel}
+              </Button>
+            )}
           </FooterFrame>
         }
         bodyHeight={bodyHeight ?? BODY_HEIGHT[variant]}

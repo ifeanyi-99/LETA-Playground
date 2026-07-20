@@ -8,7 +8,7 @@
 > **Companion design spec:** Table Column Layout Specification (owns column widths, floors, truncation, responsive behaviour)
 > **Audience:** implementation agent + engineers
 > **Status:** Ready for build — domain logic (Parts 1–11) and orders-surface interaction (Part 12); generic component behaviour in Doc 3
-> **Version:** 2.8
+> **Version:** 2.9
 
 ---
 
@@ -245,26 +245,28 @@ The region above the accordion sections: a mini-map (left) and the **summary car
 - **Counter window:** starts at Pending (or at auto-broadcast for scheduled orders that skip Pending); runs to Delivered, or to Arrived for the return/cancel branch (§11.3). For 2nd/3rd drop-offs the counter **pauses** while the order waits its turn in the chain and the denominator is always the constant Expected OFT — it counts stage time, not wall-clock time. Full mechanics and badge logic: **Doc 4 — SLA & Fulfilment-Time Specification** (§1.2).
 - **Timer scoping:** live countdowns/counters at second- or minute-precision render **in the open drawer only**. Order tables carry the static **Duration** column instead (absent for Scheduled and Returned) — rows never run live broadcast countdowns.
 
-**Copy matrix (locked 2026-07-08):**
+**Copy matrix (locked 2026-07-08; rows 1–3 corrected 2026-07-20 against the View Order wireframes `320:99590`):**
 
 | # | State | Main copy | Sub copy | CTA | Mode |
 |---|---|---|---|---|---|
-| 1 | Scheduled / Pending (auto-broadcast client), >60 min to broadcast | `9 Jun 2027, 12:30 PM` (scheduled delivery date/time) | Scheduled delivery date | View Activity | Static |
-| 2 | Scheduled / Pending (auto-broadcast client), ≤60 min to broadcast | `9 Jun 2027, 12:30 PM` | "{N} minutes until broadcast" (max 60; live, updates each minute, drawer-only) | View Activity | Dynamic |
+| 1 | Scheduled, >60 min to broadcast | `9 Jun 2027, 12:30 PM` (scheduled delivery date/time) | Scheduled delivery date | View Activity | Static |
+| 2 | Scheduled, ≤60 min to broadcast (auto-broadcast client) | `9 Jun 2027, 12:30 PM` | "{N} minutes until broadcast." (max 60; live, updates each minute, drawer-only) | View Activity | Dynamic |
+| 2b | Pending (auto-broadcast client), order wait time counting | Order broadcasting soon | "{N} minutes to broadcast." (live, updates each minute, drawer-only) | View Activity | Dynamic |
 | 3 | Pending (no auto-broadcast), ready | Dispatch Now | Items ready for delivery. | **Dispatch** | Static |
 | 4 | Broadcasted | Order broadcast started | "{N} seconds elapsed." | **View Logs** → opens the **Dispatch Logs tab** (§7.5) | Dynamic |
-| 5 | Assigned | Driver is on the way | Est delivery: 12:30 - 12:40 PM. | View Activity | Dynamic |
-| 6 | At Depot | Driver is at the depot | Est delivery: 12:30 - 12:40 PM. | View Activity | Dynamic |
-| 7 | In Transit | Driver is in transit | Est delivery: 12:30 - 12:40 PM. | View Activity | Static |
-| 8 | Arrived | Driver has arrived | Est delivery: 12:30 - 12:40 PM. | View Activity | Dynamic |
-| 9 | Returning | Driver is returning | Est drop-off: 12:30 - 12:40 PM. | View Activity | Dynamic |
-| 10 | Delivered | Order delivered | Delivered at 12:50 PM. | View Activity | Static |
+| 5 | Assigned | Driver is on the way | Est delivery: 12:30 - 12:40 PM | View Activity | Dynamic |
+| 6 | At Depot | Driver is at the depot | Est delivery: 12:30 - 12:40 PM | View Activity | Dynamic |
+| 7 | In Transit | Driver is in transit | Est delivery: 12:30 - 12:40 PM | View Activity | Static |
+| 8 | Arrived | Driver has arrived | Est delivery: 12:30 - 12:40 PM | View Activity | Dynamic |
+| 9 | Returning | Driver is returning | Est drop-off: 12:30 - 12:40 PM | View Activity | Dynamic |
+| 10 | Delivered | Order delivered | Delivered at 12:50 PM | View Activity | Static |
 | 11 | Returned | Order returned | Returned at 12:50 PM. Counter resets to **0s**; prior attempt as **"Prev: {duration}"** (§11.3) | View Activity | Static |
-| 12 | Cancelled | Order cancelled | Cancelled at 12:50 PM. | View Activity | Static |
+| 12 | Cancelled | Order cancelled | Cancelled at 12:50 PM | View Activity | Static |
 
-- Row 2 applies to **any pre-broadcast order on an auto-broadcast client** — Scheduled, or an immediate-creation Pending order whose delivery time is still >1h out (it broadcasts at T−1h like a scheduled one).
+- **A Pending order never carries a scheduled date (corrected 2026-07-20).** On an auto-broadcast client, a **Scheduled** order transitions **straight to Broadcasted** at T−1h — it never passes through Pending (§2.3). What puts a *non-scheduled* order on an auto-broadcast client into Pending is the **order wait time** — a configured hold defining how long an order stays Pending before it is auto-broadcast (flag in Appendix A / Doc 2). Row 2b is that countdown. The previous note ("Row 2 applies to any pre-broadcast order on an auto-broadcast client — Scheduled, or an immediate-creation Pending order whose delivery time is still >1h out") is withdrawn: the Pending-with-a-scheduled-date state it described does not exist.
 - **Auto-broadcast assignment banner:** on first entry to Assigned via auto-broadcast, a **dismissible highlight notification banner** shows above the map: "This order was automatically assigned to {Driver Name}."
 - Delivered main copy is **"Order delivered"** (locked) — earlier mockups showing "Order is delivered" are superseded.
+- **Header status icons mirror the table's Order-ID cell icons** (same glyphs, same tooltips — §3.2): provenance (Manual-Touch "Created manually" / Integration "Auto-create via online store" · "From connected app"), Calendar with "Scheduled: {date/time}" for scheduled-origin orders, Broadcast where applicable. They render beside the status badge in the drawer header's Status Badges row.
 
 **Map — the route's biography.** The mini-map renders the current truth of the route lifecycle:
 
@@ -277,9 +279,9 @@ The region above the accordion sections: a mini-map (left) and the **summary car
 | Returned | Suggested route + the driver's trail **up to the point the return was triggered**; failed drop-off icon |
 | Cancelled | Route shown **only if** the order was dispatched before cancellation (cancelled pre-pickup); no route if never dispatched. (An actual-path overlay is structurally impossible here — cancellation ends at pickup; §11.1) |
 
-**Expanded map mode:** the expand control (map top-right) opens a fullscreen dimmed overlay — available in **every status**. Expanded mode adds an **info card affixed to the depot** and another **affixed to the drop-off**. For undispatched orders, a notification banner with a **Dispatch** CTA at its tail nudges the route into existence:
+**Expanded map mode:** the expand control (map top-right) opens a fullscreen dimmed overlay — available in **every status**. Expanded mode adds an **info card affixed to the depot** and another **affixed to the drop-off**. For undispatched orders, a notification banner with a **Dispatch** CTA at its tail nudges the route into existence (copy corrected 2026-07-20 to the wireframe); once a driver holds the order the banner narrates the driver's progress instead ("Michael Kariuki is on the way to the depot." + View Activity):
 
-> Dispatch this order to generate its delivery route
+> Dispatch now to generate a delivery route.
 
 ### 7.3 Overview tab
 
@@ -641,6 +643,7 @@ Fully defined in **Configuration Reference (Doc 2)** — no longer TBD. Named he
 | `dispatch.enRoutePickup.enabled` | En-route pickup extension of Add to Trip (client-level, off by default) |
 | `dispatch.fleetType` | Marketplace vs. managed-fleet — client-level, fixed at onboarding |
 | `scheduling.autoBroadcast.enabled` | Whether Scheduled orders auto-transition to Broadcasted at T−1h (else → Pending). Client-level |
+| `dispatch.orderWaitTime` | How long a non-scheduled order stays Pending before auto-broadcast (auto-broadcast clients; drives the §7.2 row-2b countdown). Client-level |
 | `pickup.confirmation.enabled` | Pickup PIN + Proof of Pickup requirement. Client-level only, no depot override |
 | `delivery.pod.signature.enabled` / `delivery.pod.photo.enabled` | Independent proof-of-delivery toggles |
 | `returns.driverInitiated.enabled` | Whether drivers can start a return from the Driver App |
@@ -659,6 +662,7 @@ Broadcast/fleet mechanics (priority groups, acceptance windows, driver broadcast
 
 | Version | Date | Changes |
 |---|---|---|
+| 2.9 | Jul 2026 | **§7.2 summary-card matrix rows 1–3 corrected against the View Order wireframes** (`320:99590`, ruled 2026-07-20): a Pending order never carries a scheduled date — on auto-broadcast clients a Scheduled order goes straight to Broadcasted at T−1h, never through Pending; what holds a non-scheduled order in Pending is the **order wait time** (`dispatch.orderWaitTime`, new Appendix-A flag), whose countdown renders as new row 2b "Order broadcasting soon" / "{N} minutes to broadcast."; the old "row 2 applies to any pre-broadcast order" note withdrawn. Header status icons documented as mirroring the table's Order-ID cell icons + tooltips. Expanded-map nudge copy corrected to "Dispatch now to generate a delivery route." + driver-progress banner variant noted. Est-delivery/Delivered/Cancelled sub-copy trailing periods dropped (wireframe) |
 | 2.8 | Jul 2026 | **Update Status scoped out of Returned and Returning** (Ruled 2026-07-20) — per-order and bulk. §10.1 gains an explicit Update-Status availability ruling + AGENT flag (both options invalid for these states: Mark as Delivered contradicts a not-delivered order; Mark as Pending would erase failed-attempt history Returned preserves); it stays valid elsewhere (In Transit/Arrived → Mark as Delivered for offline reconciliation; failed pickup → Mark as Pending). §12.6 modal table moves **Returned** into the no-Update-Status row (a §1.9 carry-over corrected) alongside Returning + adds the reasoning/AGENT flag. §12.5 table overflow and §12.7 drawer-footer overflow drop Update Status from the **Returned** menus (Returning already had none). §12.9 — the selection toolbar must not offer Update Status when the selection is Returned/Returning; Bulk Reschedule lives in the "more" (⋯) overflow. |
 | 2.7 | Jul 2026 | **Bulk cancel & bulk reschedule brought into V1 scope** (DES-254), removing the stale §11.5 out-of-scope line. §11.1 — bulk cancel applies one reason code to the batch; mandatory confirmation for single + bulk; reason list updated to the wireframe copy (Customer requested it / Payment Issue / Items unavailable / Customer unreachable / Other). §11.2 — bulk in scope; the driver-held consequence is an inline warning banner ("Please note that rescheduling will unassign orders from their current drivers.", supersedes the named-driver string), shown only when ≥1 selected order is Assigned/At Depot. New **§11.2.1** — Reschedule modal detail: manual-field default + suggestion-chip base-time tables, the no-op confirm-button rule, count-led CTA + toast. CTA copy standard "Action {n} Orders" / singular "Action Order" applied to Cancel/Reschedule/Update; Update Status confirm relabelled "Update {n} Orders"/"Update Order" (was "Update Status") with the toast naming the target status. Source: Changelog_Bulk_Actions_and_Reschedule_Suggestions.md |
 | 1.0 | Jul 2026 | Initial specification — sections 1–11 consolidated from DES-248/252/256/280 and prior design decisions |

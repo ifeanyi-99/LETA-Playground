@@ -133,3 +133,63 @@ interactive-element guard) · `ModalDialog.showConfirm` (Close-only viewers) +
 `DOORSTEP_DELIVERY_IMAGE`/`SIGNATURE_IMAGE` exported · `ContentPrimitives.text/
 subtext` widened to ReactNode + `vertical-list-row` values wrap (Figma Subtext
 frames wrap) · asset consts typed `string` (kept base64 out of the d.ts).
+
+## Corrections round 2 (2026-07-20) — re-enumeration after designer componentization
+
+The designer **componentized** the drawer regions since the first build (they are now real
+Figma components, which is why the ad-hoc reproduction drifted). Verified via Dev MCP +
+figma-console bridge against the current nodes (Scheduled Ov1 `1094:86645`):
+
+- **Order Overview Card** is now component `1452:181082` (instance in Scheduled Ov1 `1452:182257`).
+- **Pickup Code** is now component `Picup Code Banner` `1454:207769` (sic).
+- **Body sections** are now `Order Detail Accordions` (instances `1454:196201` etc.).
+
+Applied corrections (playground `OrderDetailDrawer.tsx`):
+
+1. **Drawer body background** → `--surface-neutral-bg-default` (white `#fefefe`); was grey
+   `--surface-neutral-bg-muted`. `Main Body` pad `[24,16,0,16]`; inner Container vertical, gap 20,
+   pad-bottom 40 → overview body wrapper padding now `24px 16px 40px`. Section cards stay white
+   `--surface-neutral-card-idle` + 1px border + radius 12 (bordered cards on a white body).
+2. **Pickup Code Banner** rebuilt to the real component: `--surface-secondary-bg-raised` (`#f1f3f9`)
+   card, radius `lg`, padding `16px 20px`, gap 64; title `--text-secondary-label`; **four 32×32
+   digit boxes filled `--surface-secondary-bg` (`#192037`, navy), radius `md`, text
+   `--text-on-color-label` (white)**; Lock icon `--icons-secondary-default`; copy = Plain Copy-Outline.
+   (Was a white ContentCard with grey digit boxes + dark text — wrong.)
+3. **Order Status Summary** (right half of the Order Overview Card): padding `16px 20px` (py16/px20)
+   kept, **gap 12 → 20**, added `justify-content: center` (Figma `items-start justify-center`). SLA
+   metric `/ 30m SLA` recolored `--text-default-sub-body` → **`--text-default-helper`** (neutral-400
+   `#808080`) to match Figma.
+
+Reschedule Order modal (`RescheduleModal.tsx`): suggestion-card **grid gap 16 → 8** (Figma Options
+GRID `gridRowGap`/`gridColumnGap` = 8; the `itemSpacing:16` was a misleading legacy value). Card
+internal padding was already correct 16px (the reported hug was a stale dist, fixed by rebuild).
+
+Route micro-animation (`OrderDetailMap.tsx`): every displayed route now renders a 60%-opacity base
++ a 100%-opacity comet segment (SVG `stroke-dashoffset` via Web Animations API, 40% segment, 2s
+linear infinite loop) sweeping depot→drop-off; setup deferred to rAF until `getTotalLength()` is
+measured (it's 0 on the first tick); `prefers-reduced-motion` renders a static full-opacity route;
+handles cancelled on cleanup.
+
+## Per-screen pass across all 13 (2026-07-21)
+
+Text-dumped every drawer via the bridge and diffed against the running drawer. Result:
+footers, section sets, copy, driver/trip cards, Pickup-Code presence, Proof-of-Pickup rows,
+badges, and summary copy all matched — including **At Depot (`1454:208173`) being structurally
+identical to Assigned** (same footer Cancel · Add To Trip · Change Driver · Edit + ⋯; copy
+"Driver is at the depot"), Delivered/Cancelled having **no footer**, and Returning being a
+single **Add Comment** footer (no ⋯). Two genuine misses found + fixed:
+
+1. **More Information's 5th field is labeled "Completed", not "Delivered"** (confirmed on all 13;
+   value is the delivery timestamp when delivered, else N/A). Fixed the `Field label`.
+2. **Delivered's "Proof of Delivery" section renders FIRST** — right after the driver cards and
+   **before** Pickup From (my drawer had it after Pickup From). Reordered.
+
+Per-screen footer + section confirmation:
+- Scheduled ×2 / Pending ×2 / Broadcasted / Returned: Cancel · Add To Trip · Edit · Dispatch (+⋯);
+  Pickup Code + [Pickup From · Deliver To · Items · Payment · More Info]; no driver cards.
+- Assigned / At Depot: Cancel · Add To Trip · Change Driver · Edit (+⋯); Pickup Code + driver cards.
+- In Transit / Arrived: Return Order · Update Status (+⋯ Add Comment); driver cards + Proof of Pickup;
+  no Pickup Code.
+- Returning: Add Comment only; driver cards + Proof of Pickup.
+- Delivered: no footer; driver cards + **Proof of Delivery (first)** + Proof of Pickup.
+- Cancelled: no footer; driver cards (dispatched-then-cancelled), no proof sections.

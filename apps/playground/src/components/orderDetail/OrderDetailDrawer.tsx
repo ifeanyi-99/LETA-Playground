@@ -224,7 +224,7 @@ function SlaBlock({ model, elapsed }: { model: OrderDetailModel; elapsed: number
           <span className="text-heading-s-semibold" style={{ color: 'var(--text-default-heading)' }}>
             {fmtClock(elapsed)}
           </span>
-          <span className="text-body-m-regular" style={{ color: 'var(--text-default-sub-body)' }}> / 30m SLA</span>
+          <span className="text-body-m-regular" style={{ color: 'var(--text-default-helper)' }}> / 30m SLA</span>
         </div>
       </div>
       {model.slaBadge && <Badge color={model.slaBadge.color} label={model.slaBadge.label} />}
@@ -418,7 +418,7 @@ function DrawerBody({
   );
 
   const overviewBody = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-20px)', padding: 'var(--padding-24px) var(--padding-16px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-20px)', padding: 'var(--padding-24px) var(--padding-16px) var(--padding-40px)' }}>
       {/* Auto-broadcast assignment banner (§7.2) — dismissible, Assigned only. */}
       {status === 'assigned' && assignBanner && driver && (
         <NotificationBanner
@@ -445,7 +445,7 @@ function DrawerBody({
         <div style={{ width: '50%', flexShrink: 0 }}>
           <OrderMiniMap order={order} depotName={depotName} depotAddress={depotAddress} onExpand={() => setMapExpanded(true)} />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, padding: 'var(--padding-16px) var(--padding-20px)', gap: 'var(--spacing-12px)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1, minWidth: 0, padding: 'var(--padding-16px) var(--padding-20px)', gap: 'var(--spacing-20px)' }}>
           <SlaBlock model={model} elapsed={elapsed} />
           <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
           <ContentPrimitives
@@ -464,53 +464,64 @@ function DrawerBody({
         </div>
       </div>
 
-      {/* Pickup Code card (pickup confirmation config; Ready + Assigned/At Depot). */}
+      {/* Pickup Code Banner (Figma `1454:207769`) — a dark-accented banner, NOT a
+          white card: lavender `bg-raised` surface, radius lg, px-20 py-16; the
+          code shows in dark-navy `secondary-bg` digit boxes with white text. */}
       {model.showPickupCode && (
-        <ContentCard style={{ padding: 'var(--padding-16px) var(--padding-20px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-24px)', width: '100%' }}>
-            <div style={{ display: 'flex', gap: 'var(--spacing-8px)', flex: 1, minWidth: 0 }}>
-              <span style={{ display: 'flex', paddingTop: 2, color: 'var(--icons-neutral-default)', flexShrink: 0 }}>
-                <Icon name="Lock" size={16} />
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="text-label-m-semibold" style={{ color: 'var(--text-default-heading)' }}>Pickup Code</span>
-                <span className="text-body-m-regular" style={{ color: 'var(--text-default-sub-body)' }}>Share with the driver at pickup</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-16px)' }}>
-              <div style={{ display: 'flex', gap: 'var(--spacing-8px)' }}>
-                {model.pickupCode.split('').map((d, i) => (
-                  <span
-                    key={i}
-                    className="text-label-m-semibold"
-                    style={{
-                      width: 32,
-                      height: 32,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 'var(--rounding-lg)',
-                      backgroundColor: 'var(--surface-neutral-bg-tertiary)',
-                      color: 'var(--text-default-label)',
-                    }}
-                  >
-                    {d}
-                  </span>
-                ))}
-              </div>
-              <HoverTip label="Copy pickup code">
-                <Button
-                  variant="ghost"
-                  size="small"
-                  iconOnly="Copy"
-                  iconOutlined
-                  aria-label="Copy pickup code"
-                  onClick={() => void navigator.clipboard.writeText(model.pickupCode)}
-                />
-              </HoverTip>
+        <div
+          style={{
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-64px)',
+            width: '100%',
+            padding: 'var(--padding-16px) var(--padding-20px)',
+            borderRadius: 'var(--rounding-lg)',
+            backgroundColor: 'var(--surface-secondary-bg-raised)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 'var(--spacing-8px)', flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'flex', paddingTop: 4, color: 'var(--icons-secondary-default)', flexShrink: 0 }}>
+              <Icon name="Lock" size={16} />
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)' }}>
+              <span className="text-label-m-semibold" style={{ color: 'var(--text-secondary-label)' }}>Pickup Code</span>
+              <span className="text-body-m-regular" style={{ color: 'var(--text-default-sub-body)' }}>Share with the driver at pickup</span>
             </div>
           </div>
-        </ContentCard>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-16px)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 'var(--spacing-8px)' }}>
+              {model.pickupCode.split('').map((d, i) => (
+                <span
+                  key={i}
+                  className="text-label-m-semibold"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 'var(--rounding-md)',
+                    backgroundColor: 'var(--surface-secondary-bg)',
+                    color: 'var(--text-on-color-label)',
+                  }}
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+            <HoverTip label="Copy pickup code">
+              <Button
+                variant="plain"
+                size="small"
+                iconOnly="Copy"
+                iconOutlined
+                aria-label="Copy pickup code"
+                onClick={() => void navigator.clipboard.writeText(model.pickupCode)}
+              />
+            </HoverTip>
+          </div>
+        </div>
       )}
 
       {/* Driver + Trip cards (driver-held / concluded-with-driver states). */}
@@ -560,23 +571,8 @@ function DrawerBody({
         </div>
       )}
 
-      {/* Pickup From */}
-      <Section title="Pickup From">
-        <FieldRows
-          fields={[
-            <Field key="d" label="Depot" value={depotName} icon="Depot" />,
-            <Field key="a" label="Pickup address" value={depotAddress} icon="Location" />,
-          ]}
-        />
-        {model.showProofOfPickup && (
-          <>
-            <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
-            <ProofRow file={model.proofOfPickupFile} onView={setProofView} />
-          </>
-        )}
-      </Section>
-
-      {/* Proof of Delivery (Delivered only, POD config) */}
+      {/* Proof of Delivery (Delivered only, POD config) — Figma places this
+          FIRST, right after the driver cards and BEFORE Pickup From. */}
       {model.showProofOfDelivery && (
         <Section title="Proof of Delivery">
           <FieldRows
@@ -595,6 +591,22 @@ function DrawerBody({
           </div>
         </Section>
       )}
+
+      {/* Pickup From */}
+      <Section title="Pickup From">
+        <FieldRows
+          fields={[
+            <Field key="d" label="Depot" value={depotName} icon="Depot" />,
+            <Field key="a" label="Pickup address" value={depotAddress} icon="Location" />,
+          ]}
+        />
+        {model.showProofOfPickup && (
+          <>
+            <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
+            <ProofRow file={model.proofOfPickupFile} onView={setProofView} />
+          </>
+        )}
+      </Section>
 
       {/* Deliver To */}
       <Section title="Deliver To">
@@ -692,7 +704,7 @@ function DrawerBody({
             <Field key="cb" label="Created By" value={model.createdByLabel} icon={model.createdByIcon.icon} />,
             <Field key="d" label="Dispatched" value={model.dispatchedLabel} icon="Calendar" />,
             <Field key="db" label="Dispatched By" value={model.dispatchedByLabel} icon="User-Available" />,
-            <Field key="dl" label="Delivered" value={model.deliveredLabel} icon="Calendar" />,
+            <Field key="dl" label="Completed" value={model.deliveredLabel} icon="Calendar" />,
             <Field key="w" label="Weight" value="N/A" icon="Weight" />,
           ]}
         />
@@ -825,7 +837,7 @@ function DrawerBody({
               </FooterFrame>
             ) : null
           }
-          bodyStyle={{ backgroundColor: 'var(--surface-neutral-bg-muted)' }}
+          bodyStyle={{ backgroundColor: 'var(--surface-neutral-bg-default)' }}
         >
           {tab === 0 ? overviewBody : tab === 1 ? placeholderBody('Activity') : placeholderBody('Dispatch Logs')}
         </ModalShell>

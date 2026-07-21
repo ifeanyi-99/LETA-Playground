@@ -175,6 +175,63 @@ function infoCardHtml(icon: string, name: string, address: string): string {
   );
 }
 
+const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
+/**
+ * Draw one route as a two-layer trace (§ route micro-animation): a 60%-opacity
+ * base always visible, plus a 100%-opacity segment that sweeps start→end over 2s
+ * (looping) to imply direction. The tracer is a solid comet even over a dashed
+ * base, so a historical dashed trail still reads as a directional sweep. Reduced
+ * motion → a single static full-opacity line. Returns the created polylines + any
+ * Web-Animations handles so `decorate`'s cleanup can remove/cancel them.
+ */
+function traceRoute(
+  L: typeof import('leaflet'),
+  map: LeafletMap,
+  latlngs: [number, number][],
+  opts: { color: string; dashArray?: string; reduced: boolean; weight?: number },
+  anims: Animation[],
+): Polyline[] {
+  const { color, dashArray, reduced, weight = 3 } = opts;
+  const lines: Polyline[] = [];
+  const base = L.polyline(latlngs, {
+    color,
+    weight,
+    opacity: reduced ? 1 : 0.6,
+    ...(dashArray ? { dashArray } : {}),
+  }).addTo(map);
+  lines.push(base);
+  if (reduced) return lines;
+
+  const tracer = L.polyline(latlngs, { color, weight, opacity: 1 }).addTo(map);
+  lines.push(tracer);
+  // Set up the comet once the SVG path is actually measured — Leaflet adds the
+  // path before the renderer flushes geometry, so getTotalLength() is 0 on the
+  // first tick; retry on rAF until it's non-zero (bails if the path is removed).
+  const setup = () => {
+    const el = tracer.getElement() as (SVGPathElement & { animate?: Element['animate'] }) | null;
+    if (!el || typeof el.getTotalLength !== 'function' || typeof el.animate !== 'function') return;
+    const total = el.getTotalLength();
+    if (total < 1) { requestAnimationFrame(setup); return; }
+    const seg = Math.max(24, total * 0.4);
+    el.style.strokeDasharray = `${seg} ${total}`;
+    el.style.strokeLinecap = 'round';
+    // One period (seg+total) per 2s, linear → seamless loop; the lit segment
+    // travels depot→drop-off implying direction.
+    anims.push(
+      el.animate(
+        [{ strokeDashoffset: total + seg }, { strokeDashoffset: 0 }],
+        { duration: 2000, iterations: Infinity, easing: 'linear' },
+      ),
+    );
+  };
+  requestAnimationFrame(setup);
+  return lines;
+}
+
 /** Attach pins/route/driver to a Leaflet map; returns a cleanup. */
 function decorate(map: LeafletMap, order: Order, expanded: boolean, depotName: string, depotAddress: string): () => void {
   const rs = routeStateFor(order);
@@ -182,21 +239,27 @@ function decorate(map: LeafletMap, order: Order, expanded: boolean, depotName: s
   layer.sync(markerSpecs(order, expanded));
 
   const lines: Polyline[] = [];
+  const anims: Animation[] = [];
+  const reduced = prefersReducedMotion();
   // Leaflet needs concrete colors — resolve the tokens at runtime.
   const red = cssColor('--icons-primary-default', '#ff3941');
   const grey = cssColor('--icons-neutral-idle', '#8f8f8f');
   void import('leaflet').then((L) => {
+    const add = (pts: [number, number][], o: { color: string; dashArray?: string }) => {
+      lines.push(...traceRoute(L, map, pts, { ...o, reduced }, anims));
+    };
     if (rs.planned) {
       const pts = routePoints(order);
       const planned = rs.trailTo != null ? [...pts.slice(0, 3), pointAt(pts, rs.trailTo)] : pts;
-      lines.push(L.polyline(rs.trailTo != null ? pts : planned, { color: red, weight: 3, opacity: rs.actual ? 0.9 : 1 }).addTo(map));
+      // Planned route (red). On Returned we show the full planned path here.
+      add(rs.trailTo != null ? pts : planned, { color: red });
       if (rs.trailTo != null) {
         // Returned: the driver's trail up to the failure point, over the planned line.
-        lines.push(L.polyline(planned, { color: grey, weight: 3, dashArray: '6 6' }).addTo(map));
+        add(planned, { color: grey, dashArray: '6 6' });
       }
     }
     if (rs.actual) {
-      lines.push(L.polyline(actualPoints(order), { color: grey, weight: 3, dashArray: '6 6' }).addTo(map));
+      add(actualPoints(order), { color: grey, dashArray: '6 6' });
     }
   });
 
@@ -233,6 +296,7 @@ function decorate(map: LeafletMap, order: Order, expanded: boolean, depotName: s
   });
 
   return () => {
+    anims.forEach((a) => a.cancel());
     layer.clear();
     lines.forEach((l) => l.remove());
     infoMarkers.forEach((m) => (m as never as { remove: () => void }).remove());

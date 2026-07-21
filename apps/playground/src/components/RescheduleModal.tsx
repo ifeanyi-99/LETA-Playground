@@ -139,7 +139,7 @@ export function RescheduleModal({ orderIds, anchorDate, chipBase, noOpDate = nul
               </span>
               <div
                 role="radiogroup"
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-16px)' }}
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-8px)' }}
               >
                 {suggestions.map((s, i) => {
                   const active = selectedIdx === i;

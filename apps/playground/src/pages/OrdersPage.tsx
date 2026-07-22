@@ -30,7 +30,7 @@ import type { IconName } from '@leta/icons';
 import { useStore } from '../store/useStore.js';
 import type { NewOrderInput } from '../store/useStore.js';
 import type { DepotOption, Order, OrderStatus } from '../store/types.js';
-import { ORDER_STATUS_BADGE, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../store/types.js';
+import { ORDER_STATUS_BADGE, ORDER_STATUS_BADGE_ICON, ORDER_STATUS_ICON, ORDER_STATUS_LABEL } from '../store/types.js';
 import { Popover, MenuPanel, MenuDivider } from '../components/Popover.js';
 import { SkeletonTableRows } from '../components/SkeletonTableRows.js';
 import {
@@ -728,7 +728,7 @@ export function OrdersPage(): React.ReactElement {
   // The pill badge is the SAME delivery badge as the table row uses for that status.
   const subBadge = (g: Exclude<FilterTab, 'all'>) =>
     filterTab === g && subStatus
-      ? <Badge color={ORDER_STATUS_BADGE[subStatus]} label={ORDER_STATUS_LABEL[subStatus]} />
+      ? <Badge color={ORDER_STATUS_BADGE[subStatus]} label={ORDER_STATUS_LABEL[subStatus]} leadingIcon={ORDER_STATUS_BADGE_ICON[subStatus]} />
       : undefined;
 
   const TABS: TopFilterSectionItem[] = [
@@ -930,7 +930,7 @@ export function OrdersPage(): React.ReactElement {
       })(),
       'Status': {
         type: 'status',
-        statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} />,
+        statusContent: <Badge color={ORDER_STATUS_BADGE[o.status]} label={ORDER_STATUS_LABEL[o.status]} leadingIcon={ORDER_STATUS_BADGE_ICON[o.status]} />,
         // §2.3: SLA icon trails the badge only while the SLA is actively counting.
         statusIcon: slaCounting && sla === 'at-risk' ? 'warning' : slaCounting && sla === 'delayed' ? 'error' : undefined,
         // Spec pairing (warning → At Risk, error → Delayed) — the wireframe's
@@ -1103,7 +1103,7 @@ export function OrdersPage(): React.ReactElement {
               extends up through the page column's 24px gap to sit 1px below the
               Title row (its divider stays undimmed). Never shown for a Refresh —
               that's a subsequent update, handled by the Skeleton rows above. */}
-          <LoadingOverlay contained open={firstLoading} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
+          <LoadingOverlay contained opaque open={firstLoading} style={{ top: 'calc(-1 * var(--spacing-24px) + 1px)' }} />
         </div>
 
       {/* Bulk actions toolbar — slides up in / down out as the selection changes.

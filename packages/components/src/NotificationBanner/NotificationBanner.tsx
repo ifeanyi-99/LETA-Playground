@@ -154,14 +154,16 @@ export const NotificationBanner = React.forwardRef<
   };
 
   // Trailing section (Figma `Trailing section`): a full-height, right-aligned
-  // vertical column with SPACE_BETWEEN — the Dismiss × grows to pin top-right,
-  // the optional CTA pins bottom-right.
+  // vertical column. With BOTH a dismiss × and a CTA it is SPACE_BETWEEN (× top,
+  // CTA bottom). With only the dismiss × it aligns to match the banner's counter
+  // axis — centred for filled (so the × sits level with the leading icon on a
+  // single-line banner), top for subtle.
   const trailingSectionStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
     alignSelf: 'stretch',
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    justifyContent: cta ? 'space-between' : isFilled ? 'center' : 'flex-start',
     flexShrink: 0,
   };
 
@@ -200,18 +202,15 @@ export const NotificationBanner = React.forwardRef<
       {/* Trailing section — Dismiss × (top-right) + optional CTA (bottom-right) */}
       {(onDismiss || cta) && (
         <div style={trailingSectionStyle}>
-          {onDismiss && (
-            <div style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
-              <Button
-                variant="plain"
-                size="small"
-                iconOnly="Cancel"
-                showUnderline={false}
-                onClick={onDismiss}
-                aria-label="Dismiss"
-              />
-            </div>
-          )}
+          {onDismiss &&
+            (cta ? (
+              // With a CTA below, the × grows to pin itself to the top.
+              <div style={{ display: 'flex', flexGrow: 1, alignItems: 'flex-start' }}>
+                <Button variant="plain" size="small" iconOnly="Cancel" showUnderline={false} onClick={onDismiss} aria-label="Dismiss" />
+              </div>
+            ) : (
+              <Button variant="plain" size="small" iconOnly="Cancel" showUnderline={false} onClick={onDismiss} aria-label="Dismiss" />
+            ))}
           {cta && <div style={{ display: 'flex', justifyContent: 'flex-end' }}>{cta}</div>}
         </div>
       )}

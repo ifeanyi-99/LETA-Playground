@@ -25,7 +25,7 @@ import {
 import { Icon, type IconName } from '@leta/icons';
 import { useStore } from '../../store/useStore.js';
 import type { ClientConfig, Driver, Order, OrderStatus } from '../../store/types.js';
-import { ORDER_STATUS_BADGE, ORDER_STATUS_LABEL } from '../../store/types.js';
+import { ORDER_STATUS_BADGE, ORDER_STATUS_BADGE_ICON, ORDER_STATUS_LABEL } from '../../store/types.js';
 import { Popover, MenuPanel, MenuDivider } from '../Popover.js';
 import { buildOrderDetail, fmtClock, slaHeadline, type OrderDetailModel, type ProofFile } from './detailModel.js';
 import { ExpandedMapOverlay, OrderMiniMap } from './OrderDetailMap.js';
@@ -336,6 +336,10 @@ function DrawerBody({
     [order, driver, config],
   );
   const status = order.status;
+  // Terminal states show the driver card in read-only "view" mode: a single Open
+  // button (like the trip card), not the active Change-driver + Call buttons
+  // (verified against Delivered `1094:83886` / Cancelled `1237:86144`).
+  const terminal = status === 'delivered' || status === 'cancelled';
   const footer = footerFor(status);
 
   // Live counters (drawer-only, §7.2): elapsed fulfilment + summary sub-copy.
@@ -420,7 +424,7 @@ function DrawerBody({
   // Header status icons — same glyphs/colors/tooltips as the table's Order-ID cell.
   const headerIcons = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
-      <Badge color={ORDER_STATUS_BADGE[status]} label={ORDER_STATUS_LABEL[status]} />
+      <Badge color={ORDER_STATUS_BADGE[status]} label={ORDER_STATUS_LABEL[status]} leadingIcon={ORDER_STATUS_BADGE_ICON[status]} />
       <HoverTip label={model.provenanceIcon.tooltip}>
         <span style={{ display: 'flex', color: model.provenanceIcon.icon === 'Manual-Touch' ? 'var(--icons-caution-badge)' : 'var(--icons-notice-badge)' }}>
           <Icon name={model.provenanceIcon.icon} outlined={model.provenanceIcon.outlined} size={16} />
@@ -430,6 +434,13 @@ function DrawerBody({
         <HoverTip label={model.scheduledTooltip}>
           <span style={{ display: 'flex', color: 'var(--icons-information-badge)' }}>
             <Icon name="Calendar" size={16} />
+          </span>
+        </HoverTip>
+      )}
+      {model.showBroadcast && (
+        <HoverTip label="Auto-broadcast">
+          <span style={{ display: 'flex', color: 'var(--icons-highlight-default)' }}>
+            <Icon name="Broadcast" size={16} />
           </span>
         </HoverTip>
       )}
@@ -443,6 +454,7 @@ function DrawerBody({
         <NotificationBanner
           type="highlight"
           variant="filled"
+          icon="Broadcast"
           description={`This order was automatically assigned to ${driver.name}.`}
           onDismiss={() => setAssignBanner(false)}
         />
@@ -562,14 +574,20 @@ function DrawerBody({
               showPassiveElements={false}
               showInteractiveElements
               interactiveElements={
-                <div style={{ display: 'flex', gap: 'var(--spacing-8px)' }}>
-                  <HoverTip label="Change driver">
-                    <Button variant="secondary" size="medium" iconOnly="Swap" aria-label="Change driver" onClick={() => actions.stub('Change Driver')} />
+                terminal ? (
+                  <HoverTip label="View driver">
+                    <Button variant="secondary" size="medium" iconOnly="Open" aria-label="View driver" onClick={() => actions.stub('View Driver')} />
                   </HoverTip>
-                  <HoverTip label="Call driver">
-                    <Button variant="secondary" size="medium" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={() => actions.stub('Call Driver')} />
-                  </HoverTip>
-                </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: 'var(--spacing-8px)' }}>
+                    <HoverTip label="Change driver">
+                      <Button variant="secondary" size="medium" iconOnly="Swap" aria-label="Change driver" onClick={() => actions.stub('Change Driver')} />
+                    </HoverTip>
+                    <HoverTip label="Call driver">
+                      <Button variant="secondary" size="medium" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={() => actions.stub('Call Driver')} />
+                    </HoverTip>
+                  </div>
+                )
               }
             />
           </ContentCard>

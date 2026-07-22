@@ -187,6 +187,16 @@ export const ORDER_STATUS_ICON: Record<OrderStatus, IconName> = {
   returned: 'Inventory',
 };
 
+/**
+ * Leading icon rendered *inside* the delivery badge for a status. Per the DS
+ * Delivery Badges (`Atoms/Badge/Delivery Badges`, Figma `68:36703`) only the
+ * **Returning** order-status badge carries one (`Return`); every other status
+ * badge is plain. Used by the table Status cell + the View Order drawer header.
+ */
+export const ORDER_STATUS_BADGE_ICON: Partial<Record<OrderStatus, IconName>> = {
+  returning: 'Return',
+};
+
 /** Human-readable status label. */
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   scheduled: 'Scheduled',

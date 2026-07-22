@@ -46,6 +46,13 @@ export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement
    * reloads. The parent region must be `position: relative`.
    */
   contained?: boolean;
+  /**
+   * Solid scrim instead of the default translucent one. Use when the content
+   * behind must NOT show through — a full-screen / whole-view reload (e.g. the
+   * first data load, empty → populated). Light region refreshes keep the default
+   * translucent scrim so the surrounding chrome stays visible.
+   */
+  opaque?: boolean;
   /** First text line (Heading/S/SemiBold, `--text-default-heading`). Default "Loading" (Doc 3 §2.1). */
   title?: string;
   /** Second text line (Body/M/Regular, `--text-default-sub-body`). Default "This will only take a moment" (Doc 3 §2.1). */
@@ -80,7 +87,7 @@ export interface LoadingOverlayProps extends React.HTMLAttributes<HTMLDivElement
  */
 export const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayProps>(
   function LoadingOverlay(
-    { open, contained = false, title = 'Loading', subtitle = 'This will only take a moment', animationUrl = LOADER_URL, style, ...rest },
+    { open, contained = false, opaque = false, title = 'Loading', subtitle = 'This will only take a moment', animationUrl = LOADER_URL, style, ...rest },
     ref,
   ) {
     const boxRef = React.useRef<HTMLDivElement | null>(null);
@@ -178,7 +185,9 @@ export const LoadingOverlay = React.forwardRef<HTMLDivElement, LoadingOverlayPro
           justifyContent: 'center',
           // No scrim token exists — translucent white over the dimmed region
           // (--surface-neutral-bg-default #FEFEFE @ 85%), per the LETA console.
-          backgroundColor: 'rgba(254, 254, 254, 0.85)',
+          // `opaque` swaps to the solid surface so a full-screen reload doesn't
+          // reveal the (stale/empty) content behind it.
+          backgroundColor: opaque ? 'var(--surface-neutral-bg-default)' : 'rgba(254, 254, 254, 0.85)',
           ...style,
         }}
         {...rest}

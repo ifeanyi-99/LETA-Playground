@@ -193,3 +193,36 @@ Per-screen footer + section confirmation:
 - Returning: Add Comment only; driver cards + Proof of Pickup.
 - Delivered: no footer; driver cards + **Proof of Delivery (first)** + Proof of Pickup.
 - Cancelled: no footer; driver cards (dispatched-then-cancelled), no proof sections.
+
+## Per-status parity pass round 2 (2026-07-22) — against the newer section nodes
+
+Re-ran the full 13-screen pass against the current wireframe section IDs (Returned
+`1213:84581`, Scheduled Ov1 `1094:86645` / Ov2 `1094:86464`, Pending Ov1 `1094:86388` /
+Ov2 `1094:86313`, Broadcasted `1094:86646`, Assigned `1094:83942`, At Depot `1454:208173`,
+In Transit `1094:89388`, Returning `1213:82966`, Arrived `1272:86621`, Delivered
+`1094:83886`, Cancelled `1237:86144`). Confirmed the Scheduled/Pending pair semantics per
+§7.2: Scheduled Ov1 = Row 1 (>60m, "Scheduled delivery date"), Ov2 = Row 2 ("N minutes
+until broadcast."); Pending Ov1 = Row 2b (auto-broadcast, "Order broadcasting soon" + **no
+Calendar icon**), Ov2 = Row 3 (scheduled-but-non-auto-broadcast → manual, "Dispatch Now" +
+**Calendar icon**). Bodies/footers/sections all matched the prior pass.
+
+**Four fixes applied (playground only — no DS component change, no dist rebuild):**
+1. **`detailModel.ts` — auto-broadcast Pending never scheduled-origin.** `scheduledOrigin`
+   now gated `&& !(status === 'pending' && config.autoBroadcast)` so the Row-2b Pending
+   state never renders a stray Calendar icon (the contradictory state §7.2 rules out).
+2. **Header Broadcast icon (was missing).** §7.2/§7.3: header icons mirror the table's
+   Order-ID cell. Added `showBroadcast: autoBroadcastFor(order)` to the model + a
+   `Broadcast` HoverTip ("Auto-broadcast", `--icons-highlight-default`) in the header,
+   matching the table's cell exactly.
+3. **Returning delivery *badge* leading `Return` icon (user-reported).** The Return glyph
+   is the Returning badge's own leading icon (DS Delivery Badges `68:36703` / Storybook
+   confirms), **not** an Order-ID-cell icon. Added `ORDER_STATUS_BADGE_ICON` (`returning →
+   Return` only) and passed `leadingIcon` to the badge in the table Status cell, the
+   sub-status filter pill, and the drawer header. Live-verified in all three.
+4. **Terminal driver card = single "View driver" Open button.** Delivered/Cancelled render
+   the driver ContentCard in read-only mode (one `Open` button) instead of the active
+   Change-driver + Call buttons (verified `1094:83886` / `1237:86144`). Live-verified.
+
+Unchanged/confirmed: At Depot ≡ Assigned, Arrived ≡ In Transit; Delivered POD-first;
+Returning = Add Comment-only footer; Returned ⋯ without Update Status (v2.8). All
+playground typecheck-clean; live-verified via Claude Preview on the alt server.

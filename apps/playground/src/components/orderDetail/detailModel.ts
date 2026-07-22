@@ -1,6 +1,7 @@
 import type { IconName } from '@leta/icons';
 import type { ClientConfig, DepotOption, Driver, Order, OrderStatus } from '../../store/types.js';
 import {
+  autoBroadcastFor,
   creatorFor,
   depotForOrder,
   durationSecondsFor,
@@ -86,6 +87,9 @@ export interface OrderDetailModel {
   /** Provenance icon + tooltip (mirrors the table's Order-ID cell icons). */
   provenanceIcon: { icon: IconName; outlined: boolean; tooltip: string };
   scheduledOrigin: boolean;
+  /** Auto-broadcast order → Broadcast icon in the header (mirrors the table's
+   *  Order-ID cell, §3.2/§7.2). */
+  showBroadcast: boolean;
   scheduledDate: Date;
   /** "Scheduled: 09 Jun 2027, 12:30 PM" (Calendar icon tooltip). */
   scheduledTooltip: string;
@@ -281,7 +285,12 @@ export function buildOrderDetail(
           outlined: false,
           tooltip: creator.source === 'storefront' ? 'Auto-create via online store' : 'Auto-create via connected app',
         },
-    scheduledOrigin: schedOrigin,
+    // A Pending order is scheduled-origin (Calendar icon) only when it dropped
+    // Scheduled→Pending on a NON-auto-broadcast client (Pending Ov2). On an
+    // auto-broadcast client a scheduled order skips Pending entirely (§7.2), so
+    // its Pending state (order-wait-time, Ov1) is never scheduled-origin.
+    scheduledOrigin: schedOrigin && !(status === 'pending' && config.autoBroadcast),
+    showBroadcast: autoBroadcastFor(order),
     scheduledDate: scheduled,
     scheduledTooltip: scheduledLabelFor(order),
     sla,

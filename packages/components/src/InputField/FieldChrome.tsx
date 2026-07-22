@@ -104,7 +104,7 @@ export function FieldChrome({
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-4px)', minHeight: 16 }}>
           {messageIcon && (
             <span style={{ display: 'flex', flexShrink: 0, color: messageIconColor }}>
-              <Icon name={messageIcon} size={16} />
+              <Icon name={messageIcon} outlined={false} size={16} />
             </span>
           )}
           {message && (

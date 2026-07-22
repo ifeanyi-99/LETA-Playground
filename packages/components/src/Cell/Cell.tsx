@@ -402,6 +402,7 @@ export const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
       const slaIcon = statusIcon && (
         <Icon
           name={statusIcon === 'warning' ? 'Warning' : 'Error'}
+          outlined={false}
           size={16}
           color={statusIcon === 'warning' ? 'var(--icons-warning-default)' : 'var(--icons-error-default)'}
         />

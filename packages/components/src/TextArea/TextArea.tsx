@@ -276,7 +276,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(fun
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-4px)', minHeight: 16 }}>
           {messageIcon && (
             <span style={{ display: 'flex', flexShrink: 0, color: error ? 'var(--icons-error-default)' : 'var(--icons-warning-default)' }}>
-              <Icon name={messageIcon} size={16} />
+              <Icon name={messageIcon} outlined={false} size={16} />
             </span>
           )}
           <span className="text-label-s-regular" style={{ color: messageColor }}>{message}</span>

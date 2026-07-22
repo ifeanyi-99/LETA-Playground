@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Icon } from '@leta/icons';
 import { ContentPrimitives } from '../ContentPrimitives/ContentPrimitives.js';
 import { InputField, type InputFieldProps } from '../InputField/InputField.js';
+import { AccordionHeader, AccordionChevron, AccordionContent } from '../AccordionBehaviour/AccordionBehaviour.js';
 
 const DASHED = 'var(--stroke-xs) dashed var(--border-neutral-default)';
 
@@ -123,18 +123,7 @@ export const InputSection = React.forwardRef<HTMLDivElement, InputSectionProps>(
   ref,
 ) {
   const [open, setOpen] = React.useState(defaultOpen);
-
-  const chevron = showChevron ? (
-    <button
-      type="button"
-      onClick={() => (onToggle ? onToggle() : setOpen(o => !o))}
-      aria-label={open ? 'Collapse section' : 'Expand section'}
-      aria-expanded={open}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--icons-neutral-default)' }}
-    >
-      <Icon name={open ? 'Chevron-Up' : 'Chevron-Down'} size={24} />
-    </button>
-  ) : undefined;
+  const toggle = () => (onToggle ? onToggle() : setOpen(o => !o));
 
   // Interleave a dashed demarcator between adjacent form children.
   const items = React.Children.toArray(children ?? [<InputGroup key="g1" />, <InputGroup key="g2" />]);
@@ -148,30 +137,41 @@ export const InputSection = React.forwardRef<HTMLDivElement, InputSectionProps>(
     <div
       ref={ref}
       className="leta-input-section"
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12px)', width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--surface-neutral-bg-default)', ...style }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--surface-neutral-bg-default)', ...style }}
       {...rest}
     >
       {/* Section header — a Section-Heading Content Primitive (Figma `Type: Section Heading`),
-          consistent with List Section / Table Section. The chevron is its trailing slot. */}
-      {header ?? (
+          consistent with List Section / Table Section. Accordion Behaviour: the whole
+          header row toggles + drives the trailing chevron's hover state. */}
+      {header ?? (showChevron ? (
+        <AccordionHeader open={open} onToggle={toggle}>
+          <ContentPrimitives
+            type="section-heading"
+            text={title}
+            subtext={description}
+            showTrailingContent
+            showInteractiveElements
+            interactiveElements={<AccordionChevron open={open} onToggle={toggle} />}
+            showPassiveElements={false}
+          />
+        </AccordionHeader>
+      ) : (
         <ContentPrimitives
           type="section-heading"
           text={title}
           subtext={description}
-          showTrailingContent={showChevron}
-          showInteractiveElements={showChevron}
-          interactiveElements={chevron}
+          showTrailingContent={false}
+          showInteractiveElements={false}
           showPassiveElements={false}
         />
-      )}
+      ))}
 
       {/* "Forms" SLOT — vertical 24px-gap stack of Input Groups + dashed demarcators.
-          Hidden when collapsed (Figma's Close variant = header only). */}
-      {open && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24px)', width: '100%' }}>
-          {body}
-        </div>
-      )}
+          Collapses with Accordion Behaviour (Figma's Close variant = header only).
+          When the chevron is hidden the section is static/always-open. */}
+      <AccordionContent open={showChevron ? open : true} gap="var(--spacing-24px)">
+        {body}
+      </AccordionContent>
     </div>
   );
 });

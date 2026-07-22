@@ -1,6 +1,10 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 import {
+  AccordionHeader,
+  AccordionChevron,
+  AccordionContent,
+  useAccordion,
   Badge,
   Button,
   ContentCard,
@@ -83,8 +87,11 @@ function useTicker(active: boolean): number {
 
 // ── Local building blocks (wireframe ad-hoc pieces — see adhoc-registry.json) ────
 
-/** White section card with a section-heading + collapse chevron (the wireframes'
- *  "List Section" frames compose ContentPrimitives directly — so do we). */
+/** White section card using the shared **Accordion Behaviour** (`@leta/components`):
+ *  hovering anywhere on the section-heading row highlights the trailing chevron,
+ *  clicking toggles, and the body opens/closes with a smooth ease-in-out reveal.
+ *  Mirrors the Figma "Order Detail Accordions" component (card: pad 20, radius xl,
+ *  1px border; header→body gap 12; body 20px-gap column). */
 function Section({
   title,
   count,
@@ -96,14 +103,14 @@ function Section({
   children: React.ReactNode;
   defaultOpen?: boolean;
 }): React.ReactElement {
-  const [open, setOpen] = React.useState(defaultOpen);
+  const { open, toggle } = useAccordion(defaultOpen);
   return (
     <div
       style={{
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        gap: open ? 'var(--spacing-12px)' : 0,
+        gap: 0,
         width: '100%',
         backgroundColor: 'var(--surface-neutral-bg-default)',
         borderRadius: 'var(--rounding-xl)',
@@ -111,37 +118,32 @@ function Section({
         padding: 'var(--padding-20px)',
       }}
     >
-      <ContentPrimitives
-        type="section-heading"
-        text={
-          count != null ? (
-            <>
-              {title}{' '}
-              <span className="text-body-l-regular" style={{ color: 'var(--text-default-sub-body)' }}>
-                ({count})
-              </span>
-            </>
-          ) : (
-            title
-          )
-        }
-        showSubtext={false}
-        showVisualAnchor={false}
-        showTrailingContent
-        showPassiveElements={false}
-        showInteractiveElements
-        interactiveElements={
-          <Button
-            variant="ghost"
-            size="medium"
-            iconOnly={open ? 'Chevron-Up' : 'Chevron-Down'}
-            aria-label={open ? 'Collapse section' : 'Expand section'}
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-          />
-        }
-      />
-      {open && children}
+      <AccordionHeader open={open} onToggle={toggle}>
+        <ContentPrimitives
+          type="section-heading"
+          text={
+            count != null ? (
+              <>
+                {title}{' '}
+                <span className="text-body-l-regular" style={{ color: 'var(--text-default-sub-body)' }}>
+                  ({count})
+                </span>
+              </>
+            ) : (
+              title
+            )
+          }
+          showSubtext={false}
+          showVisualAnchor={false}
+          showTrailingContent
+          showPassiveElements={false}
+          showInteractiveElements
+          interactiveElements={<AccordionChevron open={open} onToggle={toggle} />}
+        />
+      </AccordionHeader>
+      <AccordionContent open={open} gap="var(--spacing-20px)">
+        {children}
+      </AccordionContent>
     </div>
   );
 }
@@ -177,30 +179,34 @@ function FieldRows({ fields }: { fields: React.ReactNode[] }): React.ReactElemen
   );
 }
 
-/** Proof-image row: thumbnail + label/filename + View (POP / POD / signature). */
+/** Proof-image row: thumbnail + label/filename + View (POP / POD / signature).
+ *  Figma: Content frame gap 20 (leading↔View); Leading Content gap 8 (image↔text);
+ *  image thumbnail 44×44, radius `md`. */
 function ProofRow({ file, onView }: { file: ProofFile; onView: (f: ProofFile) => void }): React.ReactElement {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-12px)', flex: '1 0 0', minWidth: 0 }}>
-      <img
-        src={file.src}
-        alt={file.label}
-        style={{
-          width: 48,
-          height: 32,
-          objectFit: 'cover',
-          borderRadius: 'var(--rounding-sm)',
-          border: 'var(--stroke-xs) solid var(--border-neutral-default)',
-          flexShrink: 0,
-          backgroundColor: 'var(--surface-neutral-bg-default)',
-        }}
-      />
-      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: '1 0 0' }}>
-        <span className="text-label-m-semibold" style={{ color: 'var(--text-default-heading)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {file.label}
-        </span>
-        <span className="text-label-s-regular" style={{ color: 'var(--text-default-sub-body)' }}>{file.fileName}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-20px)', flex: '1 0 0', minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-8px)', flex: '1 0 0', minWidth: 0 }}>
+        <img
+          src={file.src}
+          alt={file.label}
+          style={{
+            width: 44,
+            height: 44,
+            objectFit: 'cover',
+            borderRadius: 'var(--rounding-md)',
+            border: 'var(--stroke-xs) solid var(--border-neutral-default)',
+            flexShrink: 0,
+            backgroundColor: 'var(--surface-neutral-bg-default)',
+          }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: '1 0 0' }}>
+          <span className="text-label-m-semibold" style={{ color: 'var(--text-default-heading)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {file.label}
+          </span>
+          <span className="text-label-s-regular" style={{ color: 'var(--text-default-sub-body)' }}>{file.fileName}</span>
+        </div>
       </div>
-      <Button variant="secondary" size="small" onClick={() => onView(file)}>View</Button>
+      <Button variant="secondary" size="medium" onClick={() => onView(file)}>View</Button>
     </div>
   );
 }
@@ -355,6 +361,13 @@ function DrawerBody({
   const [menuAnchor, setMenuAnchor] = React.useState<DOMRect | null>(null);
   const [assignBanner, setAssignBanner] = React.useState(true);
   const [itemsPage, setItemsPage] = React.useState(1);
+  // Items accordion: once paginated (>5 items), lock the item-rows region to the
+  // full first-page (5-row) height so a short last page (e.g. 1 item) doesn't
+  // shrink the accordion mid-browse. Measured off the full page 1 (no magic
+  // number); ≤4 items (no pagination) stays content-height. DrawerBody is keyed
+  // by order.id, so this resets per order.
+  const itemRowsRef = React.useRef<HTMLDivElement>(null);
+  const [lockedItemRowsHeight, setLockedItemRowsHeight] = React.useState<number | null>(null);
 
   const depotName = model.depot?.name ?? order.depot ?? order.pickup.label;
   const depotAddress = model.depot?.address ?? order.pickup.label;
@@ -369,6 +382,12 @@ function DrawerBody({
   // Items pagination — 5 per page (wireframe).
   const pageCount = Math.max(1, Math.ceil(model.itemLines.length / 5));
   const pageItems = model.itemLines.slice((itemsPage - 1) * 5, itemsPage * 5);
+  // Lock the item-rows height off the full first page once paginated.
+  React.useLayoutEffect(() => {
+    if (pageCount > 1 && itemsPage === 1 && lockedItemRowsHeight == null && itemRowsRef.current) {
+      setLockedItemRowsHeight(itemRowsRef.current.scrollHeight);
+    }
+  }, [pageCount, itemsPage, lockedItemRowsHeight]);
 
   const runAction = (key: string) => {
     switch (key) {
@@ -451,7 +470,10 @@ function DrawerBody({
           <ContentPrimitives
             type="utility"
             text={model.summary.main}
-            subtext={summarySub}
+            /* One-line sub-copy (matches Figma) — the fixed 168px card can't
+               absorb a wrap. Figma keeps it on one line at this width with the
+               medium CTA, so nowrap is the fix (do NOT shrink the CTA). */
+            subtext={<span style={{ whiteSpace: 'nowrap' }}>{summarySub}</span>}
             showVisualAnchor={false}
             showPassiveElements={false}
             showInteractiveElements
@@ -482,7 +504,7 @@ function DrawerBody({
         >
           <div style={{ display: 'flex', gap: 'var(--spacing-8px)', flex: 1, minWidth: 0 }}>
             <span style={{ display: 'flex', paddingTop: 4, color: 'var(--icons-secondary-default)', flexShrink: 0 }}>
-              <Icon name="Lock" size={16} />
+              <Icon name="Lock" outlined={false} size={16} />
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4px)' }}>
               <span className="text-label-m-semibold" style={{ color: 'var(--text-secondary-label)' }}>Pickup Code</span>
@@ -510,12 +532,13 @@ function DrawerBody({
                 </span>
               ))}
             </div>
-            <HoverTip label="Copy pickup code">
+            <HoverTip label="Copy">
               <Button
                 variant="plain"
                 size="small"
                 iconOnly="Copy"
                 iconOutlined
+                copyIcon="Check-Circle"
                 aria-label="Copy pickup code"
                 onClick={() => void navigator.clipboard.writeText(model.pickupCode)}
               />
@@ -541,10 +564,10 @@ function DrawerBody({
               interactiveElements={
                 <div style={{ display: 'flex', gap: 'var(--spacing-8px)' }}>
                   <HoverTip label="Change driver">
-                    <Button variant="secondary" size="small" iconOnly="Swap" aria-label="Change driver" onClick={() => actions.stub('Change Driver')} />
+                    <Button variant="secondary" size="medium" iconOnly="Swap" aria-label="Change driver" onClick={() => actions.stub('Change Driver')} />
                   </HoverTip>
                   <HoverTip label="Call driver">
-                    <Button variant="secondary" size="small" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={() => actions.stub('Call Driver')} />
+                    <Button variant="secondary" size="medium" iconOnly="Phone" iconOutlined aria-label="Call driver" onClick={() => actions.stub('Call Driver')} />
                   </HoverTip>
                 </div>
               }
@@ -558,12 +581,13 @@ function DrawerBody({
               showVisualAnchor
               showLeadingIcon={false}
               showFeaturedIcon
-              featuredIconName="Proceed"
+              featuredIconName="Tracking"
+              featuredIconOutlined
               showPassiveElements={false}
               showInteractiveElements
               interactiveElements={
                 <HoverTip label="Open trip">
-                  <Button variant="secondary" size="small" iconOnly="Open" aria-label="Open trip" onClick={() => actions.stub('View Trip')} />
+                  <Button variant="secondary" size="medium" iconOnly="Open" aria-label="Open trip" onClick={() => actions.stub('View Trip')} />
                 </HoverTip>
               }
             />
@@ -577,17 +601,25 @@ function DrawerBody({
         <Section title="Proof of Delivery">
           <FieldRows
             fields={[
-              <Field key="n" label="Recipient Name" value={model.pod.receivedBy} icon="User-Available" />,
+              <Field key="n" label="Recipient Name" value={model.pod.receivedBy} icon="User" />,
               <Field key="p" label="Phone number" value={model.pod.phone} icon="Phone" />,
               <Field key="i" label="Recipient ID/Passport number" value={model.pod.idNumber} icon="ID" />,
               <Field key="r" label="Payment reference" value={model.pod.paymentRef} icon="Receipt" />,
             ]}
           />
-          <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
-          <div style={{ display: 'flex', gap: 'var(--spacing-16px)', width: '100%' }}>
-            {model.proofFiles.map((f) => (
-              <ProofRow key={f.label} file={f} onView={setProofView} />
-            ))}
+          {/* Proof group (Figma "Proof of pickup" frame): horizontal divider then
+              the proof rows (split by a 32px vertical `Dermacator`), grouped at
+              gap 16 — sits 20 below the fields via the body column gap. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)', width: '100%' }}>
+            <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-20px)', width: '100%' }}>
+              {model.proofFiles.map((f, i) => (
+                <React.Fragment key={f.label}>
+                  {i > 0 && <div style={{ width: 0, height: 32, borderLeft: 'var(--stroke-xs) solid var(--border-neutral-default)', flexShrink: 0 }} />}
+                  <ProofRow file={f} onView={setProofView} />
+                </React.Fragment>
+              ))}
+            </div>
           </div>
         </Section>
       )}
@@ -601,10 +633,10 @@ function DrawerBody({
           ]}
         />
         {model.showProofOfPickup && (
-          <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16px)', width: '100%' }}>
             <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
             <ProofRow file={model.proofOfPickupFile} onView={setProofView} />
-          </>
+          </div>
         )}
       </Section>
 
@@ -612,7 +644,7 @@ function DrawerBody({
       <Section title="Deliver To">
         <FieldRows
           fields={[
-            <Field key="n" label="Recipient name" value={order.customer} icon="User-Available" />,
+            <Field key="n" label="Recipient name" value={order.customer} icon="User" />,
             <Field key="a" label="Delivery address" value={order.dropoff.label} icon="Location" />,
             <Field key="p" label="Phone number" value={order.phone} icon="Phone" />,
             <Field key="e" label="Recipient email" value={model.recipientEmail} icon="Mail" />,
@@ -623,31 +655,48 @@ function DrawerBody({
         />
       </Section>
 
-      {/* Items */}
-      <Section title="Items" count={model.itemLines.length}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-20px)', width: '100%' }}>
-          {pageItems.map((line, i) => (
-            <ContentPrimitives
-              key={`${itemsPage}-${i}`}
-              type="utility"
-              text={line.name}
-              subtext={`${line.units} Unit${line.units === 1 ? '' : 's'}`}
-              showVisualAnchor
-              showLeadingIcon={false}
-              showFeaturedIcon
-              featuredIconName="Inventory"
-              showPassiveElements={false}
-              showInteractiveElements={false}
-              showTrailingContent={false}
-            />
-          ))}
-          {pageCount > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Pagination variant="stacked-list" page={itemsPage} pageCount={pageCount} onPageChange={setItemsPage} />
+      {/* Items — only for clients that create items (config.items.enabled) and
+          when the order has items. When paginated (>5 items) the item-rows region
+          is locked to the full first-page height so a short last page doesn't
+          shrink the accordion; ≤4 items hugs its content. */}
+      {config.items.enabled && model.itemLines.length > 0 && (
+        <Section title="Items" count={model.itemLines.length}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-20px)', width: '100%' }}>
+            <div
+              ref={itemRowsRef}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--spacing-20px)',
+                width: '100%',
+                ...(pageCount > 1 && lockedItemRowsHeight != null ? { minHeight: lockedItemRowsHeight } : {}),
+              }}
+            >
+              {pageItems.map((line, i) => (
+                <ContentPrimitives
+                  key={`${itemsPage}-${i}`}
+                  type="utility"
+                  text={line.name}
+                  subtext={`${line.units} Unit${line.units === 1 ? '' : 's'}`}
+                  showVisualAnchor
+                  showLeadingIcon={false}
+                  showFeaturedIcon
+                  featuredIconName="Inventory"
+                  featuredIconOutlined
+                  showPassiveElements={false}
+                  showInteractiveElements={false}
+                  showTrailingContent={false}
+                />
+              ))}
             </div>
-          )}
-        </div>
-      </Section>
+            {pageCount > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Pagination variant="stacked-list" page={itemsPage} pageCount={pageCount} onPageChange={setItemsPage} />
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
 
       {/* Payment Information */}
       <Section title="Payment Information">
@@ -655,30 +704,34 @@ function DrawerBody({
           <>
             <FieldRows
               fields={[
-                <Field key="t" label="Payment type" value={model.payment.type} icon="Payment" />,
+                <Field key="t" label="Payment type" value={model.payment.type} icon="Front-Door" />,
                 <Field key="m" label="Payment Type" value={model.payment.method} />,
                 <Field key="p" label="Product total" value={`KES ${model.payment.productTotal.toLocaleString()}`} icon="Orders" />,
-                <Field key="f" label="Delivery fee" value={`KES ${model.payment.deliveryFee.toLocaleString()}`} icon="Wallet" />,
+                <Field key="f" label="Delivery fee" value={`KES ${model.payment.deliveryFee.toLocaleString()}`} icon="Payment" />,
               ]}
             />
-            <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className="text-label-m-semibold" style={{ color: 'var(--text-default-heading)' }}>Total</span>
-                <span className="text-body-m-regular" style={{ color: 'var(--text-default-sub-body)' }}>VAT Incl.</span>
+            {/* Total Section (Figma): divider + Total row grouped at gap 12, set
+                20 below the fields by the accordion body's 20px column gap. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12px)', width: '100%' }}>
+              <div style={{ height: 0, borderTop: 'var(--stroke-xs) solid var(--border-neutral-default)', width: '100%' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span className="text-label-m-semibold" style={{ color: 'var(--text-default-heading)' }}>Total</span>
+                  <span className="text-body-m-regular" style={{ color: 'var(--text-default-sub-body)' }}>VAT Incl.</span>
+                </div>
+                <span className="text-body-l-semibold" style={{ color: 'var(--text-default-heading)' }}>
+                  KES {model.payment.total.toLocaleString()}
+                </span>
               </div>
-              <span className="text-body-l-semibold" style={{ color: 'var(--text-default-heading)' }}>
-                KES {model.payment.total.toLocaleString()}
-              </span>
             </div>
           </>
         ) : (
           <FieldRows
             fields={[
-              <Field key="m" label="Payment method" value="N/A" icon="Payment" />,
+              <Field key="m" label="Payment method" value="N/A" icon="Front-Door" />,
               <Field key="r" label="Reference number" value="N/A" />,
               <Field key="p" label="Product total" value="N/A" icon="Orders" />,
-              <Field key="f" label="Delivery fee" value="N/A" icon="Wallet" />,
+              <Field key="f" label="Delivery fee" value="N/A" icon="Payment" />,
             ]}
           />
         )}
@@ -703,7 +756,7 @@ function DrawerBody({
             <Field key="c" label="Created" value={model.createdLabel} icon="Calendar" />,
             <Field key="cb" label="Created By" value={model.createdByLabel} icon={model.createdByIcon.icon} />,
             <Field key="d" label="Dispatched" value={model.dispatchedLabel} icon="Calendar" />,
-            <Field key="db" label="Dispatched By" value={model.dispatchedByLabel} icon="User-Available" />,
+            <Field key="db" label="Dispatched By" value={model.dispatchedByLabel} icon="User" />,
             <Field key="dl" label="Completed" value={model.deliveredLabel} icon="Calendar" />,
             <Field key="w" label="Weight" value="N/A" icon="Weight" />,
           ]}
@@ -777,6 +830,8 @@ function DrawerBody({
                     size="small"
                     iconLeft="Copy"
                     iconOutlined
+                    copyIcon="Check-Circle"
+                    copiedLabel="Copied"
                     onClick={() => void navigator.clipboard.writeText(order.id)}
                   >
                     Order ID

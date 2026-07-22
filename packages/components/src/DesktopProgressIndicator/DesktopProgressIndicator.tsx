@@ -100,7 +100,7 @@ export const DesktopProgressIndicator = React.forwardRef<
       >
         {track({ flex: 1 })}
         {pct >= 100 ? (
-          <Icon name="Check-Circle" size={20} color="var(--icons-success-default)" aria-hidden />
+          <Icon name="Check-Circle" outlined={false} size={20} color="var(--icons-success-default)" aria-hidden />
         ) : (
           <span
             className="text-label-m-regular"

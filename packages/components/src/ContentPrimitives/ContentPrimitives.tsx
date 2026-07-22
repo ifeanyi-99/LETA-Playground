@@ -40,6 +40,8 @@ export interface ContentPrimitivesProps
   avatarSrc?: string;
   showFeaturedIcon?: boolean;
   featuredIconName?: IconName;
+  /** Render the featured icon glyph outlined rather than filled. @default false */
+  featuredIconOutlined?: boolean;
   showMonogramIcon?: boolean;
   monogramLabel?: string;
 
@@ -91,6 +93,7 @@ function VisualAnchor({
   avatarSrc,
   showFeaturedIcon = false,
   featuredIconName = 'Orders',
+  featuredIconOutlined = false,
   showMonogramIcon = false,
   monogramLabel = 'AS',
   iconSize = 20,
@@ -104,6 +107,7 @@ function VisualAnchor({
   avatarSrc?: string;
   showFeaturedIcon?: boolean;
   featuredIconName?: IconName;
+  featuredIconOutlined?: boolean;
   showMonogramIcon?: boolean;
   monogramLabel?: string;
   iconSize?: number;
@@ -137,7 +141,7 @@ function VisualAnchor({
       )}
       {showFeaturedIcon && (
         <div style={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch', flexShrink: 0 }}>
-          <FeaturedIcon icon={featuredIconName} color="neutral" size="large" />
+          <FeaturedIcon icon={featuredIconName} outlined={featuredIconOutlined} color="neutral" size="large" />
         </div>
       )}
       {showMonogramIcon && (
@@ -287,6 +291,7 @@ function HeadingLayout(props: ContentPrimitivesProps) {
     avatarSrc,
     showFeaturedIcon,
     featuredIconName,
+    featuredIconOutlined,
     showMonogramIcon,
     monogramLabel,
     showTrailingContent = true,
@@ -333,6 +338,7 @@ function HeadingLayout(props: ContentPrimitivesProps) {
             avatarSrc={avatarSrc}
             showFeaturedIcon={showFeaturedIcon}
             featuredIconName={featuredIconName}
+            featuredIconOutlined={featuredIconOutlined}
             showMonogramIcon={showMonogramIcon}
             monogramLabel={monogramLabel}
             align={type === 'section-heading' ? 'center' : 'top'}
@@ -597,7 +603,7 @@ export const ContentPrimitives = React.forwardRef<HTMLDivElement, ContentPrimiti
       text, subtext, showSubtext, titleName, listRowText, metric, eyebrowText,
       showVisualAnchor, showLeadingIcon, leadingIcon, leadingIconOutlined,
       showAvatar, avatarName, avatarSrc,
-      showFeaturedIcon, featuredIconName,
+      showFeaturedIcon, featuredIconName, featuredIconOutlined,
       showMonogramIcon, monogramLabel,
       showTrailingContent, showPassiveElements, passiveElements,
       showInteractiveElements, interactiveElements, contentAlign,
@@ -612,7 +618,7 @@ export const ContentPrimitives = React.forwardRef<HTMLDivElement, ContentPrimiti
       type, text, subtext, showSubtext, titleName, listRowText, metric, eyebrowText,
       showVisualAnchor, showLeadingIcon, leadingIcon, leadingIconOutlined,
       showAvatar, avatarName, avatarSrc,
-      showFeaturedIcon, featuredIconName,
+      showFeaturedIcon, featuredIconName, featuredIconOutlined,
       showMonogramIcon, monogramLabel,
       showTrailingContent, showPassiveElements, passiveElements,
       showInteractiveElements, interactiveElements, contentAlign,

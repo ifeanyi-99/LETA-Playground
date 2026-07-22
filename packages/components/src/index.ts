@@ -141,6 +141,10 @@ export type {
 } from './ConfigurationCard/index.js';
 export { ContentCard, StackedCards } from './ContentCard/index.js';
 export type { ContentCardProps, StackedCardsProps } from './ContentCard/index.js';
+// Accordion Behaviour — the shared open/close (hide & reveal) pattern used by
+// List/Table/Input Section + bespoke wireframe sections. See AccordionBehaviour.tsx.
+export { AccordionHeader, AccordionChevron, AccordionContent, useAccordion } from './AccordionBehaviour/AccordionBehaviour.js';
+export type { AccordionHeaderProps } from './AccordionBehaviour/AccordionBehaviour.js';
 export { InputSection, InputGroup, FormDemarcator } from './InputSection/index.js';
 export type { InputSectionProps, InputGroupProps } from './InputSection/index.js';
 export { Toast } from './Toast/index.js';

@@ -6,7 +6,12 @@ export type IconSize = 'xs' | 'small' | 'medium' | 'large' | 'xl' | 'xxl' | 'xxx
 export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, 'children'> {
   /** Semantic LETA icon name (e.g. "Dashboard", "Orders", "Format-Bold"). */
   name: IconName;
-  /** Render the outlined variant. Defaults to filled. */
+  /**
+   * Render the outlined variant. **Defaults to `true`** — outlined is the LETA
+   * house style. Pass `outlined={false}` for the filled variant (e.g. status /
+   * semantic icons like success ✓, error, map pins, which are intentionally
+   * filled). Glyphs with no outline variant fall back to filled automatically.
+   */
   outlined?: boolean;
   /**
    * Sizing token from the LETA Mapped Sizes collection. Each value resolves
@@ -62,13 +67,14 @@ function inner(svg: string): { viewBox: string; inner: string } {
 }
 
 /**
- * Render a LETA icon. Defaults to filled, sized by the `medium` token,
- * coloured by `currentColor`. Pass `outlined` for the outlined variant.
+ * Render a LETA icon. Defaults to **outlined** (the house style), sized by the
+ * `medium` token, coloured by `currentColor`. Pass `outlined={false}` for the
+ * filled variant. Glyphs without an outline variant fall back to filled.
  *
  * Decorative by default — only adds an accessible name when `title` is set.
  */
 export const Icon = React.forwardRef<SVGSVGElement, IconProps>(function Icon(
-  { name, outlined = false, size = 'medium', color, title, style, ...rest },
+  { name, outlined = true, size = 'medium', color, title, style, ...rest },
   ref,
 ) {
   const entry = REGISTRY[name];

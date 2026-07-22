@@ -74,7 +74,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
   const errorRow = error ? (
     <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-8px)' }}>
       <span style={{ flexShrink: 0, display: 'flex', color: 'var(--icons-error-default)' }}>
-        <Icon name="Error" size={16} />
+        <Icon name="Error" outlined={false} size={16} />
       </span>
       <span className="text-label-s-regular" style={{ color: 'var(--text-error-label)' }}>{errorMessage}</span>
     </span>

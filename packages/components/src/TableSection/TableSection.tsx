@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Icon } from '@leta/icons';
 import { ContentPrimitives } from '../ContentPrimitives/ContentPrimitives.js';
 import { TableContainer } from '../TableContainer/TableContainer.js';
 import { TableDataControl } from '../TableDataControl/TableDataControl.js';
+import { AccordionHeader, AccordionChevron, AccordionContent, useAccordion } from '../AccordionBehaviour/AccordionBehaviour.js';
 
 export interface TableSectionProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Section header title. Default "Title". */
@@ -49,23 +49,7 @@ export const TableSection = React.forwardRef<HTMLDivElement, TableSectionProps>(
     },
     ref,
   ) {
-    const [open, setOpen] = React.useState(defaultOpen);
-
-    const chevron = (
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        aria-label={open ? 'Collapse section' : 'Expand section'}
-        aria-expanded={open}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'none', border: 0, padding: 0, cursor: 'pointer',
-          color: 'var(--icons-neutral-default)',
-        }}
-      >
-        <Icon name={open ? 'Chevron-Up' : 'Chevron-Down'} size={24} />
-      </button>
-    );
+    const { open, toggle } = useAccordion(defaultOpen);
 
     return (
       <div
@@ -75,31 +59,30 @@ export const TableSection = React.forwardRef<HTMLDivElement, TableSectionProps>(
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
-          gap: 'var(--spacing-12px)',
+          gap: 0,
           width: '100%',
           ...style,
         }}
         {...rest}
       >
-        <ContentPrimitives
-          type="section-heading"
-          text={title}
-          subtext={subtext}
-          showTrailingContent={true}
-          showInteractiveElements={true}
-          interactiveElements={chevron}
-          showPassiveElements={false}
-        />
-
-        {open && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24px)', width: '100%' }}>
-            {children ?? (
-              <TableContainer
-                controls={<TableDataControl variant="search-column" showColumnControl={false} filterCount={filterCount} />}
-              />
-            )}
-          </div>
-        )}
+        <AccordionHeader open={open} onToggle={toggle}>
+          <ContentPrimitives
+            type="section-heading"
+            text={title}
+            subtext={subtext}
+            showTrailingContent={true}
+            showInteractiveElements={true}
+            interactiveElements={<AccordionChevron open={open} onToggle={toggle} />}
+            showPassiveElements={false}
+          />
+        </AccordionHeader>
+        <AccordionContent open={open} gap="var(--spacing-24px)">
+          {children ?? (
+            <TableContainer
+              controls={<TableDataControl variant="search-column" showColumnControl={false} filterCount={filterCount} />}
+            />
+          )}
+        </AccordionContent>
       </div>
     );
   },

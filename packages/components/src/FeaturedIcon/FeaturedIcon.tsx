@@ -28,6 +28,13 @@ export interface FeaturedIconProps extends React.HTMLAttributes<HTMLSpanElement>
    * @default 'rounded'
    */
   shape?: 'rounded' | 'circle';
+  /**
+   * Render the icon glyph outlined rather than filled. Defaults to filled so
+   * existing consumers are unchanged; pass `true` where the design uses the
+   * outlined glyph (e.g. Order Detail item cards use `Orders` outlined).
+   * @default false
+   */
+  outlined?: boolean;
 }
 
 const BG: Record<FeaturedIconColor, string> = {
@@ -68,7 +75,7 @@ const ICON_SIZE: Record<FeaturedIconSize, number> = {
  * visual anchor for card section titles. Non-interactive, purely presentational.
  */
 export const FeaturedIcon = React.forwardRef<HTMLSpanElement, FeaturedIconProps>(
-  function FeaturedIcon({ icon, color, size = 'medium', shape = 'rounded', style, ...rest }, ref) {
+  function FeaturedIcon({ icon, color, size = 'medium', shape = 'rounded', outlined = false, style, ...rest }, ref) {
     return (
       <span
         ref={ref}
@@ -87,7 +94,7 @@ export const FeaturedIcon = React.forwardRef<HTMLSpanElement, FeaturedIconProps>
         }}
         {...rest}
       >
-        <Icon name={icon} size={ICON_SIZE[size]} color={ICON_COLOR[color]} />
+        <Icon name={icon} outlined={outlined} size={ICON_SIZE[size]} color={ICON_COLOR[color]} />
       </span>
     );
   },

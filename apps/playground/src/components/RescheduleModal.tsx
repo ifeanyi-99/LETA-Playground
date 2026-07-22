@@ -153,6 +153,7 @@ export function RescheduleModal({ orderIds, anchorDate, chipBase, noOpDate = nul
                       trailing={
                         <Icon
                           name="Check-Circle"
+                          outlined={false}
                           size={20}
                           color="var(--icons-neutral-default)"
                           style={{ visibility: active ? 'visible' : 'hidden' }}

@@ -171,7 +171,7 @@ export const NotificationBanner = React.forwardRef<
         {/* Leading Icon — filled centres against the content, so no top pad;
             subtle top-aligns with a 1px top pad (Figma `Leading Icon` pad 1/0/0/0). */}
         <div style={{ flexShrink: 0, display: 'flex', paddingTop: isFilled ? 0 : 'var(--padding-1px)', color: config.iconColor }}>
-          <Icon name={icon ?? config.iconName} size={18} />
+          <Icon name={icon ?? config.iconName} outlined={false} size={18} />
         </div>
 
         {/* Content — text + optional content-buttons slot */}

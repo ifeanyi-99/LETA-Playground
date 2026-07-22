@@ -87,6 +87,7 @@ export function UpdateStatusModal({ orderIds, statuses, onClose, onConfirm }: Up
                     trailing={
                       <Icon
                         name="Check-Circle"
+                        outlined={false}
                         size={20}
                         color="var(--icons-neutral-default)"
                         style={{ visibility: active ? 'visible' : 'hidden' }}

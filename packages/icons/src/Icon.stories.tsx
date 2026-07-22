@@ -29,7 +29,7 @@ type Story = StoryObj<typeof Icon>;
 
 /** Single icon with full prop controls. Open the Controls panel to swap name, size, outlined, etc. */
 export const Playground: Story = {
-  args: { name: 'Dashboard', size: 'large', outlined: false },
+  args: { name: 'Dashboard', size: 'large', outlined: true },
 };
 
 /** All sizes side by side for one icon. */

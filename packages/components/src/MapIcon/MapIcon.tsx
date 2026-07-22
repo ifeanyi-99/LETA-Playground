@@ -266,10 +266,10 @@ export const MapIcon = React.forwardRef<HTMLDivElement, MapIconProps>(
             }}
           >
             {isObjectPin && (
-              <Icon name={icon ?? 'User'} size={16} color={CONTENT_COLOR} />
+              <Icon name={icon ?? 'User'} outlined={false} size={16} color={CONTENT_COLOR} />
             )}
             {isBadge && icon && (
-              <Icon name={icon} size={16} color={CONTENT_COLOR} />
+              <Icon name={icon} outlined={false} size={16} color={CONTENT_COLOR} />
             )}
             {(isNumericPin || (isBadge && !icon && text != null)) && (
               <span

@@ -101,7 +101,7 @@ export const Toast = React.forwardRef<HTMLDivElement, ToastProps>(function Toast
       {/* Leading: status icon + text */}
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--spacing-12px)', minWidth: 0 }}>
         <div style={{ flexShrink: 0, width: 24, height: 24, color: config.iconColor }}>
-          <Icon name={config.icon} size={24} />
+          <Icon name={config.icon} outlined={false} size={24} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2px)', minWidth: 0 }}>
           {showTitle && title && (

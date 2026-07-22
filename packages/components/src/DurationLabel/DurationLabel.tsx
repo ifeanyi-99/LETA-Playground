@@ -63,7 +63,7 @@ export const DurationLabel = React.forwardRef<HTMLSpanElement, DurationLabelProp
     let icon: React.ReactNode = null;
     if (finished) {
       if (status === 'on-target') {
-        icon = <Icon name="Check-Circle" size={16} color="var(--icons-success-default)" />;
+        icon = <Icon name="Check-Circle" outlined={false} size={16} color="var(--icons-success-default)" />;
       } else if (status === 'delayed') {
         icon = <Icon name="Cancel-Circle" size={16} color="var(--icons-error-default)" />;
       }

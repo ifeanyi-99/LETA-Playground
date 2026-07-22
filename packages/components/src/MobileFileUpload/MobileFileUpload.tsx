@@ -138,7 +138,7 @@ export const MobileFileUpload = React.forwardRef<HTMLDivElement, MobileFileUploa
             }}
           >
             <span style={{ display: 'flex', color: 'var(--icons-neutral-idle)' }}>
-              <Icon name="Image-Upload" size={40} />
+              <Icon name="Image-Upload" outlined={false} size={40} />
             </span>
             <span className="text-label-s-regular" style={{ color: 'var(--text-default-label-idle)' }}>{addLabel}</span>
           </button>

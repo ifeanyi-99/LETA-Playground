@@ -110,7 +110,7 @@ export const MobileFeaturedIcon = React.forwardRef<HTMLSpanElement, MobileFeatur
         }}
         {...rest}
       >
-        <Icon name={icon} size={iconPx} color={ICON_TOKEN[color]} />
+        <Icon name={icon} outlined={false} size={iconPx} color={ICON_TOKEN[color]} />
       </span>
     );
   },

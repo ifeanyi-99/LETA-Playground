@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Tooltip } from './Tooltip.js';
+import { Tooltip, type CaretAlign } from './Tooltip.js';
 
 export interface HoverTipProps {
   /** Tooltip label (the Small Tooltip's single text line). */
@@ -35,9 +35,14 @@ function ensureHoverTipStyles(): void {
 
 /** Above the trigger (caret points down) unless there isn't room, then below (caret up). */
 type Placement = 'above' | 'below';
-interface Pos { top: number; left: number; placement: Placement }
+interface Pos { top: number; left: number; placement: Placement; caretAlign: CaretAlign }
 
 const GAP = 8; // clearance between the caret TIP and the trigger edge
+// Distance from the tooltip's start/end edge to the caret's CENTRE for the
+// `start`/`end` caret alignments: the caret sits 20px in from the edge and is a
+// 16px rotated square, so its centre is 20 + 8 = 28px from that edge. Used to
+// position the tooltip so the caret lands on the trigger centre when clamped.
+const CARET_CENTER_INSET = 28;
 // The caret straddles the tooltip body's edge and its tip overhangs ~11px beyond
 // it (16px rotated square, half outside). The measured panel height is the body
 // only (the caret is absolutely-positioned overflow), so we add this so the
@@ -109,12 +114,30 @@ export function HoverTip({ label, children, delay = 120, style }: HoverTipProps)
     const p = panel.getBoundingClientRect();
     const margin = 8;
     const cx = t.left + t.width / 2;
-    const left = Math.max(margin, Math.min(cx - p.width / 2, window.innerWidth - margin - p.width));
+    const minLeft = margin;
+    const maxLeft = window.innerWidth - margin - p.width;
+    // Prefer centring the tooltip (and caret) on the trigger. If that would clamp
+    // to a viewport edge, instead pin the tooltip so the caret's start/end
+    // position lands on the trigger centre — so the caret always points at the
+    // trigger (right-aligned near the right edge, left-aligned near the left).
+    const centeredLeft = cx - p.width / 2;
+    let left: number;
+    let caretAlign: CaretAlign;
+    if (centeredLeft >= minLeft && centeredLeft <= maxLeft) {
+      left = centeredLeft;
+      caretAlign = 'center';
+    } else if (centeredLeft > maxLeft) {
+      caretAlign = 'end';
+      left = Math.max(minLeft, Math.min(cx - p.width + CARET_CENTER_INSET, maxLeft));
+    } else {
+      caretAlign = 'start';
+      left = Math.max(minLeft, Math.min(cx - CARET_CENTER_INSET, maxLeft));
+    }
     const offset = GAP + CARET_OVERHANG; // clears the caret tip past the trigger
     const fitsAbove = t.top - offset - p.height >= margin;
     const placement: Placement = fitsAbove ? 'above' : 'below';
     const top = placement === 'above' ? t.top - offset - p.height : t.bottom + offset;
-    setPos({ top, left, placement });
+    setPos({ top, left, placement, caretAlign });
   }, [open, label]);
 
   React.useEffect(() => () => {
@@ -157,7 +180,7 @@ export function HoverTip({ label, children, delay = 120, style }: HoverTipProps)
               variant="small"
               text={label}
               caretSide={pos?.placement === 'below' ? 'top' : 'bottom'}
-              caretAlign="center"
+              caretAlign={pos?.caretAlign ?? 'center'}
             />
           </div>,
           document.body,
